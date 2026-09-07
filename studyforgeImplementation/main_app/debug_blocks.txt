@@ -1,0 +1,731 @@
+--- Block at line 39 ---
+
+
+### 1.1 Prompt assembly rule
+
+
+--- Block at line 47 ---
+
+  + [Canonical Output Contract]
+
+The application must save this exact final assembled request before calling AI.
+
+--- Block at line 65 ---
+
+
+**Use with:** AI-01A, AI-01B, AI-03A, AI-03B, AI-03C, AI-03D, AI-04, AI-05, AI-06A, AI-06B, AI-07A, AI-07E, AI-07F, AI-07G, AI-07H, AI-07I, AI-07J, AI-07K.
+
+
+--- Block at line 80 ---
+
+8. Use stable IDs, anchors, and references supplied in the task. Never silently rename them.
+9. Do not use live web information unless the request explicitly states that grounding/search is enabled. When live web information is permitted, include the required URL, date, and source metadata.
+10. Do not optimize for attractive wording alone. Optimize for correct, comprehensive, understandable study material.
+
+--- Block at line 86 ---
+
+
+**Use with:** AI-02A and AI-02B only.
+
+
+--- Block at line 98 ---
+
+4. If text is uncertain, unreadable, or impossible to reconstruct reliably, mark it as unresolved. Do not guess.
+5. Preserve page references and clearly report any page mapping that cannot be retained.
+6. Return only the exact requested JSON object. Do not add commentary.
+
+--- Block at line 104 ---
+
+
+**Use with:** AI-07B and AI-07C.
+
+
+--- Block at line 118 ---
+
+6. Use clear reading order, high-contrast labels, and a structure appropriate for students.
+7. Do not add decorative elements that distract from the learning objective.
+8. Return only the exact requested JSON object or image-generation instruction. Do not add commentary.
+
+--- Block at line 124 ---
+
+
+**Use with:** AI-07D, and AI-01A/AI-01B only when the user has explicitly enabled internet/current mode.
+
+
+--- Block at line 137 ---
+
+5. If live grounding/search is unavailable or a fact cannot be verified, state this in the required field. Do not fabricate a source or URL.
+6. Do not label web results as source-backed user material. They must remain web-sourced.
+7. Return only the exact requested JSON object. Do not add commentary.
+
+--- Block at line 143 ---
+
+
+**Use with:** AI-06A, AI-06B, AI-07G, AI-07H, AI-07I, AI-07K.
+
+
+--- Block at line 157 ---
+
+6. Suggestions must be actionable: identify target anchor/container, action type, rationale, priority, and required source/context.
+7. Do not silently approve inaccurate, unsupported, or unresolved material.
+8. Return only the exact requested JSON object. Do not add commentary.
+
+--- Block at line 208 ---
+
+**Grounding:** OFF by default; ON only when user explicitly enabled internet/current mode.  
+**Trigger:** Method 2 — user clicks AI Draft Text.
+
+
+--- Block at line 253 ---
+
+  ],
+  "scope_notes": [""]
+}
+
+--- Block at line 270 ---
+
+**Grounding:** OFF by default; ON only when explicitly enabled.  
+**Trigger:** User approves/edits expanded scope and clicks Approve & Generate.
+
+
+--- Block at line 311 ---
+
+    {"claim": "", "related_heading_id": "H-1", "source_url": ""}
+  ]
+}
+
+--- Block at line 321 ---
+
+**Grounding:** OFF.  
+**Trigger:** Technical extraction quality check fails or user chooses method B.
+
+
+--- Block at line 353 ---
+
+  "quality_status": "usable|partially_usable|unusable",
+  "cleanup_log": [""]
+}
+
+--- Block at line 363 ---
+
+**Grounding:** OFF.  
+**Trigger:** AI-02A result remains inadequate or user chooses method C.
+
+
+--- Block at line 397 ---
+
+  ],
+  "reconstruction_notes": [""]
+}
+
+--- Block at line 407 ---
+
+**Grounding:** OFF.  
+**Trigger:** Always when canonical source reaches Screen 3; once per semantic chunk if chunking is active.
+
+
+--- Block at line 455 ---
+
+  },
+  "routing_hints": []
+}
+
+--- Block at line 465 ---
+
+**Grounding:** OFF.  
+**Trigger:** Always after AI-03A.
+
+
+--- Block at line 531 ---
+
+    {"id": "PR-001", "name": "", "steps_or_description": "", "page_refs": [], "topic_ids": []}
+  ]
+}
+
+--- Block at line 541 ---
+
+**Grounding:** OFF.  
+**Trigger:** Always after AI-03A/AI-03B, but only for rule-routed bundle instructions.
+
+
+--- Block at line 579 ---
+
+    }
+  ]
+}
+
+--- Block at line 589 ---
+
+**Grounding:** OFF.  
+**Trigger:** User force-enables a previously hidden/not-detected bundle.
+
+
+--- Block at line 624 ---
+
+  ],
+  "limitations": []
+}
+
+--- Block at line 634 ---
+
+**Grounding:** OFF.  
+**Trigger:** Entering/recreating Screen 4 after Stage 3 analysis is ready.
+
+
+--- Block at line 683 ---
+
+    }
+  ]
+}
+
+--- Block at line 694 ---
+
+**Grounding:** OFF.  
+**Trigger:** One call per confirmed part; staggered parallel execution.
+
+
+--- Block at line 754 ---
+
+  ],
+  "applied_bundles": []
+}
+
+--- Block at line 764 ---
+
+**Grounding:** OFF.  
+**Trigger:** User sends Screen 6 chat instruction.
+
+
+--- Block at line 802 ---
+
+  "requires_full_regeneration": false,
+  "warning": ""
+}
+
+--- Block at line 812 ---
+
+**Grounding:** OFF.  
+**Trigger:** User selects a section-only regeneration action.
+
+
+--- Block at line 848 ---
+
+  "new_ids": [],
+  "compatibility_notes": []
+}
+
+--- Block at line 858 ---
+
+**Grounding:** OFF.  
+**Trigger:** Generate Part or Auto-Generate Part/All.
+
+
+--- Block at line 923 ---
+
+  "citations": [],
+  "generation_summary": ""
+}
+
+--- Block at line 933 ---
+
+**Grounding:** OFF.  
+**Trigger:** Chained whenever a planned or accepted dynamic image request must be generated.
+
+
+--- Block at line 977 ---
+
+  ],
+  "split_reason": ""
+}
+
+--- Block at line 987 ---
+
+**Grounding:** OFF.  
+**Trigger:** Chained after AI-07B, or after user confirms/edits final image prompt.
+
+
+--- Block at line 1003 ---
+
+- Preserve the title and learning goal.
+- Provide a concise alt description of what the visual shows.
+- Do not include explanation outside the image-generation result.
+
+--- Block at line 1015 ---
+
+**Grounding:** ON.  
+**Trigger:** User clicks Fetch CA; automatically chained for Auto-Generate only when CA applies.
+
+
+--- Block at line 1053 ---
+
+  ],
+  "disclaimer": ""
+}
+
+--- Block at line 1063 ---
+
+**Grounding:** OFF.  
+**Trigger:** Conditional review after text generation when enabled.
+
+
+--- Block at line 1095 ---
+
+    {"description": "", "insert_at": "", "learning_goal": "", "style_hint": "", "reason": "", "priority": "high|medium|low"}
+  ]
+}
+
+--- Block at line 1105 ---
+
+**Grounding:** OFF.  
+**Trigger:** User highlights text and clicks Visualize This.
+
+
+--- Block at line 1141 ---
+
+  ],
+  "placement_anchor": ""
+}
+
+--- Block at line 1151 ---
+
+**Grounding:** OFF.  
+**Trigger:** User asks to modify generated notes.
+
+
+--- Block at line 1192 ---
+
+  "requires_full_regeneration": false,
+  "warning": ""
+}
+
+--- Block at line 1202 ---
+
+**Grounding:** OFF.  
+**Trigger:** Automatically after user clicks Approve Part.
+
+
+--- Block at line 1256 ---
+
+    {"request_id": "", "description": "", "insert_at": "", "learning_goal": "", "style_hint": "", "priority": "high|medium|low"}
+  ]
+}
+
+--- Block at line 1266 ---
+
+**Grounding:** OFF.  
+**Trigger:** Automatically after all remaining parts are approved.
+
+
+--- Block at line 1306 ---
+
+    {"suggestion_id": "", "type": "add_part|enrich_part|add_container|add_visual", "target": "", "title": "", "details": "", "rationale": "", "bundles": [], "requires_ca": false, "priority": "high|medium|low"}
+  ]
+}
+
+--- Block at line 1316 ---
+
+**Grounding:** OFF.  
+**Trigger:** User adds part on Screen 7 or accepts final-validation add-part suggestion.
+
+
+--- Block at line 1353 ---
+
+  "ca_recommended": false,
+  "ca_reason": ""
+}
+
+--- Block at line 1363 ---
+
+**Grounding:** OFF.  
+**Trigger:** User accepts an AI-07H suggested image.
+
+
+--- Block at line 1389 ---
+
+  "learning_goal": "",
+  "style_hint": ""
+}
+
+--- Block at line 1399 ---
+
+
+## STRAT-ECO — Economics / Public Finance / Macroeconomics
+
+
+--- Block at line 1407 ---
+
+- Use tables, formula breakdowns, data interpretation, and process visuals when they improve understanding.
+- For PSC/UPSC relevance, cover India-specific policy/current dimensions only when supplied by source or approved current-affairs flow.
+- Do not force an economics-only view when the topic also contains constitutional, historical, geographical, social, or institutional dimensions.
+
+--- Block at line 1411 ---
+
+
+## STRAT-POL — Polity / Governance / Constitutional Content
+
+
+--- Block at line 1418 ---
+
+- Use timelines for amendments/evolution and flowcharts for institutional process where useful.
+- Distinguish constitutional text, statutory rules, policy practice, and current developments; do not merge them without evidence.
+- Do not force a polity-only view when the topic also contains economics, history, geography, current affairs, or social dimensions.
+
+--- Block at line 1422 ---
+
+
+## STRAT-HIS — History / Culture / Civilisation
+
+
+--- Block at line 1429 ---
+
+- Use timelines, maps, comparison tables, character/story devices, and cause-effect chains when they materially improve understanding.
+- For locations, include historical or archaeological relevance to the exact topic, not unrelated current facts unless current affairs is explicitly relevant.
+- Do not flatten historical complexity into unsupported simple claims.
+
+--- Block at line 1433 ---
+
+
+## STRAT-GEO — Geography / Geopolitics / Place-Based Content
+
+
+--- Block at line 1440 ---
+
+- Treat location facts contextually: history needs historical relevance; economics needs economic relevance; geopolitics needs political/strategic relevance; current affairs needs grounded current context.
+- Use maps, labelled diagrams, comparison tables, and process visuals when they teach the relationship clearly.
+- Avoid generic location fact dumps.
+
+--- Block at line 1444 ---
+
+
+## STRAT-SCI — Science / Technology / Medicine
+
+
+--- Block at line 1451 ---
+
+- Preserve technical accuracy and distinguish established source content from optional simplifying analogies.
+- For medicine, retain meaningful anatomy/symptom/diagnosis/treatment or guideline relationships only when present and within the task scope.
+- Do not introduce medical or scientific claims not supported by source or approved web research.
+
+--- Block at line 1455 ---
+
+
+## STRAT-CS — Computer Science / Programming
+
+
+--- Block at line 1461 ---
+
+- Keep code examples with an explanation of what they demonstrate.
+- Use state/step visualisation, algorithm tables, complexity comparison tables, and real-world analogies where they improve clarity.
+- Do not add code, complexity claims, or language-specific behavior that is not supported by source/context unless clearly tagged as enrichment or research-required.
+
+--- Block at line 1465 ---
+
+
+## STRAT-ENV — Environment / Ecology
+
+
+--- Block at line 1471 ---
+
+- Use labelled cycles, food-web/process diagrams, maps, timelines, and comparison tables when they improve understanding.
+- Keep legal/policy, science, geography, and current-affairs aspects distinct but connected when the topic contains them.
+- Use current facts only through approved grounded current-affairs flow.
+
+--- Block at line 1475 ---
+
+
+## STRAT-SOC — Social Issues / Society
+
+
+--- Block at line 1481 ---
+
+- Use comparison matrices, process/cause-effect diagrams, case stories, and policy/institution boxes when they improve comprehension.
+- Avoid stereotypes, unsupported generalisations, and invented statistics.
+- Preserve cross-domain links to polity, economics, history, geography, law, and current affairs when source/context supports them.
+
+--- Block at line 1485 ---
+
+
+## STRAT-MP — Madhya Pradesh / State-Specific Content
+
+
+--- Block at line 1491 ---
+
+- Where location context matters, explain relationships with neighbouring states/regions, resources, historical sites, or policy context only when useful for the exact learning objective.
+- Current facts must come through approved grounded current-affairs flow and retain URLs/dates.
+- Do not add generic state trivia unrelated to the part.
+
+--- Block at line 1495 ---
+
+
+## STRAT-CA — Current Affairs-First Content
+
+
+--- Block at line 1502 ---
+
+- Preserve date, source, and relevance for each current item.
+- Use timelines, maps, comparison tables, formula/data explanations, or process visuals only where they make the issue understandable.
+- Do not treat old model knowledge as current information when grounded data is required.
+
+--- Block at line 1510 ---
+
+
+Append this exact text to the final approved image prompt when a user clicks Regenerate without editing the prompt:
+
+
+--- Block at line 1515 ---
+
+
+Optional user direction:
+{{USER_DIRECTION}}
+
+--- Block at line 1521 ---
+
+
+When the user edits a final prompt, preserve the canonical system instruction and add this exact context after the edited final task prompt:
+
+
+--- Block at line 1534 ---
+
+{{PROMPT_CHANGE_SUMMARY}}
+
+Follow the user-edited final prompt for this run while preserving all applicable system rules, source boundaries, output contract, and traceability requirements.
+
+--- Block at line 1540 ---
+
+
+When a token/context failure occurs, do not rewrite the canonical task instruction. Keep it unchanged and append this exact instruction after the reduced context payload:
+
+
+--- Block at line 1542 ---
+
+
+```text
+This is a simplified retry because the previous request exceeded the available context limit. Preserve all source-critical information, stable IDs, required output fields, user instructions, and traceability rules. Do not compensate for removed optional context by inventing information.
+
+--- Block at line 1715 ---
+
+
+**Add this exact line immediately after the `sub_discipline` requirement in AI-03A:**
+
+
+--- Block at line 1717 ---
+
+
+```text
+3. Identify the content purpose in one concise sentence, for example: “Teach national income measurement methods” or “Explain stack and queue operations.”
+
+--- Block at line 1721 ---
+
+
+**Replace the AI-03A output schema opening with this exact opening:**
+
+
+--- Block at line 1727 ---
+
+  "sub_discipline": "",
+  "purpose": "",
+  "secondary_domains": [],
+
+--- Block at line 1737 ---
+
+
+**Add this exact requirement immediately before the final return-schema instruction in AI-03B:**
+
+
+--- Block at line 1739 ---
+
+
+```text
+8. Extract key standalone facts, statistics, rankings, and data points with stable IDs beginning "KF-" when they are explicitly present in the source. Do not treat a fact as current unless the source itself gives the date/context.
+
+--- Block at line 1743 ---
+
+
+**Add this exact field before `processes` in AI-03B output schema:**
+
+
+--- Block at line 1747 ---
+
+"key_facts": [
+  {"id": "KF-001", "fact": "", "page_refs": [], "topic_ids": [], "date_or_period": "", "uncertain": false}
+],
+
+--- Block at line 1759 ---
+
+
+## BND-GEO — Geography, Locations and Maps
+
+
+--- Block at line 1771 ---
+
+6. Location comparisons, map needs, and location-specific data already present in the source.
+
+Do not fetch generic facts, capitals, borders, seas, passages, or current affairs at this stage. Record only detection evidence and the context needed for later context-specific generation.
+
+--- Block at line 1775 ---
+
+
+## BND-PER — Personalities and Contributions
+
+
+--- Block at line 1787 ---
+
+6. Whether a future PSC/current-affairs enrichment may be useful.
+
+Do not write a biography or fetch current news at this stage. Record only source-supported identity and context for later enrichment.
+
+--- Block at line 1791 ---
+
+
+## BND-FORM — Formula Operations
+
+
+--- Block at line 1801 ---
+
+4. Whether the formula is central, supporting, or incidental to the part.
+
+Do not invent derivations, numerical values, exam questions, or formula relationships in this detection stage. Return only supported opportunities for later formula operations.
+
+--- Block at line 1805 ---
+
+
+## BND-DATA — Charts, Data and Comparisons
+
+
+--- Block at line 1816 ---
+
+5. Any data that is likely time-sensitive and should later be considered for grounded current-affairs update.
+
+Do not calculate missing values or claim external data in this stage.
+
+--- Block at line 1820 ---
+
+
+## BND-LAW — Legal, Constitutional and Case-Law Content
+
+
+--- Block at line 1830 ---
+
+4. Page references and topic IDs.
+
+Do not invent case facts, legal arguments, holdings, articles, or amendment details not present in the source. Flag what later enrichment may need research/verification.
+
+--- Block at line 1834 ---
+
+
+## BND-TIME — Timeline and Historical Evolution
+
+
+--- Block at line 1845 ---
+
+5. Page references and topic IDs.
+
+Do not fill missing dates or historical events from outside knowledge in this detection stage.
+
+--- Block at line 1849 ---
+
+
+## BND-STORY — Storytelling, Analogy and Scenario Learning
+
+
+--- Block at line 1859 ---
+
+4. Whether a comic story, scenario box, simple analogy, or mnemonic is most suitable.
+
+Do not create the story now. Do not force storytelling when straightforward explanation is better.
+
+--- Block at line 1863 ---
+
+
+## BND-ADM — Institutions, Administration and Governance
+
+
+--- Block at line 1874 ---
+
+5. Whether a structure, function map, hierarchy visual, or reform timeline would help.
+
+Do not fetch recent reforms or personnel in this detection stage.
+
+--- Block at line 1878 ---
+
+
+## BND-PROC — Process, Creation and Procedure
+
+
+--- Block at line 1890 ---
+
+4. Best teaching representation: step-by-step, flowchart, decision tree, process map, input-output demonstration, or other.
+
+Do not invent process steps that are absent from the source.
+
+--- Block at line 1894 ---
+
+
+## BND-CS — Code, Algorithms and Data Structures
+
+
+--- Block at line 1904 ---
+
+4. Suitable containers/visuals: code block, I/O demo, trace table, complexity table, architecture diagram, state visualisation.
+
+Do not invent code, complexity results, or runtime behavior in this detection stage.
+
+--- Block at line 1908 ---
+
+
+## BND-MED — Medical and Science Content
+
+
+--- Block at line 1917 ---
+
+3. Suitable teaching representation: labelled diagram, process/cycle visual, comparison table, protocol chain, formula box, experiment box.
+
+Do not add medical guidance, diagnosis, treatment, or scientific facts beyond the source in this detection stage.
+
+--- Block at line 1921 ---
+
+
+## BND-CA — Current-Affairs Relevance Layer
+
+
+--- Block at line 1931 ---
+
+4. A draft search-query intent, not a final current fact.
+
+Do not fetch current affairs or create web citations at this detection stage.
+
+--- Block at line 1945 ---
+
+**Grounding:** OFF; if current facts are needed, create/use AI-07D query instead.  
+**Trigger:** Conditional during Stage 7 for a central/supporting location in a relevant part.
+
+
+--- Block at line 1978 ---
+
+  "requires_grounded_ca": false,
+  "suggested_ca_query": ""
+}
+
+--- Block at line 1986 ---
+
+**Grounding:** OFF; current news uses AI-07D.  
+**Trigger:** Conditional during Stage 7 when personality bundle applies.
+
+
+--- Block at line 2017 ---
+
+  "requires_grounded_ca": false,
+  "suggested_ca_query": ""
+}
+
+--- Block at line 2025 ---
+
+**Grounding:** OFF.  
+**Trigger:** Conditional during Stage 7 when Formula Operations applies to a formula in the generating part.
+
+
+--- Block at line 2062 ---
+
+  "related_formulas": [],
+  "visual_need": {"needed": false, "reason": "", "style_hint": ""}
+}

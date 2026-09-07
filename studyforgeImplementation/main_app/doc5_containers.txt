@@ -1,0 +1,17 @@
+## C. Exact additional container specification
+
+| Container | Minimum required content | Used by |
+|---|---|---|
+| Geography/Location Box | location title, context facts, map/reference where relevant | CTX-LOC / geography bundle |
+| Personality Bio Card | name, role, contributions, relevant facts/CA link | CTX-PER |
+| Data Insight Box | highlighted metric, data context, source/tag | chart/data bundle |
+| Formula Operations Box | formula, variables, operations/derivation/mistakes | CTX-FORM |
+| Institution/Admin Box | body, role, function/structure/reform | administration bundle |
+| Current Affairs Box | date, fact, relevance, clickable WEB source | AI-07D |
+| Analogy Box | “Think of it like…” clarification, enrichment tag | storytelling |
+| Process/Creation Box | inputs, numbered steps, output/flow | process bundle |
+| Experiment Box | hypothesis, method, observation, result | science |
+| Medical Info Box | relevant symptom/diagnosis/treatment/process relationship | medical |
+
+Every container requires CSS, a safe renderer template, allowed container enum, export handling, and prompt/blueprint selection rule.
+

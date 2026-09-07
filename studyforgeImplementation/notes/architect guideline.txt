@@ -1,0 +1,3872 @@
+```markdown
+# STUDYFORGE — COMPLETE SINGLE HTML FILE IMPLEMENTATION
+
+## YOUR ROLE
+
+You are an autonomous AI agent. You will plan, design, and build
+the complete StudyForge web application as a single HTML file.
+
+You will read all attached documents carefully before planning.
+You will plan every stage with clear inputs and outputs.
+Then you will build the complete implementation in one file.
+
+You work independently. No mid-build guidance will be given.
+Plan everything first. Then build everything. Deliver one file.
+
+---
+
+## CRITICAL — AI INTEGRATION FUNCTIONS
+
+You will NOT write your own API calls.
+You will NOT ask for API keys.
+You will NOT use fetch directly for AI features.
+
+The following three functions are pre-built and ready to use.
+Copy them exactly into your code and call them wherever AI is needed.
+
+```javascript
+// ─── FUNCTION 1: Text Generation & Analysis ───────────────────
+async function geminiGenerateText(promptText) {
+    const apiKey = "";
+    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+    const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            contents: [{ parts: [{ text: promptText }] }]
+        })
+    });
+    if (!response.ok) throw new Error(`API Error: ${response.status}`);
+    const result = await response.json();
+    return result?.candidates?.[0]?.content?.parts?.[0]?.text || "No text generated.";
+}
+
+// ─── FUNCTION 2: Live Web Search (Grounding) ──────────────────
+async function geminiSearchText(searchQuery) {
+    const apiKey = "";
+    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+    const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            contents: [{ parts: [{ text: `Search the web for: "${searchQuery}". Provide a concise summary.` }] }],
+            tools: [{ googleSearch: {} }]
+        })
+    });
+    if (!response.ok) throw new Error(`API Error: ${response.status}`);
+    const result = await response.json();
+    return result?.candidates?.[0]?.content?.parts?.[0]?.text || "No search results.";
+}
+
+// ─── FUNCTION 3: Image Generation ─────────────────────────────
+async function geminiImageCreation(imagePrompt) {
+    const apiKey = "";
+    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${apiKey}`;
+    const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            instances: [{ prompt: imagePrompt }],
+            parameters: { sampleCount: 1, aspectRatio: "16:9" }
+        })
+    });
+    if (!response.ok) throw new Error(`API Error: ${response.status}`);
+    const result = await response.json();
+    const base64Encoded = result?.predictions?.[0]?.bytesBase64Encoded;
+    if (!base64Encoded) throw new Error("No image data returned.");
+    return `data:image/png;base64,${base64Encoded}`;
+}
+```
+
+### How to use these functions
+
+```
+geminiGenerateText(prompt)
+  → Use for: material analysis, blueprint generation,
+             note writing, validation, AI chat responses,
+             auto-drafting text, prompt regeneration
+  → Always await and wrap in try/catch
+  → Output is a markdown string — render with your parser
+
+geminiSearchText(query)
+  → Use for: current affairs search (national/state/international),
+             personality news lookups, location news,
+             any real-time information needed
+  → Always await and wrap in try/catch
+  → Output is a markdown string
+
+geminiImageCreation(prompt)
+  → Use for: generating all study images, infographics,
+             diagrams, visualize-this feature
+  → Always await and wrap in try/catch
+  → Output is a base64 data URL — use directly in <img src="">
+```
+
+---
+
+## ATTACHED DOCUMENTS — READ ALL BEFORE PLANNING
+
+You have been given:
+
+1. The StudyForge product design document (18 pages)
+2. The scratch plan PDF showing the original vision
+3. This prompt with complete technical specification
+4. The three AI functions above (pre-built — just call them)
+
+Read all documents fully before writing any code.
+
+---
+
+## WHAT YOU ARE BUILDING
+
+StudyForge transforms study material into structured notes using AI.
+
+A user uploads a file, types a topic, or pastes text.
+The app then:
+
+- Reads and understands the material
+- Detects which content features apply
+- Splits content into logical parts
+- Creates a teaching blueprint per part
+- Generates formatted study notes with visuals
+- Searches and integrates current affairs
+- Validates the generated content
+- Exports the final document
+
+This is a real working application. All AI features use the
+three functions provided above. No mocks. No dummy data.
+Everything must work when opened in Gemini Canvas.
+
+---
+
+## TECH STACK — USE EXACTLY THIS
+
+```html
+<!-- Scripts to include in <head> -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+```
+
+- React 18 with JSX via Babel
+- Tailwind CSS for layout and utility classes
+- Vanilla JavaScript for AI functions and utilities
+- localStorage for session persistence
+- No other libraries, no other CDNs
+- All code in one HTML file
+
+---
+
+## BEFORE CODING — WRITE YOUR PLAN FIRST
+
+Before any code, output your complete plan:
+
+```
+=== STUDYFORGE IMPLEMENTATION PLAN ===
+
+STAGE 1: [Name]
+  Purpose: [what this stage does]
+  Input: [what data comes in]
+  AI Calls: [which function, what prompt, what output]
+  Output: [what state is produced]
+  UI: [what the user sees]
+
+STAGE 2: [Name]
+  ...
+
+[All 8 stages]
+
+=== STATE ARCHITECTURE ===
+[Full appState object]
+
+=== COMPONENT TREE ===
+[React component hierarchy]
+
+=== AI PROMPT DESIGNS ===
+[Each prompt with purpose and expected output format]
+
+=== DATA FLOW ===
+[Input → Analysis → Parts → Blueprint → Generation → Export]
+```
+
+---
+
+## FILE STRUCTURE INSIDE THE HTML
+
+Organize your script section like this:
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- meta, CDN scripts, Google Fonts -->
+  <style>
+    /* Custom CSS: prose styles, containers, scrollbars,
+       animations, print styles */
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script>
+    /* ═══════════════════════════════════════════
+       SECTION 1: AI INTEGRATION FUNCTIONS
+       (Copy the three functions exactly here)
+       ═══════════════════════════════════════════ */
+
+    async function geminiGenerateText(promptText) { ... }
+    async function geminiSearchText(searchQuery) { ... }
+    async function geminiImageCreation(imagePrompt) { ... }
+  </script>
+
+  <script type="text/babel">
+    /* ═══════════════════════════════════════════
+       SECTION 2: CONSTANTS & CONFIGURATION
+       ═══════════════════════════════════════════ */
+    // SCREEN_NAMES, VISUAL_STYLES, FEATURE_CATEGORIES,
+    // CONTAINER_TYPES, DEFAULT_PROMPTS
+
+    /* ═══════════════════════════════════════════
+       SECTION 3: PROMPT BUILDER FUNCTIONS
+       ═══════════════════════════════════════════ */
+    // buildAnalysisPrompt(), buildPartsPrompt(),
+    // buildBlueprintPrompt(), buildGenerationPrompt(),
+    // buildImagePrompt(), buildCAPrompt(),
+    // buildValidationPrompt(), buildVisualizePrompt()
+
+    /* ═══════════════════════════════════════════
+       SECTION 4: UTILITY FUNCTIONS
+       ═══════════════════════════════════════════ */
+    // sanitizeInput(), parseMarkdown(),
+    // buildExportHTML(), buildExportMarkdown(),
+    // downloadFile(), readFileAsText()
+
+    /* ═══════════════════════════════════════════
+       SECTION 5: SHARED UI COMPONENTS
+       ═══════════════════════════════════════════ */
+    // Button, Modal, Toggle, Card, Badge,
+    // ProgressBar, MarkdownContent, SourceTag,
+    // ContainerRenderer, LoadingSpinner
+
+    /* ═══════════════════════════════════════════
+       SECTION 6: SCREEN COMPONENTS
+       ═══════════════════════════════════════════ */
+    // Screen1Input, Screen2Reading, Screen3Understanding,
+    // Screen4Parts, Screen5Blueprints, Screen6BlueprintDetail,
+    // Screen7Generation, Screen8Export
+
+    /* ═══════════════════════════════════════════
+       SECTION 7: OVERLAY COMPONENTS
+       ═══════════════════════════════════════════ */
+    // VisualizePopup, ValidationModal, ErrorModal,
+    // PromptCenter, TourOverlay, AddPartModal,
+    // EditPartModal, AIChat
+
+    /* ═══════════════════════════════════════════
+       SECTION 8: GLOBAL LAYOUT COMPONENTS
+       ═══════════════════════════════════════════ */
+    // TopBar, StepIndicator, AutoSaveIndicator,
+    // GenerationSidebar
+
+    /* ═══════════════════════════════════════════
+       SECTION 9: MAIN APP COMPONENT
+       ═══════════════════════════════════════════ */
+    const App = () => { ... };
+
+    /* ═══════════════════════════════════════════
+       SECTION 10: RENDER
+       ═══════════════════════════════════════════ */
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
+```
+
+---
+
+## DESIGN SYSTEM
+
+### Colors
+
+```css
+--primary:        #2563EB;   /* blue-600 — buttons, links, accents */
+--primary-hover:  #1D4ED8;   /* blue-700 — button hover */
+--success:        #10B981;   /* green-500 — approved, success */
+--warning:        #F59E0B;   /* amber-500 — warnings, CA tags */
+--error:          #EF4444;   /* red-500 — errors */
+--bg:             #FFFFFF;   /* white — page background */
+--surface:        #F9FAFB;   /* gray-50 — card backgrounds */
+--border:         #E5E7EB;   /* gray-200 — borders */
+--text:           #111827;   /* gray-900 — primary text */
+--text-secondary: #6B7280;   /* gray-500 — secondary text */
+```
+
+### Typography
+
+```css
+font-family: 'Inter', system-ui, sans-serif;
+/* Headings: font-weight 700 */
+/* Body: font-weight 400 */
+/* Small labels: 0.875rem */
+```
+
+### Prose Content Class
+
+```css
+.prose-content {
+  max-width: 70ch;
+  line-height: 1.75;
+}
+.prose-content h1 { font-size: 1.75rem; font-weight: 700; margin: 2rem 0 1rem; }
+.prose-content h2 { font-size: 1.4rem; font-weight: 700; margin: 1.75rem 0 0.75rem; }
+.prose-content h3 { font-size: 1.15rem; font-weight: 600; margin: 1.5rem 0 0.5rem; }
+.prose-content p  { margin-bottom: 1rem; }
+.prose-content table { width: 100%; border-collapse: collapse; margin: 1.5rem 0; }
+.prose-content th { background: #F3F4F6; padding: 0.75rem; border: 1px solid #E5E7EB; font-weight: 600; }
+.prose-content td { padding: 0.75rem; border: 1px solid #E5E7EB; }
+.prose-content code { background: #F3F4F6; padding: 0.2em 0.4em; border-radius: 4px; font-size: 0.875em; }
+.prose-content pre { background: #1F2937; color: #F9FAFB; padding: 1rem; border-radius: 8px; overflow-x: auto; }
+.prose-content blockquote { border-left: 4px solid #2563EB; padding: 0.5rem 1rem; background: #EFF6FF; margin: 1rem 0; border-radius: 0 8px 8px 0; }
+.prose-content ul { list-style: disc; padding-left: 1.5rem; margin-bottom: 1rem; }
+.prose-content ol { list-style: decimal; padding-left: 1.5rem; margin-bottom: 1rem; }
+.prose-content li { margin-bottom: 0.25rem; }
+```
+
+### Component Patterns
+
+```
+Cards:        bg-white rounded-lg shadow-sm border border-gray-200 p-6
+              hover: shadow-md transition-shadow duration-200
+
+Buttons:
+  Primary:    bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md font-medium
+  Secondary:  bg-white border border-gray-300 hover:bg-gray-50 px-4 py-2 rounded-md
+  Text:       text-blue-600 hover:text-blue-700 font-medium
+
+Inputs:       border border-gray-300 rounded-md px-3 py-2 w-full
+              focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none
+
+Toggles:      Switch-style, blue when ON, gray when OFF
+              w-10 h-6 rounded-full relative cursor-pointer transition-colors
+
+Progress:     h-2 bg-gray-200 rounded-full overflow-hidden
+              inner fill: bg-blue-600 h-full transition-all duration-300
+```
+
+---
+
+## GLOBAL NAVIGATION SYSTEM
+
+```javascript
+// Navigation state
+const [currentScreen, setCurrentScreen] = useState(1);
+const [maxReachedScreen, setMaxReachedScreen] = useState(1);
+
+// Forward navigation — only allowed to next unlocked screen
+const navigateForward = (targetScreen) => {
+  if (targetScreen <= maxReachedScreen + 1) {
+    setCurrentScreen(targetScreen);
+    if (targetScreen > maxReachedScreen) {
+      setMaxReachedScreen(targetScreen);
+    }
+    saveState();
+  }
+};
+
+// Backward navigation — always allowed to any completed screen
+const navigateBack = (targetScreen) => {
+  if (targetScreen <= maxReachedScreen) {
+    setCurrentScreen(targetScreen);
+  }
+};
+```
+
+### Top Navigation Bar (visible on every screen)
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│ 📚 StudyForge  │  [Screen Name]  │  Step ①②③④⑤⑥⑦⑧  │  Controls │
+│                │                 │                   │           │
+│ Logo + Name    │ Current stage   │ Clickable steps   │ [Prompts] │
+│                │                 │ ✓ = done          │ [Help]    │
+│                │                 │ ● = current       │ [Reset]   │
+│                │                 │ ○ = locked        │ [Saved ✓] │
+└──────────────────────────────────────────────────────────────────┘
+```
+
+```jsx
+const TopBar = ({ currentScreen, maxReachedScreen, navigateBack,
+                  onPromptCenter, onHelp, onReset, saveStatus }) => (
+  <div className="sticky top-0 z-50 bg-white border-b border-gray-200
+                  px-6 py-3 flex items-center justify-between shadow-sm">
+
+    {/* Left: Logo */}
+    <div className="flex items-center gap-3">
+      <span className="text-xl font-bold text-blue-600">📚 StudyForge</span>
+      <span className="text-gray-300">|</span>
+      <span className="text-sm text-gray-600 font-medium">
+        {SCREEN_NAMES[currentScreen]}
+      </span>
+    </div>
+
+    {/* Center: Step indicators */}
+    <div className="flex items-center gap-1">
+      {[1,2,3,4,5,6,7,8].map(n => (
+        <button
+          key={n}
+          onClick={() => n <= maxReachedScreen && navigateBack(n)}
+          title={SCREEN_NAMES[n]}
+          className={`w-8 h-8 rounded-full text-xs font-semibold transition-all
+            ${currentScreen === n
+              ? 'bg-blue-600 text-white ring-2 ring-blue-300'
+              : n < maxReachedScreen
+              ? 'bg-green-100 text-green-700 hover:bg-green-200 cursor-pointer'
+              : n === maxReachedScreen
+              ? 'bg-blue-100 text-blue-700 cursor-pointer'
+              : 'bg-gray-100 text-gray-400 cursor-not-allowed'}`}
+        >
+          {n < maxReachedScreen ? '✓' : n}
+        </button>
+      ))}
+    </div>
+
+    {/* Right: Controls */}
+    <div className="flex items-center gap-3">
+      <AutoSaveIndicator status={saveStatus} />
+      <button onClick={onPromptCenter}
+        className="text-sm text-gray-600 hover:text-blue-600 px-2 py-1">
+        🔧 Prompts
+      </button>
+      <button onClick={onHelp}
+        className="text-sm text-gray-600 hover:text-blue-600 px-2 py-1">
+        ❓ Help
+      </button>
+      <button onClick={onReset}
+        className="text-sm text-red-500 hover:text-red-700 px-2 py-1">
+        🔄 Reset
+      </button>
+    </div>
+  </div>
+);
+```
+
+---
+
+## AUTO-SAVE SYSTEM
+
+```javascript
+// Debounced auto-save — triggers 1 second after any state change
+const saveTimerRef = useRef(null);
+const [saveStatus, setSaveStatus] = useState('saved');
+
+const triggerAutoSave = (stateSnapshot) => {
+  setSaveStatus('saving');
+  if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+  saveTimerRef.current = setTimeout(() => {
+    try {
+      // Strip large base64 image data before saving to avoid quota
+      const saveable = {
+        ...stateSnapshot,
+        generated: Object.fromEntries(
+          Object.entries(stateSnapshot.generated || {}).map(([k, v]) => [
+            k, { ...v, images: (v.images || []).map(img => ({
+              ...img, url: null  // Don't save base64 to localStorage
+            }))}
+          ])
+        )
+      };
+      localStorage.setItem('studyforge_session', JSON.stringify(saveable));
+      setSaveStatus('saved');
+    } catch (e) {
+      setSaveStatus('error');
+      console.warn('Save failed:', e.message);
+    }
+  }, 1000);
+};
+
+// Auto-Save Indicator Component
+const AutoSaveIndicator = ({ status }) => (
+  <span className={`text-xs font-medium px-2 py-1 rounded-full
+    ${status === 'saving' ? 'bg-amber-100 text-amber-700' :
+      status === 'saved'  ? 'bg-green-100 text-green-700' :
+                            'bg-red-100 text-red-600'}`}>
+    {status === 'saving' ? '💾 Saving...' :
+     status === 'saved'  ? '✅ Saved' : '⚠️ Save failed'}
+  </span>
+);
+```
+
+---
+
+## SESSION RESTORE (Gap #3 Fix)
+
+```javascript
+// On app mount — check for saved session
+useEffect(() => {
+  const saved = localStorage.getItem('studyforge_session');
+  if (saved) {
+    try {
+      const parsed = JSON.parse(saved);
+      // Set all state from saved session
+      setAppState(parsed);
+      setCurrentScreen(parsed.currentScreen || 1);
+      setMaxReachedScreen(parsed.maxReachedScreen || 1);
+      setShowResumePrompt(true); // Show resume banner
+    } catch (e) {
+      console.warn('Could not restore session');
+    }
+  }
+}, []);
+
+// Resume Banner — shown at top of Screen 1 if session found
+const ResumeBanner = ({ savedState, onResume, onFresh }) => (
+  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6
+                  flex items-center justify-between">
+    <div>
+      <p className="font-semibold text-blue-800">
+        📂 Saved session found: "{savedState.input?.topic || 'Previous session'}"
+      </p>
+      <p className="text-sm text-blue-600">
+        Last saved: {new Date(savedState.lastSaved).toLocaleString()}
+      </p>
+    </div>
+    <div className="flex gap-3">
+      <button onClick={onResume}
+        className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium
+                   hover:bg-blue-700">
+        Resume Session
+      </button>
+      <button onClick={onFresh}
+        className="bg-white border border-gray-300 text-gray-700 px-4 py-2
+                   rounded-md text-sm font-medium hover:bg-gray-50">
+        Start Fresh
+      </button>
+    </div>
+  </div>
+);
+
+// When Resume is clicked:
+// Repopulate Screen 1 inputs, topic field, sub-topics array,
+// paste textarea, all optional settings, file name display
+// Navigate directly to the screen user was on
+```
+
+---
+
+## SCREEN 1 — INPUT
+
+### Purpose
+Collect study material from the user via file, topic, or paste.
+
+### Full Layout
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    📚 StudyForge                             │
+│           Transform any material into study notes            │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  [Resume Banner — if saved session exists]                  │
+│                                                             │
+│  ┌─ SECTION A: Upload File ──────────────────────────────┐  │
+│  │  ┌ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─┐  │  │
+│  │  │   📁 Drop file here or click to browse          │  │  │
+│  │  │   PDF · TXT · DOC · DOCX · MD · HTML           │  │  │
+│  │  │           JPG · JPEG · PNG                      │  │  │
+│  │  └ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─┘  │  │
+│  │  [When file selected: name + size + type + Remove]   │  │
+│  └───────────────────────────────────────────────────────┘  │
+│                                                             │
+│                     — OR —                                  │
+│                                                             │
+│  ┌─ SECTION B: Type Topic ───────────────────────────────┐  │
+│  │  Main Topic: [_______________________________]        │  │
+│  │  Sub-topics: [_____________] [×]                      │  │
+│  │              [_____________] [×]                      │  │
+│  │              [_____________] [×]                      │  │
+│  │              [+ Add Sub-topic]    (up to 10)          │  │
+│  │  Specific focus: [___________________________]        │  │
+│  │  [✨ AI Draft Text] — appears when topic is entered   │  │
+│  └───────────────────────────────────────────────────────┘  │
+│                                                             │
+│                     — OR —                                  │
+│                                                             │
+│  ┌─ SECTION C: Paste Text ───────────────────────────────┐  │
+│  │  [Large textarea — 8 rows]                            │  │
+│  │  0 / 50,000 characters                               │  │
+│  └───────────────────────────────────────────────────────┘  │
+│                                                             │
+│  ▼ Optional Settings (collapsible, starts open)             │
+│  ┌─────────────────────────┬───────────────────────────┐   │
+│  │ Exam Type [dropdown]    │ Language [dropdown]        │   │
+│  │ Objective [dropdown]    │ Difficulty [dropdown]      │   │
+│  │ State Focus [text]      │ Notes Length [dropdown]    │   │
+│  │                         │ Include CA [toggle]        │   │
+│  └─────────────────────────┴───────────────────────────┘   │
+│                                                             │
+│              [Continue →] (primary blue button)             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Section A — File Upload
+
+```jsx
+const FileUploadSection = ({ onFileLoad }) => {
+  const [dragOver, setDragOver] = useState(false);
+  const [fileInfo, setFileInfo] = useState(null);
+
+  const handleFile = (file) => {
+    const allowed = [
+      'application/pdf', 'text/plain', 'text/markdown',
+      'text/html', 'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'image/jpeg', 'image/png'
+    ];
+    const ext = file.name.split('.').pop().toLowerCase();
+    const allowedExt = ['pdf','txt','doc','docx','md','html','jpg','jpeg','png'];
+
+    if (!allowedExt.includes(ext)) {
+      alert('File type not supported. Use PDF, TXT, DOC, DOCX, MD, HTML, JPG, PNG');
+      return;
+    }
+
+    setFileInfo({
+      name: file.name,
+      size: (file.size / 1024).toFixed(1) + ' KB',
+      type: ext.toUpperCase(),
+      rawFile: file
+    });
+
+    // Read file content
+    const reader = new FileReader();
+    if (['jpg','jpeg','png'].includes(ext)) {
+      reader.readAsDataURL(file); // base64 for images
+    } else {
+      reader.readAsText(file);
+    }
+    reader.onload = (e) => {
+      onFileLoad({
+        name: file.name,
+        size: file.size,
+        type: ext,
+        content: e.target.result
+      });
+    };
+  };
+
+  return (
+    <div
+      onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+      onDragLeave={() => setDragOver(false)}
+      onDrop={(e) => { e.preventDefault(); setDragOver(false);
+                       handleFile(e.dataTransfer.files[0]); }}
+      className={`border-2 border-dashed rounded-lg p-8 text-center
+                  transition-colors cursor-pointer
+                  ${dragOver ? 'border-blue-400 bg-blue-50'
+                             : 'border-gray-300 hover:border-gray-400'}`}
+      onClick={() => document.getElementById('file-input').click()}
+    >
+      <input id="file-input" type="file" className="hidden"
+        accept=".pdf,.txt,.doc,.docx,.md,.html,.jpg,.jpeg,.png"
+        onChange={(e) => handleFile(e.target.files[0])} />
+
+      {fileInfo ? (
+        <div className="flex items-center justify-center gap-4">
+          <span className="text-3xl">📄</span>
+          <div className="text-left">
+            <p className="font-semibold text-gray-800">{fileInfo.name}</p>
+            <p className="text-sm text-gray-500">
+              {fileInfo.size} · {fileInfo.type}
+            </p>
+          </div>
+          <button onClick={(e) => { e.stopPropagation(); setFileInfo(null); }}
+            className="ml-4 text-red-500 hover:text-red-700 text-sm font-medium">
+            Remove
+          </button>
+        </div>
+      ) : (
+        <>
+          <span className="text-4xl mb-3 block">📁</span>
+          <p className="text-gray-700 font-medium">Drop file here or click to browse</p>
+          <p className="text-sm text-gray-500 mt-1">
+            PDF · TXT · DOC · DOCX · MD · HTML · JPG · PNG
+          </p>
+        </>
+      )}
+    </div>
+  );
+};
+```
+
+### Section B — Topic Input (Gap #2 Fix — Dynamic Sub-topics)
+
+```jsx
+const TopicInputSection = ({ topicData, onChange, onAIDraft }) => {
+  const [subTopics, setSubTopics] = useState(topicData.subTopics || ['', '', '']);
+  const [isDrafting, setIsDrafting] = useState(false);
+
+  const addSubTopic = () => {
+    if (subTopics.length < 10) {
+      const updated = [...subTopics, ''];
+      setSubTopics(updated);
+      onChange({ subTopics: updated });
+    }
+  };
+
+  const removeSubTopic = (index) => {
+    const updated = subTopics.filter((_, i) => i !== index);
+    setSubTopics(updated);
+    onChange({ subTopics: updated });
+  };
+
+  const updateSubTopic = (index, value) => {
+    const updated = [...subTopics];
+    updated[index] = value;
+    setSubTopics(updated);
+    onChange({ subTopics: updated });
+  };
+
+  // AI Draft Text (Gap #4 Fix)
+  const handleAIDraft = async () => {
+    if (!topicData.topic.trim()) return;
+    setIsDrafting(true);
+    try {
+      const prompt = `Write comprehensive study material about: ${topicData.topic}.
+        Sub-topics to cover: ${subTopics.filter(Boolean).join(', ')}.
+        ${topicData.focus ? `Focus: ${topicData.focus}` : ''}
+        Write in clear, educational style. Include definitions, examples, and key facts.
+        Length: 400-600 words.`;
+
+      const drafted = await geminiGenerateText(prompt);
+      onAIDraft(drafted); // Injects into Section C textarea
+    } catch (e) {
+      alert('Could not draft text. Please try again.');
+    } finally {
+      setIsDrafting(false);
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      {/* Main Topic */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Main Topic <span className="text-red-500">*</span>
+        </label>
+        <input type="text" value={topicData.topic}
+          onChange={(e) => onChange({ topic: e.target.value })}
+          placeholder="e.g., National Income Accounting"
+          className="w-full border border-gray-300 rounded-md px-3 py-2
+                     focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none" />
+      </div>
+
+      {/* Dynamic Sub-topics */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Sub-topics <span className="text-gray-400">(optional, up to 10)</span>
+        </label>
+        <div className="space-y-2">
+          {subTopics.map((st, i) => (
+            <div key={i} className="flex gap-2">
+              <input type="text" value={st}
+                onChange={(e) => updateSubTopic(i, e.target.value)}
+                placeholder={`Sub-topic ${i + 1}`}
+                className="flex-1 border border-gray-300 rounded-md px-3 py-2
+                           focus:ring-2 focus:ring-blue-500 outline-none text-sm" />
+              <button onClick={() => removeSubTopic(i)}
+                className="text-gray-400 hover:text-red-500 px-2 font-medium">
+                ×
+              </button>
+            </div>
+          ))}
+        </div>
+        {subTopics.length < 10 && (
+          <button onClick={addSubTopic}
+            className="mt-2 text-sm text-blue-600 hover:text-blue-800 font-medium">
+            + Add Sub-topic
+          </button>
+        )}
+      </div>
+
+      {/* Specific Focus */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Specific Focus <span className="text-gray-400">(optional)</span>
+        </label>
+        <textarea rows={2} value={topicData.focus}
+          onChange={(e) => onChange({ focus: e.target.value })}
+          placeholder="e.g., Focus on MP state data and PYQs for MPPSC 2025"
+          className="w-full border border-gray-300 rounded-md px-3 py-2
+                     focus:ring-2 focus:ring-blue-500 outline-none text-sm resize-none" />
+      </div>
+
+      {/* AI Draft Button — appears when topic is filled */}
+      {topicData.topic.trim() && (
+        <button onClick={handleAIDraft} disabled={isDrafting}
+          className="flex items-center gap-2 text-sm bg-purple-50 border border-purple-200
+                     text-purple-700 hover:bg-purple-100 px-4 py-2 rounded-md font-medium
+                     disabled:opacity-50 transition-colors">
+          {isDrafting ? '⏳ Drafting...' : '✨ AI Draft Text'}
+          <span className="text-xs text-purple-500">
+            (auto-fills paste section below)
+          </span>
+        </button>
+      )}
+    </div>
+  );
+};
+```
+
+### Section C — Paste Text
+
+```jsx
+const PasteTextSection = ({ value, onChange }) => {
+  const MAX_CHARS = 50000;
+  return (
+    <div>
+      <label className="block text-sm font-medium text-gray-700 mb-1">
+        Paste your material
+      </label>
+      <textarea rows={8} value={value}
+        onChange={(e) => {
+          if (e.target.value.length <= MAX_CHARS) onChange(e.target.value);
+        }}
+        placeholder="Paste notes, textbook content, articles, or any text here..."
+        className="w-full border border-gray-300 rounded-md px-3 py-2
+                   focus:ring-2 focus:ring-blue-500 outline-none resize-y font-mono text-sm" />
+      <div className="flex justify-between mt-1">
+        <span className="text-xs text-gray-500">
+          Any language accepted
+        </span>
+        <span className={`text-xs font-medium
+          ${value.length > MAX_CHARS * 0.9 ? 'text-red-500' : 'text-gray-500'}`}>
+          {value.length.toLocaleString()} / {MAX_CHARS.toLocaleString()}
+        </span>
+      </div>
+    </div>
+  );
+};
+```
+
+### Optional Settings
+
+```jsx
+const SettingsPanel = ({ settings, onChange }) => {
+  const [open, setOpen] = useState(true);
+
+  return (
+    <div className="border border-gray-200 rounded-lg overflow-hidden">
+      <button onClick={() => setOpen(!open)}
+        className="w-full flex items-center justify-between px-4 py-3
+                   bg-gray-50 hover:bg-gray-100 transition-colors">
+        <span className="text-sm font-semibold text-gray-700">
+          ⚙️ Optional Settings
+        </span>
+        <span className="text-gray-400">{open ? '▲' : '▼'}</span>
+      </button>
+
+      {open && (
+        <div className="p-4 grid grid-cols-2 gap-4">
+          {/* LEFT COLUMN */}
+          <div className="space-y-3">
+            <div>
+              <label className="text-xs font-medium text-gray-600 block mb-1">
+                Exam Type
+              </label>
+              <select value={settings.exam} onChange={(e) => onChange({exam: e.target.value})}
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm
+                           focus:ring-2 focus:ring-blue-500 outline-none">
+                <option value="">Select exam...</option>
+                <option>UPSC</option>
+                <option>State PSC</option>
+                <option>Academic Exam</option>
+                <option>Programming / CS</option>
+                <option>General Learning</option>
+                <option>Other</option>
+              </select>
+            </div>
+            <div>
+              <label className="text-xs font-medium text-gray-600 block mb-1">
+                Objective
+              </label>
+              <select value={settings.objective}
+                onChange={(e) => onChange({objective: e.target.value})}
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm
+                           focus:ring-2 focus:ring-blue-500 outline-none">
+                <option value="">Select objective...</option>
+                <option>Detailed Study Notes</option>
+                <option>Answer Writing Practice</option>
+                <option>Quick Revision</option>
+                <option>Concept Learning</option>
+                <option>Interview Preparation</option>
+              </select>
+            </div>
+            <div>
+              <label className="text-xs font-medium text-gray-600 block mb-1">
+                State Focus
+              </label>
+              <input type="text" value={settings.state}
+                onChange={(e) => onChange({state: e.target.value})}
+                placeholder="e.g., Madhya Pradesh"
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm
+                           focus:ring-2 focus:ring-blue-500 outline-none" />
+            </div>
+          </div>
+
+          {/* RIGHT COLUMN */}
+          <div className="space-y-3">
+            <div>
+              <label className="text-xs font-medium text-gray-600 block mb-1">
+                Language
+              </label>
+              <select value={settings.language}
+                onChange={(e) => onChange({language: e.target.value})}
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm
+                           focus:ring-2 focus:ring-blue-500 outline-none">
+                <option>English</option>
+                <option>Hindi</option>
+                <option>Bilingual (Eng + Hindi)</option>
+                <option>Regional</option>
+              </select>
+            </div>
+            <div>
+              <label className="text-xs font-medium text-gray-600 block mb-1">
+                Difficulty
+              </label>
+              <select value={settings.difficulty}
+                onChange={(e) => onChange({difficulty: e.target.value})}
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm
+                           focus:ring-2 focus:ring-blue-500 outline-none">
+                <option>Beginner</option>
+                <option>Intermediate</option>
+                <option>Advanced</option>
+              </select>
+            </div>
+            <div>
+              <label className="text-xs font-medium text-gray-600 block mb-1">
+                Notes Length
+              </label>
+              <select value={settings.length}
+                onChange={(e) => onChange({length: e.target.value})}
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm
+                           focus:ring-2 focus:ring-blue-500 outline-none">
+                <option>Short (concise)</option>
+                <option>Medium (standard)</option>
+                <option>Detailed (comprehensive)</option>
+              </select>
+            </div>
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-medium text-gray-600">
+                Include Current Affairs
+              </label>
+              <ToggleSwitch
+                value={settings.includeCA}
+                onChange={(v) => onChange({includeCA: v})} />
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+```
+
+### Continue Button + Validation
+
+```jsx
+// Validation before continuing
+const handleContinue = () => {
+  const hasFile = !!inputState.fileContent;
+  const hasTopic = inputState.topic.trim().length > 0;
+  const hasPaste = inputState.pastedText.trim().length > 0;
+
+  if (!hasFile && !hasTopic && !hasPaste) {
+    setValidationError(
+      'Please upload a file, type a topic, or paste text to continue.'
+    );
+    return;
+  }
+  setValidationError('');
+  navigateForward(2);
+};
+```
+
+---
+
+## SCREEN 2 — READING
+
+### Purpose
+Run real Gemini analysis. Show animated progress. Move to Screen 3.
+
+### AI Call — Material Analysis
+
+```javascript
+// Build the analysis prompt
+const buildAnalysisPrompt = (inputData, settings) => {
+  const content = inputData.fileContent || inputData.pastedText || '';
+  const topic = inputData.topic || '';
+  const subTopics = (inputData.subTopics || []).filter(Boolean);
+
+  return `
+You are an expert educational content analyzer.
+Analyze the following study material and return a detailed analysis.
+
+${topic ? `TOPIC: ${topic}` : ''}
+${subTopics.length ? `SUB-TOPICS: ${subTopics.join(', ')}` : ''}
+${inputData.focus ? `FOCUS: ${inputData.focus}` : ''}
+${settings.exam ? `EXAM TYPE: ${settings.exam}` : ''}
+${settings.state ? `STATE FOCUS: ${settings.state}` : ''}
+
+MATERIAL:
+${content.substring(0, 8000)}
+
+Analyze and return JSON with:
+{
+  "subject": "main subject name",
+  "subDiscipline": "specific sub-field",
+  "contentType": "psc_upsc|academic|programming|geography|history|science|economics|general",
+  "language": "detected language",
+  "complexity": "low|medium|high|very_high",
+  "topics": ["topic1", "topic2", ...],
+  "definitions": [{"term": "...", "definition": "..."}],
+  "formulas": [{"formula": "...", "meaning": "...", "facts": ["..."]}],
+  "codeBlocks": ["..."],
+  "pyqs": ["question1", ...],
+  "geographyMentions": ["place1", ...],
+  "personalitiesMentioned": ["name1", ...],
+  "institutionsMentioned": ["institution1", ...],
+  "counts": {
+    "topics": 0, "definitions": 0, "formulas": 0,
+    "pyqs": 0, "diagrams": 0, "tables": 0,
+    "examples": 0, "timelines": 0, "codeBlocks": 0
+  },
+  "detectedFeatures": [
+    {
+      "featureId": "formula_breakdown",
+      "featureName": "Formula Breakdown",
+      "category": "FORMULAS_MATH",
+      "detected": true,
+      "reason": "12 formulas found in material",
+      "priority": 1
+    }
+  ],
+  "suggestedParts": 6,
+  "splitRationale": "reason for this number of parts"
+}
+
+Return ONLY valid JSON. No markdown wrapping.
+  `.trim();
+};
+```
+
+```javascript
+// Execute analysis on Screen 2
+const runAnalysis = async () => {
+  const steps = [
+    'Detecting input type and language...',
+    'Extracting readable text content...',
+    'Identifying subject and context...',
+    'Analyzing structure and features...',
+    'Counting elements and topics...',
+    'Preparing your understanding report...'
+  ];
+
+  for (let i = 0; i < steps.length; i++) {
+    setCurrentStep(i);
+    setProgress(Math.round((i / steps.length) * 85));
+    await new Promise(r => setTimeout(r, 600));
+  }
+
+  try {
+    const prompt = buildAnalysisPrompt(inputState, settingsState);
+    const rawResponse = await geminiGenerateText(prompt);
+
+    // Parse JSON — handle markdown code blocks if present
+    const jsonStr = rawResponse
+      .replace(/```json\n?/g, '')
+      .replace(/```\n?/g, '')
+      .trim();
+    const analysisResult = JSON.parse(jsonStr);
+
+    setProgress(100);
+    setCurrentStep(steps.length);
+    setAnalysisData(analysisResult);
+
+    await new Promise(r => setTimeout(r, 500));
+    navigateForward(3);
+
+  } catch (e) {
+    setAnalysisError('Analysis failed: ' + e.message);
+  }
+};
+
+useEffect(() => { runAnalysis(); }, []); // Runs when Screen 2 mounts
+```
+
+### UI Display
+
+```jsx
+const Screen2Reading = () => {
+  const steps = [
+    'Detecting input type and language...',
+    'Extracting readable text content...',
+    'Identifying subject and context...',
+    'Analyzing structure and features...',
+    'Counting elements and topics...',
+    'Preparing your understanding report...'
+  ];
+
+  return (
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="max-w-lg w-full text-center space-y-8">
+        <div className="text-6xl animate-pulse">📖</div>
+        <h1 className="text-2xl font-bold text-gray-800">
+          Reading your material...
+        </h1>
+
+        {/* Step List */}
+        <div className="text-left space-y-3">
+          {steps.map((step, i) => (
+            <div key={i} className="flex items-center gap-3">
+              <span className={`w-6 h-6 rounded-full flex items-center
+                                justify-center text-sm flex-shrink-0
+                ${i < currentStep ? 'bg-green-500 text-white' :
+                  i === currentStep ? 'bg-blue-500 text-white' :
+                  'bg-gray-200 text-gray-400'}`}>
+                {i < currentStep ? '✓' :
+                 i === currentStep ? '⟳' : '○'}
+              </span>
+              <span className={`text-sm
+                ${i < currentStep ? 'text-green-700 font-medium' :
+                  i === currentStep ? 'text-blue-700 font-medium' :
+                  'text-gray-400'}`}>
+                {step}
+              </span>
+            </div>
+          ))}
+        </div>
+
+        {/* Progress Bar */}
+        <div>
+          <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
+            <div className="h-full bg-blue-600 rounded-full transition-all duration-500"
+              style={{ width: `${progress}%` }} />
+          </div>
+          <p className="text-sm text-gray-500 mt-2">{progress}% complete</p>
+        </div>
+
+        <p className="text-sm text-gray-400">
+          This may take 30–60 seconds for large files
+        </p>
+
+        {analysisError && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+            <p className="text-red-700 text-sm">{analysisError}</p>
+            <button onClick={runAnalysis}
+              className="mt-2 text-sm text-red-600 underline">
+              Try Again
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+```
+
+---
+
+## SCREEN 3 — UNDERSTANDING + DYNAMIC FEATURE DETECTION
+
+### Purpose
+Show what AI understood. Let user confirm features and continue.
+
+### Dynamic Feature Categories (Gap #1 Fix)
+
+```javascript
+const FEATURE_CATEGORIES = {
+  CONTENT_CORE: {
+    label: '📝 Core Content',
+    alwaysShow: true,
+    features: {
+      detailed_notes:        'Detailed Explanatory Notes',
+      quick_revision:        'Quick Revision Boxes',
+      concept_clarification: 'Concept Clarification',
+      definitions_list:      'Definitions & Glossary',
+      examples_boxes:        'Real-World Examples',
+      summary_boxes:         'Summary Boxes'
+    }
+  },
+  FORMULAS_MATH: {
+    label: '🔢 Formulas & Mathematics',
+    showWhen: (a) => a.counts?.formulas > 0 || a.contentType === 'science',
+    features: {
+      formula_breakdown:   'Formula Breakdown & Explanation',
+      formula_facts:       'Facts About Each Formula',
+      formula_operations:  'Mathematical Operations Demonstrated',
+      formula_derivation:  'Step-by-Step Derivations',
+      formula_applications:'Where Each Formula Applies'
+    }
+  },
+  GEOGRAPHY: {
+    label: '🗺️ Geography & Locations',
+    showWhen: (a) => (a.geographyMentions?.length > 0) ||
+                     a.contentType === 'geography',
+    features: {
+      location_maps:         'Location Maps & Diagrams',
+      neighboring_analysis:  'Neighboring Places Analysis',
+      personalities_from_place: 'Important Personalities from Location',
+      place_current_news:    'Current News About Location',
+      place_activities:      'Important Activities at Location',
+      place_history:         'Historical Significance'
+    }
+  },
+  PERSONALITIES: {
+    label: '👤 Personalities & People',
+    showWhen: (a) => a.personalitiesMentioned?.length > 0,
+    features: {
+      bio_cards:             'Personality Bio Cards',
+      related_personalities: 'Related & Contemporary Personalities',
+      contributions:         'Key Contributions & Legacy',
+      personalities_news:    'Recent News About Personalities'
+    }
+  },
+  DATA_CHARTS: {
+    label: '📊 Data & Charts',
+    showWhen: (a) => a.counts?.tables > 0 || a.counts?.diagrams > 0,
+    features: {
+      comparison_tables:  'Comparison Tables',
+      data_charts:        'Data Visualization Charts',
+      chart_facts:        'Key Facts from Charts',
+      chart_operations:   'Operations Performed on Data',
+      trend_analysis:     'Trend Analysis'
+    }
+  },
+  CODE_PROGRAMMING: {
+    label: '💻 Code & Programming',
+    showWhen: (a) => a.contentType === 'programming' ||
+                     a.counts?.codeBlocks > 0,
+    features: {
+      code_blocks:           'Syntax-Highlighted Code Blocks',
+      input_output_demos:    'Input → Output Demonstrations',
+      algorithm_complexity:  'Time & Space Complexity Tables',
+      data_structure_visuals:'Data Structure Diagrams',
+      step_by_step_trace:    'Algorithm Trace Steps'
+    }
+  },
+  CURRENT_AFFAIRS: {
+    label: '📰 Current Affairs',
+    showWhen: (a, s) => s.includeCA ||
+                        ['psc_upsc','geography','history'].includes(a.contentType),
+    features: {
+      national_recent: 'National Recent (2024–today)',
+      national_major:  'National Major Events (2020–2023)',
+      state_recent:    'State Recent (if state set)',
+      state_major:     'State Major Events (if state set)',
+      international:   'International Context'
+    }
+  },
+  EXAM_PREP: {
+    label: '🎯 Exam Preparation',
+    showWhen: (a, s) => ['UPSC','State PSC','Academic Exam'].includes(s.exam),
+    features: {
+      pyq_integration:    'Previous Year Questions',
+      answer_framework:   'Answer Writing Framework',
+      keywords_highlight: 'Exam Keywords Highlighted',
+      marks_allocation:   'Marks & Importance Indicators'
+    }
+  },
+  STORYTELLING: {
+    label: '📖 Storytelling & Analogies',
+    alwaysShow: true,
+    features: {
+      story_boxes:   'Story & Scenario Boxes',
+      analogy_boxes: 'Analogy Boxes',
+      case_studies:  'Case Studies'
+    }
+  },
+  ADMINISTRATIVE: {
+    label: '🏛️ Administration & Governance',
+    showWhen: (a) => a.institutionsMentioned?.length > 0 ||
+                     a.contentType === 'governance',
+    features: {
+      institution_cards:     'Institution & Organization Cards',
+      policy_context:        'Policy & Legal Context',
+      constitutional_links:  'Constitutional Articles Linked',
+      admin_structure:       'Administrative Structure Diagrams'
+    }
+  },
+  PROCESS_CREATION: {
+    label: '⚙️ Process & Creation',
+    features: {
+      process_flows:   'Process Flow Diagrams',
+      creation_steps:  'Step-by-Step Creation Process',
+      experiment_boxes:'Experiment & Method Boxes'
+    }
+  },
+  MEDICAL_SCIENCE: {
+    label: '🔬 Science & Medicine',
+    showWhen: (a) => ['biology','chemistry','medicine','science']
+                      .some(t => a.subject?.toLowerCase().includes(t)),
+    features: {
+      medical_info:        'Medical / Scientific Info Cards',
+      chemical_formulas:   'Chemical Formula Boxes',
+      biological_diagrams: 'Biological Process Diagrams'
+    }
+  }
+};
+
+// Determine which categories to show based on analysis
+const getVisibleCategories = (analysisData, settings) => {
+  return Object.entries(FEATURE_CATEGORIES).filter(([_, cat]) => {
+    if (cat.alwaysShow) return true;
+    if (cat.showWhen) return cat.showWhen(analysisData, settings);
+    return false;
+  });
+};
+```
+
+### Layout
+
+```jsx
+const Screen3Understanding = ({ analysisData, settings, features,
+                                 onToggleFeature, onContinue }) => {
+  const [showDetails, setShowDetails] = useState(false);
+  const [showMoreCategories, setShowMoreCategories] = useState(false);
+
+  const visibleCategories = getVisibleCategories(analysisData, settings);
+  const hiddenCategories = Object.entries(FEATURE_CATEGORIES)
+    .filter(([id]) => !visibleCategories.find(([vid]) => vid === id));
+
+  return (
+    <div className="max-w-5xl mx-auto px-6 py-8">
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-gray-900">
+          Here's what I understood ✨
+        </h1>
+        <p className="text-gray-500 mt-1">
+          Step 2 of 8 — Review and confirm before we continue
+        </p>
+      </div>
+
+      <div className="grid grid-cols-5 gap-6">
+
+        {/* LEFT — 3/5 width */}
+        <div className="col-span-3 space-y-4">
+
+          {/* Subject Card */}
+          <div className="bg-white border border-gray-200 rounded-lg p-5 shadow-sm">
+            <div className="flex items-start gap-3">
+              <span className="text-3xl">📚</span>
+              <div>
+                <h2 className="font-bold text-gray-900 text-lg">
+                  {analysisData.subject}
+                </h2>
+                <p className="text-gray-600 text-sm">
+                  {analysisData.subDiscipline}
+                </p>
+                <div className="flex gap-2 mt-2">
+                  <span className="text-xs bg-blue-100 text-blue-700
+                                   px-2 py-0.5 rounded-full font-medium">
+                    {analysisData.contentType?.replace('_', ' ').toUpperCase()}
+                  </span>
+                  <span className="text-xs bg-gray-100 text-gray-600
+                                   px-2 py-0.5 rounded-full font-medium">
+                    Complexity: {analysisData.complexity}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Stats Card */}
+          <div className="bg-white border border-gray-200 rounded-lg p-5 shadow-sm">
+            <h3 className="font-semibold text-gray-700 mb-3">
+              Found in your material:
+            </h3>
+            <div className="grid grid-cols-3 gap-3">
+              {[
+                ['Topics', analysisData.counts?.topics],
+                ['Definitions', analysisData.counts?.definitions],
+                ['Formulas', analysisData.counts?.formulas],
+                ['PYQs', analysisData.counts?.pyqs],
+                ['Diagrams', analysisData.counts?.diagrams],
+                ['Examples', analysisData.counts?.examples],
+                ['Tables', analysisData.counts?.tables],
+                ['Timelines', analysisData.counts?.timelines],
+                ['Code Blocks', analysisData.counts?.codeBlocks],
+              ].map(([label, count]) => (
+                <div key={label}
+                  className="text-center bg-gray-50 rounded-lg p-3">
+                  <p className="text-2xl font-bold text-blue-600">
+                    {count || 0}
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">{label}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* See Full Details */}
+            <button onClick={() => setShowDetails(!showDetails)}
+              className="mt-4 text-sm text-blue-600 hover:text-blue-800 font-medium">
+              {showDetails ? '▲ Hide details' : '👁 See full details'}
+            </button>
+
+            {showDetails && (
+              <div className="mt-4 space-y-4 border-t pt-4">
+                {/* Definitions Table */}
+                {analysisData.definitions?.length > 0 && (
+                  <div>
+                    <h4 className="text-sm font-semibold text-gray-700 mb-2">
+                      Definitions
+                    </h4>
+                    <table className="w-full text-xs border-collapse">
+                      <thead>
+                        <tr className="bg-gray-50">
+                          <th className="border border-gray-200 px-3 py-2 text-left">Term</th>
+                          <th className="border border-gray-200 px-3 py-2 text-left">Definition</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {analysisData.definitions.slice(0,8).map((d, i) => (
+                          <tr key={i} className="hover:bg-gray-50">
+                            <td className="border border-gray-200 px-3 py-2 font-medium">
+                              {d.term}
+                            </td>
+                            <td className="border border-gray-200 px-3 py-2 text-gray-600">
+                              {d.definition}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+
+                {/* Formulas Table */}
+                {analysisData.formulas?.length > 0 && (
+                  <div>
+                    <h4 className="text-sm font-semibold text-gray-700 mb-2">
+                      Formulas
+                    </h4>
+                    <div className="space-y-2">
+                      {analysisData.formulas.slice(0,5).map((f, i) => (
+                        <div key={i}
+                          className="bg-indigo-50 border border-indigo-200
+                                     rounded p-2">
+                          <p className="font-mono text-sm font-bold text-indigo-800">
+                            {f.formula}
+                          </p>
+                          <p className="text-xs text-indigo-600 mt-1">
+                            {f.meaning}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Prompt Visibility (Gap #7) */}
+                <details className="text-xs text-gray-400">
+                  <summary className="cursor-pointer hover:text-gray-600">
+                    🔍 View analysis prompt used
+                  </summary>
+                  <div className="mt-2 bg-gray-50 border rounded p-3 font-mono
+                                  text-xs whitespace-pre-wrap max-h-40 overflow-y-auto">
+                    {buildAnalysisPrompt(inputState, settings)}
+                  </div>
+                  <button onClick={() =>
+                    navigator.clipboard.writeText(
+                      buildAnalysisPrompt(inputState, settings)
+                    )}
+                    className="mt-1 text-blue-500 hover:text-blue-700">
+                    📋 Copy prompt
+                  </button>
+                </details>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* RIGHT — 2/5 width */}
+        <div className="col-span-2">
+          <div className="bg-white border border-gray-200 rounded-lg p-5
+                          shadow-sm">
+            <h3 className="font-semibold text-gray-700 mb-4">
+              Features Detected
+            </h3>
+
+            <div className="space-y-5">
+              {visibleCategories.map(([catId, cat]) => (
+                <div key={catId}>
+                  <p className="text-xs font-bold text-gray-500 uppercase
+                                tracking-wide mb-2">
+                    {cat.label}
+                  </p>
+                  <div className="space-y-2">
+                    {Object.entries(cat.features).map(([featId, featName]) => {
+                      const detected = analysisData.detectedFeatures
+                        ?.find(f => f.featureId === featId);
+                      const isOn = features[featId] ?? detected?.detected ?? false;
+
+                      return (
+                        <div key={featId}
+                          className="flex items-center justify-between gap-2">
+                          <div className="flex-1">
+                            <p className="text-sm text-gray-700">{featName}</p>
+                            {detected?.reason && (
+                              <p className="text-xs text-gray-400">
+                                {detected.reason}
+                              </p>
+                            )}
+                          </div>
+                          <ToggleSwitch value={isOn}
+                            onChange={(v) => onToggleFeature(featId, v)} />
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+
+              {/* Show more categories */}
+              {hiddenCategories.length > 0 && (
+                <>
+                  <button onClick={() => setShowMoreCategories(!showMoreCategories)}
+                    className="text-sm text-blue-600 hover:text-blue-800 font-medium">
+                    {showMoreCategories
+                      ? '▲ Show fewer categories'
+                      : `+ Show ${hiddenCategories.length} more categories`}
+                  </button>
+
+                  {showMoreCategories && hiddenCategories.map(([catId, cat]) => (
+                    <div key={catId}>
+                      <p className="text-xs font-bold text-gray-400 uppercase
+                                    tracking-wide mb-2">
+                        {cat.label}
+                      </p>
+                      <div className="space-y-2">
+                        {Object.entries(cat.features).map(([featId, featName]) => (
+                          <div key={featId}
+                            className="flex items-center justify-between gap-2">
+                            <p className="text-sm text-gray-500">{featName}</p>
+                            <ToggleSwitch
+                              value={features[featId] ?? false}
+                              onChange={(v) => onToggleFeature(featId, v)} />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom Actions */}
+      <div className="flex items-center gap-4 mt-8">
+        <button onClick={() => navigateBack(1)}
+          className="text-gray-500 hover:text-gray-700 font-medium">
+          ← Re-analyze
+        </button>
+        <button onClick={onContinue}
+          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3
+                     rounded-md font-semibold ml-auto">
+          Looks Good → Continue
+        </button>
+      </div>
+    </div>
+  );
+};
+```
+
+---
+
+## SCREEN 4 — PARTS
+
+### AI Call — Generate Parts
+
+```javascript
+const buildPartsPrompt = (analysisData, settings, features) => `
+You are an expert curriculum designer.
+Split the following study material into logical learning parts.
+
+Subject: ${analysisData.subject}
+Sub-discipline: ${analysisData.subDiscipline}
+Content type: ${analysisData.contentType}
+Complexity: ${analysisData.complexity}
+Suggested parts: ${analysisData.suggestedParts}
+Total topics: ${JSON.stringify(analysisData.topics)}
+Settings: ${JSON.stringify(settings)}
+
+Rules:
+- Create ${analysisData.suggestedParts} logical parts
+- Each part should be self-contained
+- Progress from foundational to advanced
+- Group related topics together
+- Each part needs a clear learning objective
+
+Return JSON:
+{
+  "parts": [
+    {
+      "id": "part-1",
+      "title": "...",
+      "summary": "...",
+      "topics": ["topic1", "topic2"],
+      "complexity": "low|medium|high",
+      "estimatedLength": "short|medium|long",
+      "applicableFeatures": ["feature_id1", ...],
+      "needsCurrentAffairs": true|false,
+      "hasFormulas": true|false,
+      "hasCode": true|false,
+      "suggestedImageCount": 3,
+      "learningObjective": "..."
+    }
+  ],
+  "totalParts": 6,
+  "splitRationale": "..."
+}
+
+Return ONLY valid JSON.
+`;
+```
+
+### Part Cards Grid
+
+```jsx
+const Screen4Parts = ({ parts, analysisData, onEditPart, onDeletePart,
+                         onAddPart, onMergeParts, onContinue }) => (
+  <div className="max-w-5xl mx-auto px-6 py-8">
+    <div className="mb-6">
+      <h1 className="text-2xl font-bold text-gray-900">
+        How I'll split your material ({parts.length} parts)
+      </h1>
+      <p className="text-gray-500 mt-1">
+        Review the proposed split. Edit, merge, or add parts as needed.
+      </p>
+    </div>
+
+    <div className="grid grid-cols-2 gap-4 mb-8">
+      {parts.map((part, index) => (
+        <PartCard key={part.id} part={part} index={index}
+          onEdit={() => onEditPart(part)}
+          onDelete={() => onDeletePart(part.id)} />
+      ))}
+    </div>
+
+    {/* Sticky bottom bar */}
+    <div className="sticky bottom-0 bg-white border-t border-gray-200
+                    px-6 py-4 -mx-6 flex items-center justify-between">
+      <div className="flex gap-3">
+        <button onClick={onAddPart}
+          className="border border-gray-300 bg-white hover:bg-gray-50
+                     text-gray-700 px-4 py-2 rounded-md text-sm font-medium">
+          ➕ Add Part
+        </button>
+        <button onClick={onMergeParts}
+          className="border border-gray-300 bg-white hover:bg-gray-50
+                     text-gray-700 px-4 py-2 rounded-md text-sm font-medium">
+          🔀 Merge Parts
+        </button>
+      </div>
+      <button onClick={onContinue}
+        className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2
+                   rounded-md font-semibold">
+        Continue to Blueprint →
+      </button>
+    </div>
+  </div>
+);
+
+const PartCard = ({ part, index, onEdit, onDelete }) => (
+  <div className="bg-white border border-gray-200 rounded-lg p-5
+                  shadow-sm hover:shadow-md transition-shadow">
+    <div className="flex items-start justify-between mb-3">
+      <div className="flex items-center gap-2">
+        <span className="w-8 h-8 rounded-full bg-blue-100 text-blue-700
+                         flex items-center justify-center text-sm font-bold">
+          {index + 1}
+        </span>
+        <h3 className="font-bold text-gray-900">{part.title}</h3>
+      </div>
+      <div className="flex gap-1">
+        <span className={`text-xs px-2 py-0.5 rounded-full font-medium
+          ${part.complexity === 'high' ? 'bg-red-100 text-red-700' :
+            part.complexity === 'medium' ? 'bg-amber-100 text-amber-700' :
+            'bg-green-100 text-green-700'}`}>
+          {part.complexity}
+        </span>
+      </div>
+    </div>
+
+    <p className="text-sm text-gray-600 mb-3 line-clamp-2">{part.summary}</p>
+
+    {/* Topics chips */}
+    <div className="flex flex-wrap gap-1 mb-3">
+      {(part.topics || []).slice(0, 4).map(topic => (
+        <span key={topic}
+          className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
+          {topic}
+        </span>
+      ))}
+      {part.topics?.length > 4 && (
+        <span className="text-xs text-gray-400">
+          +{part.topics.length - 4} more
+        </span>
+      )}
+    </div>
+
+    {/* Feature badges */}
+    <div className="flex gap-1 flex-wrap mb-4">
+      {part.hasFormulas && (
+        <span className="text-xs bg-indigo-100 text-indigo-600
+                         px-2 py-0.5 rounded-full">🔢 Formulas</span>
+      )}
+      {part.needsCurrentAffairs && (
+        <span className="text-xs bg-amber-100 text-amber-600
+                         px-2 py-0.5 rounded-full">📰 CA</span>
+      )}
+      {part.hasCode && (
+        <span className="text-xs bg-gray-800 text-gray-100
+                         px-2 py-0.5 rounded-full">💻 Code</span>
+      )}
+      <span className="text-xs bg-purple-100 text-purple-600
+                       px-2 py-0.5 rounded-full">
+        🖼️ {part.suggestedImageCount} images
+      </span>
+    </div>
+
+    {/* Actions */}
+    <div className="flex gap-2 pt-3 border-t border-gray-100">
+      <button onClick={onEdit}
+        className="text-sm text-blue-600 hover:text-blue-800 font-medium">
+        ✏️ Edit
+      </button>
+      <button onClick={onDelete}
+        className="text-sm text-red-500 hover:text-red-700 font-medium ml-auto">
+        🗑 Delete
+      </button>
+    </div>
+  </div>
+);
+```
+
+### Edit Part Modal (Gap #6 Fix — Real Modal)
+
+```jsx
+const EditPartModal = ({ part, onSave, onClose }) => {
+  const [edited, setEdited] = useState({ ...part });
+
+  return (
+    <Modal title={`Edit Part ${part.id}`} onClose={onClose}>
+      <div className="space-y-4">
+        <div>
+          <label className="text-sm font-medium text-gray-700 block mb-1">
+            Title
+          </label>
+          <input type="text" value={edited.title}
+            onChange={(e) => setEdited({...edited, title: e.target.value})}
+            className="w-full border border-gray-300 rounded-md px-3 py-2
+                       focus:ring-2 focus:ring-blue-500 outline-none" />
+        </div>
+        <div>
+          <label className="text-sm font-medium text-gray-700 block mb-1">
+            Summary
+          </label>
+          <textarea rows={3} value={edited.summary}
+            onChange={(e) => setEdited({...edited, summary: e.target.value})}
+            className="w-full border border-gray-300 rounded-md px-3 py-2
+                       focus:ring-2 focus:ring-blue-500 outline-none resize-none" />
+        </div>
+        <div>
+          <label className="text-sm font-medium text-gray-700 block mb-1">
+            Topics (one per line)
+          </label>
+          <textarea rows={4}
+            value={(edited.topics || []).join('\n')}
+            onChange={(e) =>
+              setEdited({...edited, topics: e.target.value.split('\n')})}
+            className="w-full border border-gray-300 rounded-md px-3 py-2
+                       focus:ring-2 focus:ring-blue-500 outline-none
+                       resize-none font-mono text-sm" />
+        </div>
+        <div className="flex items-center justify-between">
+          <label className="text-sm font-medium text-gray-700">
+            Needs Current Affairs
+          </label>
+          <ToggleSwitch value={edited.needsCurrentAffairs}
+            onChange={(v) => setEdited({...edited, needsCurrentAffairs: v})} />
+        </div>
+        <div className="flex gap-3 pt-4 border-t">
+          <button onClick={onClose}
+            className="flex-1 border border-gray-300 text-gray-700 py-2
+                       rounded-md font-medium hover:bg-gray-50">
+            Cancel
+          </button>
+          <button onClick={() => onSave(edited)}
+            className="flex-1 bg-blue-600 text-white py-2 rounded-md
+                       font-medium hover:bg-blue-700">
+            Save Changes
+          </button>
+        </div>
+      </div>
+    </Modal>
+  );
+};
+```
+
+---
+
+## SCREEN 5 — BLUEPRINT CARDS
+
+### AI Call — Generate Blueprint Per Part
+
+```javascript
+const buildBlueprintPrompt = (part, analysisData, settings, features) => `
+Create a detailed teaching blueprint for this part of study notes.
+
+Part: ${part.title}
+Summary: ${part.summary}
+Topics to cover: ${JSON.stringify(part.topics)}
+Subject: ${analysisData.subject}
+Content type: ${analysisData.contentType}
+Enabled features: ${JSON.stringify(Object.entries(features).filter(([,v]) => v).map(([k]) => k))}
+Settings: ${JSON.stringify(settings)}
+
+Return JSON:
+{
+  "headings": {
+    "main": "...",
+    "subHeadings": ["H2 heading 1", "H2 heading 2", ...]
+  },
+  "textPlan": {
+    "fromSource": ["bullet: content from material to use"],
+    "willAdd": ["bullet: content AI will generate"],
+    "containers": [
+      {"type": "concept_box", "heading": "...", "topic": "..."},
+      {"type": "formula_box", "formula": "...", "topic": "..."}
+    ]
+  },
+  "imagePlan": [
+    {
+      "title": "...",
+      "purpose": "...",
+      "recommendedStyles": ["infographic", "comparison_matrix", "flowchart"],
+      "dataToShow": ["label1", "label2"],
+      "isMixedStyle": true,
+      "prompt": "Create an educational infographic showing..."
+    }
+  ],
+  "caPlan": {
+    "needed": true,
+    "searches": [
+      {"scope": "national_recent", "query": "..."},
+      {"scope": "state_recent", "query": "..."}
+    ]
+  },
+  "validationPlan": [
+    "Check source coverage",
+    "Verify all formulas are correct",
+    "Confirm image relevance"
+  ],
+  "estimatedLength": "medium",
+  "generationPromptPreview": "Write detailed notes about..."
+}
+
+Return ONLY valid JSON.
+`;
+```
+
+```javascript
+// Generate blueprints for all parts in parallel
+const generateAllBlueprints = async () => {
+  const promises = parts.map(part =>
+    geminiGenerateText(buildBlueprintPrompt(part, analysisData, settings, features))
+      .then(raw => {
+        const json = raw.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+        return [part.id, JSON.parse(json)];
+      })
+      .catch(e => [part.id, { error: e.message }])
+  );
+  const results = await Promise.all(promises);
+  const blueprintMap = Object.fromEntries(results);
+  setBlueprints(blueprintMap);
+};
+```
+
+### Blueprint Card Grid
+
+```jsx
+const Screen5Blueprints = ({ parts, blueprints, approvals,
+                              onApprove, onApproveAll,
+                              onViewDetail, onContinue }) => {
+  const approvedCount = Object.values(approvals).filter(Boolean).length;
+  const allApproved = approvedCount === parts.length;
+
+  return (
+    <div className="max-w-5xl mx-auto px-6 py-8">
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">
+            Teaching Plan (Blueprint)
+          </h1>
+          <p className="text-gray-500 mt-1">
+            Review what I'll cover in each part. Approve to continue.
+          </p>
+        </div>
+        <div className="flex items-center gap-4">
+          <span className="text-sm text-gray-600">
+            {approvedCount} of {parts.length} approved
+          </span>
+          <button onClick={onApproveAll}
+            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2
+                       rounded-md text-sm font-medium">
+            ✅ Approve All
+          </button>
+        </div>
+      </div>
+
+      {/* Progress bar */}
+      <div className="h-2 bg-gray-200 rounded-full mb-8 overflow-hidden">
+        <div className="h-full bg-green-500 rounded-full transition-all duration-500"
+          style={{ width: `${(approvedCount / parts.length) * 100}%` }} />
+      </div>
+
+      {/* Blueprint cards grid */}
+      <div className="grid grid-cols-2 gap-4 mb-8">
+        {parts.map(part => {
+          const bp = blueprints[part.id];
+          const isApproved = approvals[part.id];
+
+          return (
+            <div key={part.id}
+              className={`bg-white border rounded-lg p-5 shadow-sm
+                          transition-all
+                ${isApproved ? 'border-green-300 bg-green-50' : 'border-gray-200'}`}>
+
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="font-bold text-gray-900">{part.title}</h3>
+                {isApproved && (
+                  <span className="text-green-600 text-sm font-medium">
+                    ✅ Approved
+                  </span>
+                )}
+              </div>
+
+              {bp && !bp.error ? (
+                <>
+                  {/* Text plan preview */}
+                  <ul className="text-sm text-gray-600 space-y-1 mb-4">
+                    {(bp.textPlan?.fromSource || []).slice(0, 3).map((item, i) => (
+                      <li key={i} className="flex items-start gap-2">
+                        <span className="text-gray-400 mt-0.5">•</span>
+                        <span className="line-clamp-1">{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+
+                  {/* Summary badges */}
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    <span className="text-xs bg-purple-100 text-purple-700
+                                     px-2 py-0.5 rounded-full">
+                      🖼️ {bp.imagePlan?.length || 0} images
+                    </span>
+                    {bp.caPlan?.needed && (
+                      <span className="text-xs bg-amber-100 text-amber-700
+                                       px-2 py-0.5 rounded-full">
+                        📰 {bp.caPlan.searches?.length || 0} CA searches
+                      </span>
+                    )}
+                    <span className="text-xs bg-blue-100 text-blue-700
+                                     px-2 py-0.5 rounded-full">
+                      📦 {bp.textPlan?.containers?.length || 0} containers
+                    </span>
+                  </div>
+                </>
+              ) : (
+                <div className="text-sm text-gray-400 mb-4">
+                  {bp?.error ? `Error: ${bp.error}` : 'Generating blueprint...'}
+                </div>
+              )}
+
+              <div className="flex gap-2 pt-3 border-t border-gray-100">
+                <button onClick={() => onViewDetail(part.id)}
+                  className="flex-1 text-sm text-blue-600 hover:text-blue-800
+                             font-medium text-center py-1">
+                  View Full Blueprint
+                </button>
+                <button onClick={() => onApprove(part.id)}
+                  disabled={!bp || bp.error}
+                  className={`flex-1 text-sm font-medium py-1 rounded
+                    ${isApproved
+                      ? 'bg-green-100 text-green-700 border border-green-300'
+                      : 'bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50'}`}>
+                  {isApproved ? '✓ Approved' : 'Approve'}
+                </button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Continue button */}
+      <div className="flex justify-end">
+        {!allApproved && (
+          <p className="text-sm text-amber-600 mr-4 self-center">
+            ⚠️ Approve all blueprints to continue
+          </p>
+        )}
+        <button onClick={onContinue} disabled={!allApproved}
+          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3
+                     rounded-md font-semibold disabled:opacity-40
+                     disabled:cursor-not-allowed">
+          Continue to Generation →
+        </button>
+      </div>
+    </div>
+  );
+};
+```
+
+---
+
+## SCREEN 6 — BLUEPRINT DETAIL (Full Overlay)
+
+```jsx
+const Screen6BlueprintDetail = ({ partId, parts, blueprints,
+                                   onSave, onApprove, onBack }) => {
+  const part = parts.find(p => p.id === partId);
+  const blueprint = blueprints[partId];
+  const [localBP, setLocalBP] = useState({ ...blueprint });
+  const [chatMessages, setChatMessages] = useState([]);
+  const [chatInput, setChatInput] = useState('');
+  const [chatLoading, setChatLoading] = useState(false);
+  const [chatMinimized, setChatMinimized] = useState(false);
+
+  const handleChatSend = async () => {
+    if (!chatInput.trim()) return;
+    const userMsg = chatInput.trim();
+    setChatInput('');
+    setChatMessages(prev => [...prev, { role: 'user', text: userMsg }]);
+    setChatLoading(true);
+
+    try {
+      const prompt = `
+You are helping modify a teaching blueprint for: "${part.title}"
+Current blueprint: ${JSON.stringify(localBP)}
+
+User request: "${userMsg}"
+
+Apply the user's request and return the COMPLETE updated blueprint JSON.
+Make specific, meaningful changes based on the request.
+Return ONLY valid JSON matching the original blueprint structure.
+      `;
+      const raw = await geminiGenerateText(prompt);
+      const json = raw.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+      const updated = JSON.parse(json);
+      setLocalBP(updated);
+      setChatMessages(prev => [...prev, {
+        role: 'ai',
+        text: `Blueprint updated based on your request: "${userMsg}". Changes applied.`
+      }]);
+    } catch (e) {
+      setChatMessages(prev => [...prev, {
+        role: 'ai',
+        text: `Could not apply change: ${e.message}. Please try rephrasing.`
+      }]);
+    } finally {
+      setChatLoading(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-white z-50 flex flex-col">
+      {/* Header */}
+      <div className="border-b border-gray-200 px-6 py-4 flex items-center
+                      justify-between bg-white shadow-sm">
+        <button onClick={onBack}
+          className="text-blue-600 hover:text-blue-800 font-medium flex items-center gap-2">
+          ← Back to Blueprints
+        </button>
+        <h2 className="font-bold text-gray-900">{part?.title}</h2>
+        <button onClick={() => { onSave(partId, localBP); onApprove(partId); }}
+          className="bg-green-600 hover:bg-green-700 text-white px-4 py-2
+                     rounded-md text-sm font-medium">
+          ✅ Save & Approve
+        </button>
+      </div>
+
+      {/* Body */}
+      <div className="flex flex-1 overflow-hidden">
+        {/* Left — Scrollable content */}
+        <div className="flex-1 overflow-y-auto px-8 py-6 space-y-8">
+
+          {/* Section 1: Headings */}
+          <section>
+            <h3 className="text-lg font-bold text-gray-800 mb-4">
+              📑 Headings Plan
+            </h3>
+            <div className="space-y-2">
+              <input type="text"
+                value={localBP.headings?.main || ''}
+                onChange={(e) => setLocalBP({...localBP,
+                  headings: {...localBP.headings, main: e.target.value}})}
+                placeholder="Main heading (H1)"
+                className="w-full border border-gray-300 rounded-md px-3 py-2
+                           font-semibold text-lg focus:ring-2 focus:ring-blue-500 outline-none" />
+              {(localBP.headings?.subHeadings || []).map((sh, i) => (
+                <input key={i} type="text" value={sh}
+                  onChange={(e) => {
+                    const updated = [...(localBP.headings?.subHeadings || [])];
+                    updated[i] = e.target.value;
+                    setLocalBP({...localBP,
+                      headings: {...localBP.headings, subHeadings: updated}});
+                  }}
+                  placeholder={`Sub-heading ${i + 1}`}
+                  className="w-full border border-gray-200 rounded-md px-3 py-2
+                             text-sm focus:ring-2 focus:ring-blue-500 outline-none
+                             ml-4" />
+              ))}
+            </div>
+          </section>
+
+          {/* Section 2: Text Plan */}
+          <section>
+            <h3 className="text-lg font-bold text-gray-800 mb-4">
+              📝 Text Plan
+            </h3>
+            <div className="space-y-4">
+              {/* Generation prompt */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-sm font-semibold text-gray-700">
+                    Generation Prompt
+                  </label>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => navigator.clipboard.writeText(
+                        localBP.generationPromptPreview || ''
+                      )}
+                      className="text-xs text-blue-600 hover:text-blue-800">
+                      📋 Copy
+                    </button>
+                    <button
+                      onClick={async () => {
+                        const regen = await geminiGenerateText(
+                          `Generate a detailed text generation prompt for notes about: ${part.title}. Return only the prompt text.`
+                        );
+                        setLocalBP({...localBP, generationPromptPreview: regen});
+                      }}
+                      className="text-xs text-blue-600 hover:text-blue-800">
+                      🔄 Regenerate
+                    </button>
+                  </div>
+                </div>
+                <textarea rows={5}
+                  value={localBP.generationPromptPreview || ''}
+                  onChange={(e) => setLocalBP({...localBP,
+                    generationPromptPreview: e.target.value})}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2
+                             text-sm font-mono focus:ring-2 focus:ring-blue-500
+                             outline-none resize-none bg-gray-50" />
+              </div>
+
+              {/* Containers planned */}
+              <div>
+                <label className="text-sm font-semibold text-gray-700 block mb-2">
+                  Containers Planned
+                </label>
+                <div className="space-y-2">
+                  {(localBP.textPlan?.containers || []).map((c, i) => (
+                    <div key={i}
+                      className="flex items-center gap-3 bg-gray-50 border
+                                 border-gray-200 rounded-md px-3 py-2">
+                      <span className="text-xs bg-blue-100 text-blue-700
+                                       px-2 py-0.5 rounded font-medium">
+                        {c.type.replace('_', ' ')}
+                      </span>
+                      <span className="text-sm text-gray-700 flex-1">
+                        {c.heading || c.formula || c.topic}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Section 3: Image Plan */}
+          <section>
+            <h3 className="text-lg font-bold text-gray-800 mb-4">
+              🖼️ Image Plan
+            </h3>
+            <div className="space-y-4">
+              {(localBP.imagePlan || []).map((img, i) => (
+                <div key={i}
+                  className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="font-semibold text-gray-800">
+                      Image {i + 1}: {img.title}
+                    </h4>
+                  </div>
+                  <p className="text-sm text-gray-600 mb-3">
+                    {img.purpose}
+                  </p>
+
+                  {/* Recommended styles */}
+                  <div className="mb-3">
+                    <label className="text-xs text-gray-500 font-medium block mb-1">
+                      Recommended Styles
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      {(img.recommendedStyles || []).map(style => (
+                        <span key={style}
+                          className="text-xs bg-purple-100 text-purple-700
+                                     px-2 py-0.5 rounded-full font-medium">
+                          {style}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Style selector */}
+                  <div className="mb-3">
+                    <label className="text-xs text-gray-500 font-medium block mb-1">
+                      Change Style
+                    </label>
+                    <select
+                      onChange={(e) => {
+                        const updated = [...localBP.imagePlan];
+                        updated[i] = {...img,
+                          recommendedStyles: [e.target.value]};
+                        setLocalBP({...localBP, imagePlan: updated});
+                      }}
+                      className="border border-gray-300 rounded-md px-3 py-1.5
+                                 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                      <option>Select style...</option>
+                      {VISUAL_STYLES.map(s => (
+                        <option key={s.id} value={s.id}>{s.label}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Image prompt */}
+                  <div>
+                    <label className="text-xs text-gray-500 font-medium block mb-1">
+                      Image Prompt
+                    </label>
+                    <textarea rows={3} value={img.prompt || ''}
+                      onChange={(e) => {
+                        const updated = [...localBP.imagePlan];
+                        updated[i] = {...img, prompt: e.target.value};
+                        setLocalBP({...localBP, imagePlan: updated});
+                      }}
+                      className="w-full border border-gray-300 rounded-md px-3 py-2
+                                 text-sm focus:ring-2 focus:ring-blue-500 outline-none
+                                 resize-none" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* Section 4: CA Plan */}
+          <section>
+            <h3 className="text-lg font-bold text-gray-800 mb-4">
+              📰 Current Affairs Plan
+            </h3>
+            {localBP.caPlan?.needed ? (
+              <div className="space-y-3">
+                {(localBP.caPlan?.searches || []).map((search, i) => (
+                  <div key={i}
+                    className="border border-amber-200 bg-amber-50 rounded-lg p-3">
+                    <span className="text-xs font-bold text-amber-700 uppercase
+                                     block mb-1">
+                      {search.scope.replace('_', ' ')}
+                    </span>
+                    <input type="text" value={search.query}
+                      onChange={(e) => {
+                        const updated = [...localBP.caPlan.searches];
+                        updated[i] = {...search, query: e.target.value};
+                        setLocalBP({...localBP,
+                          caPlan: {...localBP.caPlan, searches: updated}});
+                      }}
+                      className="w-full bg-white border border-amber-200 rounded
+                                 px-2 py-1 text-sm focus:ring-1 focus:ring-amber-400
+                                 outline-none" />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-6 bg-gray-50 rounded-lg border
+                              border-gray-200">
+                <p className="text-gray-500 text-sm mb-3">
+                  Current affairs not required for this part
+                </p>
+                <button
+                  onClick={() => setLocalBP({...localBP,
+                    caPlan: { needed: true,
+                      searches: [{ scope: 'national_recent', query: part.title }]
+                    }})}
+                  className="text-sm text-blue-600 hover:text-blue-800 font-medium">
+                  Force Enable Current Affairs
+                </button>
+              </div>
+            )}
+          </section>
+
+          {/* Section 5: Validation Plan */}
+          <section>
+            <h3 className="text-lg font-bold text-gray-800 mb-4">
+              🔍 Validation Plan
+            </h3>
+            <div className="space-y-2">
+              {(localBP.validationPlan || []).map((item, i) => (
+                <label key={i}
+                  className="flex items-center gap-3 bg-gray-50 border
+                             border-gray-200 rounded-md px-3 py-2 cursor-pointer
+                             hover:bg-gray-100">
+                  <input type="checkbox" defaultChecked
+                    className="text-blue-600" />
+                  <span className="text-sm text-gray-700">{item}</span>
+                </label>
+              ))}
+            </div>
+          </section>
+        </div>
+
+        {/* Right — Sticky AI Chat */}
+        <div className={`border-l border-gray-200 bg-gray-50 flex flex-col
+                         transition-all duration-300
+                         ${chatMinimized ? 'w-14' : 'w-80'}`}>
+          {chatMinimized ? (
+            <button onClick={() => setChatMinimized(false)}
+              className="w-full h-full flex items-center justify-center
+                         text-blue-600 hover:bg-gray-100">
+              💬
+            </button>
+          ) : (
+            <>
+              <div className="flex items-center justify-between px-4 py-3
+                              border-b border-gray-200 bg-white">
+                <span className="font-semibold text-gray-800 text-sm">
+                  💬 AI Assistant
+                </span>
+                <button onClick={() => setChatMinimized(true)}
+                  className="text-gray-400 hover:text-gray-600 text-xs">
+                  Minimize ▼
+                </button>
+              </div>
+
+              {/* Chat messages */}
+              <div className="flex-1 overflow-y-auto p-3 space-y-3">
+                {chatMessages.length === 0 && (
+                  <div className="space-y-2">
+                    <p className="text-xs text-gray-500">Try asking:</p>
+                    {['Add more images', 'Remove current affairs',
+                      'Add formula operations', 'Use comic style',
+                      'Make beginner-friendly'].map(q => (
+                      <button key={q}
+                        onClick={() => {
+                          setChatInput(q);
+                        }}
+                        className="block w-full text-left text-xs bg-white border
+                                   border-gray-200 rounded-md px-3 py-2
+                                   hover:bg-blue-50 hover:border-blue-200
+                                   text-gray-600">
+                        {q}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {chatMessages.map((msg, i) => (
+                  <div key={i}
+                    className={`rounded-lg p-3 text-sm
+                      ${msg.role === 'user'
+                        ? 'bg-blue-600 text-white ml-4'
+                        : 'bg-white border border-gray-200 text-gray-700'}`}>
+                    {msg.text}
+                  </div>
+                ))}
+                {chatLoading && (
+                  <div className="bg-white border border-gray-200 rounded-lg
+                                  p-3 text-sm text-gray-500">
+                    ⏳ Updating blueprint...
+                  </div>
+                )}
+              </div>
+
+              {/* Chat input */}
+              <div className="p-3 border-t border-gray-200 bg-white">
+                <div className="flex gap-2">
+                  <input type="text" value={chatInput}
+                    onChange={(e) => setChatInput(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleChatSend()}
+                    placeholder="Ask to modify..."
+                    className="flex-1 border border-gray-300 rounded-md px-3 py-2
+                               text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+                  <button onClick={handleChatSend} disabled={chatLoading}
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2
+                               rounded-md text-sm disabled:opacity-50">
+                    ↵
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+```
+
+---
+
+## SCREEN 7 — GENERATION WORKSPACE
+
+### Layout Structure
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│ STICKY TOP BAR                                                  │
+│ [Generate All] [▓▓▓░░░ 2/6] [33%] [🔍 Search] [📤 Export]      │
+├──────────────┬──────────────────────────────────────────────────┤
+│ SIDEBAR      │ MAIN SCROLL AREA                                 │
+│ 200px fixed  │                                                  │
+│              │ ═══ Part 1: [Title] ══════════════════════════   │
+│ Part 1 ✅    │ [Generate] [Approve Text ☐] [Approve Images ☐]  │
+│ Part 2 🔄    │ [Approve Part] [Version] [Validate] [Refine]     │
+│ Part 3 ⏳    │ ───────────────────────────────────────────────  │
+│ Part 4 ⏳    │ [Generated content: containers, images, CA]      │
+│ Part 5 ⏳    │                                                  │
+│ Part 6 ⏳    │ ═══ Part 2: [Title] ══════════════════════════   │
+│              │ ...                                              │
+│ [+Add Part]  │                                                  │
+└──────────────┴──────────────────────────────────────────────────┘
+```
+
+### AI Call — Generate Part Notes
+
+```javascript
+const buildGenerationPrompt = (part, blueprint, analysisData, settings, features) => `
+You are an expert educator writing structured study notes.
+
+Part: ${part.title}
+Topics: ${JSON.stringify(part.topics)}
+Subject: ${analysisData.subject}
+Content type: ${analysisData.contentType}
+Difficulty: ${settings.difficulty}
+Length: ${settings.length}
+Language: ${settings.language}
+State focus: ${settings.state || 'none'}
+Enabled features: ${JSON.stringify(Object.entries(features).filter(([,v]) => v).map(([k]) => k))}
+Blueprint containers planned: ${JSON.stringify(blueprint.textPlan?.containers || [])}
+
+Write comprehensive, well-structured study notes covering all topics.
+Format your response as JSON:
+{
+  "sections": [
+    {
+      "containerType": "concept_box|formula_box|story_box|comparison_table|code_block|definition_box|pyq_box|quick_revision|geography_box|personality_card|data_insight|analogy_box|timeline_box|process_box|institution_box|ca_box|experiment_box|summary_box",
+      "heading": "...",
+      "content": "...rich markdown content...",
+      "sourceTag": "source_backed|ai_enriched|ca_integrated",
+      "formula": "...(if formula_box)",
+      "variables": ["..."],
+      "operations": ["..."],
+      "facts": ["..."],
+      "code": "...(if code_block)",
+      "language": "python|javascript|etc",
+      "inputExample": "...",
+      "outputExample": "...",
+      "tableData": {"headers": [], "rows": [[]]},
+      "steps": ["..."],
+      "person": "...",
+      "role": "..."
+    }
+  ],
+  "quickRevision": ["key point 1", "key point 2", ...],
+  "caNeeded": true|false,
+  "caContext": "search query for CA"
+}
+
+Make notes comprehensive, educationally rich, and well-structured.
+Include real facts and accurate information.
+Return ONLY valid JSON.
+`;
+```
+
+### Content Renderer — All Container Types
+
+```jsx
+const ContentSection = ({ section }) => {
+  const containers = {
+    concept_box: (s) => (
+      <div className="border-l-4 border-blue-500 bg-blue-50 p-4 rounded-r-lg my-4">
+        <div className="flex items-center gap-2 mb-2">
+          <span>💡</span>
+          <h3 className="font-bold text-blue-800">{s.heading}</h3>
+          <SourceTag type={s.sourceTag} />
+        </div>
+        <MarkdownContent content={s.content} />
+      </div>
+    ),
+
+    formula_box: (s) => (
+      <div className="border border-indigo-200 bg-indigo-50 rounded-lg p-4 my-4">
+        <div className="flex items-center gap-2 mb-3">
+          <span>🔢</span>
+          <h3 className="font-bold text-indigo-800">{s.heading || 'Formula'}</h3>
+        </div>
+        {s.formula && (
+          <div className="bg-white border border-indigo-300 rounded p-3
+                          font-mono text-lg text-center mb-3 text-indigo-900">
+            {s.formula}
+          </div>
+        )}
+        {s.content && <MarkdownContent content={s.content} />}
+        {(s.variables || []).length > 0 && (
+          <div className="mt-2">
+            <p className="text-xs font-bold text-indigo-700 mb-1">Variables:</p>
+            <ul className="list-disc pl-4 text-sm space-y-0.5">
+              {s.variables.map((v, i) => <li key={i}>{v}</li>)}
+            </ul>
+          </div>
+        )}
+        {(s.facts || []).length > 0 && (
+          <div className="mt-3 bg-indigo-100 rounded p-2">
+            <p className="text-xs font-bold text-indigo-700 mb-1">Key Facts:</p>
+            {s.facts.map((f, i) => (
+              <p key={i} className="text-sm flex items-start gap-1">
+                <span>→</span><span>{f}</span>
+              </p>
+            ))}
+          </div>
+        )}
+        {(s.operations || []).length > 0 && (
+          <div className="mt-3">
+            <p className="text-xs font-bold text-indigo-700 mb-1">
+              Operations:
+            </p>
+            {s.operations.map((op, i) => (
+              <div key={i}
+                className="bg-indigo-100 rounded p-2 text-sm font-mono mt-1">
+                {op}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    ),
+
+    code_block: (s) => (
+      <div className="rounded-lg overflow-hidden border border-gray-300 my-4">
+        <div className="bg-gray-800 text-gray-300 px-4 py-2 text-sm
+                        flex justify-between items-center">
+          <span>{s.language || 'code'}</span>
+          <button onClick={() => navigator.clipboard.writeText(s.code || '')}
+            className="text-xs hover:text-white">📋 Copy</button>
+        </div>
+        <pre className="bg-gray-900 text-green-400 p-4 overflow-x-auto text-sm
+                        leading-relaxed">
+          <code>{s.code}</code>
+        </pre>
+        {s.inputExample && (
+          <div className="bg-gray-100 border-t border-gray-300 p-3">
+            <p className="text-xs font-bold text-gray-600 mb-1">INPUT:</p>
+            <code className="text-sm text-gray-800">{s.inputExample}</code>
+          </div>
+        )}
+        {s.outputExample && (
+          <div className="bg-green-50 border-t border-gray-300 p-3">
+            <p className="text-xs font-bold text-green-700 mb-1">OUTPUT:</p>
+            <code className="text-sm text-green-800">{s.outputExample}</code>
+          </div>
+        )}
+        {s.content && (
+          <div className="p-4 border-t border-gray-200 bg-white">
+            <MarkdownContent content={s.content} />
+          </div>
+        )}
+      </div>
+    ),
+
+    comparison_table: (s) => (
+      <div className="my-4 overflow-x-auto">
+        <div className="flex items-center gap-2 mb-2">
+          <span>📊</span>
+          <h3 className="font-bold text-gray-800">{s.heading}</h3>
+          <SourceTag type={s.sourceTag} />
+        </div>
+        {s.tableData ? (
+          <table className="w-full border-collapse text-sm">
+            <thead>
+              <tr>
+                {s.tableData.headers.map((h, i) => (
+                  <th key={i}
+                    className="border border-gray-300 bg-gray-100 px-4 py-2
+                               text-left font-semibold">
+                    {h}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {s.tableData.rows.map((row, i) => (
+                <tr key={i} className="hover:bg-gray-50">
+                  {row.map((cell, j) => (
+                    <td key={j}
+                      className="border border-gray-300 px-4 py-2">
+                      {cell}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        ) : (
+          <MarkdownContent content={s.content} />
+        )}
+      </div>
+    ),
+
+    story_box: (s) => (
+      <div className="border border-amber-200 bg-amber-50 rounded-lg p-4 my-4">
+        <div className="flex items-center gap-2 mb-2">
+          <span>📖</span>
+          <h3 className="font-bold text-amber-800">{s.heading}</h3>
+          <SourceTag type={s.sourceTag} />
+        </div>
+        <MarkdownContent content={s.content} />
+      </div>
+    ),
+
+    geography_box: (s) => (
+      <div className="border border-green-200 bg-green-50 rounded-lg p-4 my-4">
+        <div className="flex items-center gap-2 mb-2">
+          <span>🗺️</span>
+          <h3 className="font-bold text-green-800">{s.heading}</h3>
+        </div>
+        <MarkdownContent content={s.content} />
+      </div>
+    ),
+
+    personality_card: (s) => (
+      <div className="border border-purple-200 bg-purple-50 rounded-lg p-4 my-4">
+        <div className="flex items-center gap-3 mb-3">
+          <div className="w-12 h-12 bg-purple-200 rounded-full flex items-center
+                          justify-center text-2xl">👤</div>
+          <div>
+            <h3 className="font-bold text-purple-800">{s.person || s.heading}</h3>
+            <p className="text-sm text-purple-600">{s.role || ''}</p>
+          </div>
+        </div>
+        <MarkdownContent content={s.content} />
+      </div>
+    ),
+
+    pyq_box: (s) => (
+      <div className="border-2 border-red-200 bg-red-50 rounded-lg p-4 my-4">
+        <div className="flex items-center gap-2 mb-2">
+          <span>❓</span>
+          <h3 className="font-bold text-red-800">Previous Year Question</h3>
+        </div>
+        <MarkdownContent content={s.content} />
+      </div>
+    ),
+
+    quick_revision: (s) => (
+      <div className="border border-green-300 bg-green-50 rounded-lg p-4 my-4">
+        <div className="flex items-center gap-2 mb-3">
+          <span>⚡</span>
+          <h3 className="font-bold text-green-800">Quick Revision</h3>
+        </div>
+        <MarkdownContent content={s.content} />
+      </div>
+    ),
+
+    definition_box: (s) => (
+      <div className="border-l-4 border-gray-400 bg-gray-50 p-4 my-4 rounded-r">
+        <div className="flex items-center gap-2 mb-1">
+          <span>📌</span>
+          <h4 className="font-bold text-gray-700">{s.heading}</h4>
+          <SourceTag type={s.sourceTag} />
+        </div>
+        <MarkdownContent content={s.content} />
+      </div>
+    ),
+
+    analogy_box: (s) => (
+      <div className="border border-sky-200 bg-sky-50 rounded-lg p-4 my-4">
+        <div className="flex items-center gap-2 mb-2">
+          <span>🔗</span>
+          <h3 className="font-bold text-sky-800">{s.heading}</h3>
+        </div>
+        <MarkdownContent content={s.content} />
+      </div>
+    ),
+
+    timeline_box: (s) => (
+      <div className="border border-violet-200 bg-violet-50 rounded-lg p-4 my-4">
+        <div className="flex items-center gap-2 mb-3">
+          <span>📅</span>
+          <h3 className="font-bold text-violet-800">{s.heading}</h3>
+        </div>
+        {(s.steps || []).length > 0 ? (
+          <div className="space-y-2">
+            {s.steps.map((step, i) => (
+              <div key={i} className="flex gap-3 items-start">
+                <div className="w-6 h-6 rounded-full bg-violet-500 text-white
+                                flex items-center justify-center text-xs
+                                flex-shrink-0 mt-0.5">
+                  {i + 1}
+                </div>
+                <p className="text-sm text-violet-800">{step}</p>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <MarkdownContent content={s.content} />
+        )}
+      </div>
+    ),
+
+    process_box: (s) => (
+      <div className="border border-orange-200 bg-orange-50 rounded-lg p-4 my-4">
+        <div className="flex items-center gap-2 mb-2">
+          <span>⚙️</span>
+          <h3 className="font-bold text-orange-800">{s.heading}</h3>
+        </div>
+        <MarkdownContent content={s.content} />
+      </div>
+    ),
+
+    institution_box: (s) => (
+      <div className="border border-slate-200 bg-slate-50 rounded-lg p-4 my-4">
+        <div className="flex items-center gap-2 mb-2">
+          <span>🏛️</span>
+          <h3 className="font-bold text-slate-800">{s.heading}</h3>
+        </div>
+        <MarkdownContent content={s.content} />
+      </div>
+    ),
+
+    experiment_box: (s) => (
+      <div className="border border-teal-200 bg-teal-50 rounded-lg p-4 my-4">
+        <div className="flex items-center gap-2 mb-2">
+          <span>🔬</span>
+          <h3 className="font-bold text-teal-800">{s.heading}</h3>
+        </div>
+        <MarkdownContent content={s.content} />
+      </div>
+    ),
+
+    summary_box: (s) => (
+      <div className="border-2 border-blue-200 bg-blue-50 rounded-lg p-5 my-6">
+        <div className="flex items-center gap-2 mb-3">
+          <span>📋</span>
+          <h3 className="font-bold text-blue-800">{s.heading || 'Summary'}</h3>
+        </div>
+        <MarkdownContent content={s.content} />
+      </div>
+    ),
+  };
+
+  const renderer = containers[section.containerType] || containers.concept_box;
+  return renderer(section);
+};
+```
+
+### Image Card with Real Generation
+
+```jsx
+const ImageCard = ({ imagePlan, partId, imageIndex,
+                     onApprove, approvedImages }) => {
+  const [status, setStatus] = useState('idle'); // idle|generating|done|error
+  const [imageUrl, setImageUrl] = useState(null);
+  const [error, setError] = useState(null);
+  const isApproved = approvedImages?.[`${partId}-${imageIndex}`];
+
+  const generateImage = async () => {
+    setStatus('generating');
+    setError(null);
+    try {
+      const prompt = `
+        ${imagePlan.prompt}
+        Educational study material image.
+        Style: ${(imagePlan.recommendedStyles || []).join(' + ')}.
+        Include clear labels, legends, and annotations.
+        Clean, professional, high-contrast colors.
+        No text errors. Accurate educational content.
+      `;
+      const url = await geminiImageCreation(prompt);
+      setImageUrl(url);
+      setStatus('done');
+    } catch (e) {
+      setError(e.message);
+      setStatus('error');
+    }
+  };
+
+  return (
+    <div className={`border rounded-lg overflow-hidden my-4
+      ${isApproved ? 'border-green-300' : 'border-gray-200'}`}>
+      {/* Image display */}
+      <div className="bg-gray-100 min-h-48 flex items-center justify-center">
+        {status === 'idle' && (
+          <div className="text-center p-6">
+            <p className="text-gray-500 text-sm mb-3">🖼️ {imagePlan.title}</p>
+            <p className="text-xs text-gray-400 mb-4">{imagePlan.purpose}</p>
+            <button onClick={generateImage}
+              className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2
+                         rounded-md text-sm font-medium">
+              Generate Image
+            </button>
+          </div>
+        )}
+        {status === 'generating' && (
+          <div className="text-center p-6">
+            <div className="animate-spin text-4xl mb-3">⚙️</div>
+            <p className="text-gray-500 text-sm">Generating image...</p>
+            <p className="text-xs text-gray-400 mt-1">
+              This may take 15–30 seconds
+            </p>
+          </div>
+        )}
+        {status === 'done' && imageUrl && (
+          <img src={imageUrl} alt={imagePlan.title}
+            className="w-full h-auto max-h-80 object-contain" />
+        )}
+        {status === 'error' && (
+          <div className="text-center p-6">
+            <p className="text-red-500 text-sm mb-2">⚠️ {error}</p>
+            <button onClick={generateImage}
+              className="text-sm text-blue-600 hover:text-blue-800 font-medium">
+              Try Again
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Controls */}
+      <div className="bg-white border-t border-gray-200 px-4 py-3">
+        <p className="text-xs text-gray-500 mb-2">
+          {imagePlan.title} ·{' '}
+          {(imagePlan.recommendedStyles || []).join(', ')}
+        </p>
+        <div className="flex gap-2 flex-wrap">
+          {status === 'done' && (
+            <>
+              <button onClick={generateImage}
+                className="text-xs border border-gray-300 text-gray-600
+                           hover:bg-gray-50 px-3 py-1 rounded">
+                🔄 Regenerate
+              </button>
+              <button
+                onClick={() => onApprove(`${partId}-${imageIndex}`)}
+                className={`text-xs px-3 py-1 rounded font-medium
+                  ${isApproved
+                    ? 'bg-green-100 text-green-700 border border-green-300'
+                    : 'bg-green-600 text-white hover:bg-green-700'}`}>
+                {isApproved ? '✓ Approved' : '✅ Approve Image'}
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+```
+
+### Current Affairs Zone
+
+```jsx
+const CurrentAffairsZone = ({ caContext, partTitle, settings }) => {
+  const [expanded, setExpanded] = useState(false);
+  const [caResults, setCaResults] = useState({});
+  const [loadingScope, setLoadingScope] = useState(null);
+
+  const scopes = [
+    { id: 'national_recent', label: '📰 National Recent (2024–today)',
+      query: `${caContext} India 2024 current affairs news` },
+    { id: 'national_major', label: '📰 National Major (2020–2023)',
+      query: `${caContext} India 2020 2021 2022 2023 important events` },
+    ...(settings.state ? [
+      { id: 'state_recent', label: `📰 ${settings.state} Recent (2024–today)`,
+        query: `${caContext} ${settings.state} 2024 current affairs` },
+      { id: 'state_major', label: `📰 ${settings.state} Major (2020–2023)`,
+        query: `${caContext} ${settings.state} 2020 2023 important` }
+    ] : [])
+  ];
+
+  const loadCA = async (scope) => {
+    setLoadingScope(scope.id);
+    try {
+      const result = await geminiSearchText(scope.query);
+      setCaResults(prev => ({ ...prev, [scope.id]: result }));
+    } catch (e) {
+      setCaResults(prev => ({ ...prev, [scope.id]: `Error: ${e.message}` }));
+    } finally {
+      setLoadingScope(null);
+    }
+  };
+
+  return (
+    <div className="border border-amber-200 rounded-lg my-4">
+      <button onClick={() => setExpanded(!expanded)}
+        className="w-full flex items-center justify-between px-4 py-3
+                   bg-amber-50 hover:bg-amber-100 rounded-t-lg transition-colors">
+        <span className="font-medium text-amber-800">
+          🔍 Current Affairs for "{partTitle}"
+        </span>
+        <span className="text-amber-600">{expanded ? '▲' : '▼'}</span>
+      </button>
+
+      {expanded && (
+        <div className="p-4 space-y-4">
+          {scopes.map(scope => (
+            <div key={scope.id}
+              className="border border-amber-100 rounded-lg overflow-hidden">
+              <div className="flex items-center justify-between px-4 py-2
+                              bg-amber-50">
+                <span className="text-sm font-medium text-amber-700">
+                  {scope.label}
+                </span>
+                {!caResults[scope.id] && (
+                  <button onClick={() => loadCA(scope)}
+                    disabled={loadingScope === scope.id}
+                    className="text-xs bg-amber-600 hover:bg-amber-700 text-white
+                               px-3 py-1 rounded disabled:opacity-50">
+                    {loadingScope === scope.id ? '⏳ Searching...' : 'Search'}
+                  </button>
+                )}
+              </div>
+              {caResults[scope.id] && (
+                <div className="p-4 bg-white">
+                  <MarkdownContent content={caResults[scope.id]} />
+                  <div className="flex gap-2 mt-3 pt-3 border-t border-gray-100">
+                    <button className="text-xs bg-green-600 text-white
+                                       hover:bg-green-700 px-3 py-1 rounded">
+                      ➕ Merge into Notes
+                    </button>
+                    <button className="text-xs border border-gray-300 text-gray-600
+                                       hover:bg-gray-50 px-3 py-1 rounded">
+                      🚫 Ignore
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+```
+
+### Visualize This Feature
+
+```jsx
+// Add selection listener when generation workspace mounts
+useEffect(() => {
+  const handleMouseUp = () => {
+    const sel = window.getSelection();
+    const text = sel?.toString().trim();
+    if (text && text.length > 15) {
+      const range = sel.getRangeAt(0);
+      const rect = range.getBoundingClientRect();
+      setVisualizeSelection({
+        text,
+        x: rect.left + rect.width / 2,
+        y: rect.top + window.scrollY - 50
+      });
+    } else {
+      setVisualizeSelection(null);
+    }
+  };
+  document.addEventListener('mouseup', handleMouseUp);
+  return () => document.removeEventListener('mouseup', handleMouseUp);
+}, []);
+
+// Floating button
+{visualizeSelection && (
+  <button
+    style={{
+      position: 'absolute',
+      left: visualizeSelection.x - 70,
+      top: visualizeSelection.y,
+      zIndex: 100
+    }}
+    onClick={() => {
+      setVisualizePopupText(visualizeSelection.text);
+      setShowVisualizePopup(true);
+      setVisualizeSelection(null);
+    }}
+    className="bg-purple-600 hover:bg-purple-700 text-white text-xs
+               px-3 py-1.5 rounded-full shadow-lg font-medium">
+    🎨 Visualize This
+  </button>
+)}
+```
+
+```jsx
+const VisualizePopup = ({ selectedText, onClose, onInsert }) => {
+  const [prompt, setPrompt] = useState('');
+  const [selectedStyles, setSelectedStyles] = useState([]);
+  const [isMixed, setIsMixed] = useState(false);
+  const [generating, setGenerating] = useState(false);
+  const [imageUrl, setImageUrl] = useState(null);
+
+  // Auto-generate prompt from selected text
+  useEffect(() => {
+    const autoPrompt = async () => {
+      try {
+        const p = await geminiGenerateText(
+          `Create a detailed educational image prompt for this concept: "${selectedText}". Return only the image prompt, 2-3 sentences.`
+        );
+        setPrompt(p);
+      } catch (e) {
+        setPrompt(`Create an educational visual explaining: ${selectedText}`);
+      }
+    };
+    autoPrompt();
+  }, [selectedText]);
+
+  const generate = async () => {
+    setGenerating(true);
+    try {
+      const styleDesc = isMixed
+        ? `Mixed visual combining: ${selectedStyles.join(', ')}`
+        : `Style: ${selectedStyles[0] || 'infographic'}`;
+      const finalPrompt = `${prompt}. ${styleDesc}. Educational, clear labels, professional.`;
+      const url = await geminiImageCreation(finalPrompt);
+      setImageUrl(url);
+    } catch (e) {
+      alert('Image generation failed: ' + e.message);
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  return (
+    <Modal title="🎨 Visualize This" onClose={onClose} wide>
+      <div className="space-y-4">
+        <div className="bg-gray-50 rounded-lg p-3">
+          <p className="text-xs text-gray-500 mb-1">Selected text:</p>
+          <p className="text-sm text-gray-800 italic">"{selectedText}"</p>
+        </div>
+
+        <div>
+          <label className="text-sm font-medium text-gray-700 block mb-1">
+            Image Prompt
+          </label>
+          <textarea rows={4} value={prompt}
+            onChange={(e) => setPrompt(e.target.value)}
+            className="w-full border border-gray-300 rounded-md px-3 py-2
+                       text-sm focus:ring-2 focus:ring-blue-500 outline-none resize-none" />
+        </div>
+
+        <div>
+          <div className="flex items-center justify-between mb-2">
+            <label className="text-sm font-medium text-gray-700">
+              Visual Style
+            </label>
+            <label className="flex items-center gap-2 text-sm text-gray-600">
+              <ToggleSwitch value={isMixed}
+                onChange={setIsMixed} />
+              Mixed styles
+            </label>
+          </div>
+
+          {/* Style dropdown or multi-select */}
+          {isMixed ? (
+            <div className="flex flex-wrap gap-2">
+              {VISUAL_STYLES.slice(0, 12).map(s => (
+                <button key={s.id}
+                  onClick={() => setSelectedStyles(prev =>
+                    prev.includes(s.id)
+                      ? prev.filter(x => x !== s.id)
+                      : [...prev, s.id]
+                  )}
+                  className={`text-xs px-3 py-1 rounded-full border font-medium
+                    ${selectedStyles.includes(s.id)
+                      ? 'bg-purple-600 text-white border-purple-600'
+                      : 'bg-white text-gray-600 border-gray-300 hover:border-purple-400'}`}>
+                  {s.label}
+                </button>
+              ))}
+            </div>
+          ) : (
+            <select
+              onChange={(e) => setSelectedStyles([e.target.value])}
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm
+                         focus:ring-2 focus:ring-blue-500 outline-none">
+              <option>Select style...</option>
+              {VISUAL_STYLES.map(s => (
+                <option key={s.id} value={s.id}>{s.label}</option>
+              ))}
+            </select>
+          )}
+        </div>
+
+        <button onClick={generate}
+          disabled={generating || (!isMixed && !selectedStyles[0])}
+          className="w-full bg-purple-600 hover:bg-purple-700 text-white py-2
+                     rounded-md font-medium disabled:opacity-50">
+          {generating ? '⏳ Generating...' : '🖼️ Generate Image'}
+        </button>
+
+        {imageUrl && (
+          <div>
+            <img src={imageUrl} alt="Generated visual"
+              className="w-full rounded-lg border border-gray-200" />
+            <div className="flex gap-2 mt-3">
+              <button onClick={() => onInsert(imageUrl)}
+                className="flex-1 bg-green-600 text-white py-2 rounded-md
+                           text-sm font-medium hover:bg-green-700">
+                Insert Here
+              </button>
+              <button onClick={generate}
+                className="flex-1 border border-gray-300 text-gray-700 py-2
+                           rounded-md text-sm font-medium hover:bg-gray-50">
+                Regenerate
+              </button>
+              <button onClick={onClose}
+                className="border border-gray-300 text-gray-700 py-2 px-4
+                           rounded-md text-sm hover:bg-gray-50">
+                Discard
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </Modal>
+  );
+};
+```
+
+### AI Validation (Gap #9 — Full Workflow)
+
+```javascript
+const runValidation = async (partContent, blueprint, part) => {
+  const prompt = `
+You are an expert educational content validator.
+
+Review these study notes for quality, accuracy, and completeness.
+Part title: ${part.title}
+Blueprint planned: ${JSON.stringify(blueprint?.validationPlan || [])}
+
+Notes content summary:
+${JSON.stringify(partContent?.sections?.map(s =>
+  ({ type: s.containerType, heading: s.heading })) || []
+)}
+
+Return JSON:
+{
+  "overallScore": 82,
+  "grade": "Good",
+  "strengths": ["point 1", "point 2"],
+  "improvements": [
+    {
+      "priority": "high|medium|low",
+      "issue": "...",
+      "suggestion": "...",
+      "autoFixable": false
+    }
+  ],
+  "missingElements": ["element 1"],
+  "accuracyNotes": ["note 1"]
+}
+
+Return ONLY valid JSON.
+  `;
+
+  const raw = await geminiGenerateText(prompt);
+  const json = raw.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+  return JSON.parse(json);
+};
+```
+
+### Granular Approval System (Gap #8)
+
+```jsx
+const PartApprovalBar = ({ partId, approval, onApproveText,
+                            onApproveImages, onApprovePart,
+                            onUnlock, generatedContent }) => {
+  const textApproved = approval?.textApproved;
+  const imagesApproved = approval?.imagesApproved;
+  const partApproved = approval?.partApproved;
+  const canApprovePart = textApproved && imagesApproved;
+
+  return (
+    <div className={`flex flex-wrap items-center gap-3 p-3 rounded-lg
+      ${partApproved ? 'bg-green-50 border border-green-300'
+                     : 'bg-gray-50 border border-gray-200'}`}>
+
+      {partApproved ? (
+        <>
+          <span className="text-green-700 font-semibold flex items-center gap-2">
+            ✅ Part Approved
+          </span>
+          <button onClick={() => onUnlock(partId)}
+            className="text-sm text-amber-600 hover:text-amber-800 font-medium
+                       border border-amber-300 px-3 py-1 rounded">
+            🔓 Unlock to Edit
+          </button>
+        </>
+      ) : (
+        <>
+          <button onClick={() => onApproveText(partId)}
+            className={`text-sm px-3 py-1.5 rounded font-medium
+              ${textApproved
+                ? 'bg-green-100 text-green-700 border border-green-300'
+                : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'}`}>
+            {textApproved ? '✓ Text Approved' : 'Approve Text ☐'}
+          </button>
+
+          <button onClick={() => onApproveImages(partId)}
+            className={`text-sm px-3 py-1.5 rounded font-medium
+              ${imagesApproved
+                ? 'bg-green-100 text-green-700 border border-green-300'
+                : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'}`}>
+            {imagesApproved ? '✓ Images Approved' : 'Approve Images ☐'}
+          </button>
+
+          <button onClick={() => onApprovePart(partId)}
+            disabled={!canApprovePart}
+            title={!canApprovePart
+              ? 'Approve text and images first' : ''}
+            className="text-sm bg-green-600 hover:bg-green-700 text-white
+                       px-4 py-1.5 rounded font-medium disabled:opacity-40
+                       disabled:cursor-not-allowed">
+            ✅ Approve Part
+          </button>
+
+          {!canApprovePart && (
+            <span className="text-xs text-gray-400">
+              {!textApproved && !imagesApproved
+                ? 'Approve text + images first'
+                : !textApproved ? 'Approve text first'
+                : 'Approve images first'}
+            </span>
+          )}
+        </>
+      )}
+    </div>
+  );
+};
+```
+
+---
+
+## SCREEN 8 — EXPORT
+
+```jsx
+const Screen8Export = ({ parts, generated, approvals, analysisData }) => {
+  const [format, setFormat] = useState('html');
+  const [options, setOptions] = useState({
+    coverPage: true, toc: true, images: true,
+    ca: true, pyqs: true, sourceTags: true,
+    blueprintPrompts: false
+  });
+
+  const approvedCount = parts.filter(p => approvals[p.id]?.partApproved).length;
+
+  const buildExportHTML = () => {
+    // Compile all approved parts into clean HTML document
+    const sections = parts.map(part => {
+      const content = generated[part.id];
+      if (!content || !approvals[part.id]?.partApproved) return '';
+
+      const sectionHtml = (content.sections || []).map(s => {
+        return `<div class="content-section container-${s.containerType}">
+          <h3>${sanitizeOutput(s.heading || '')}</h3>
+          <div class="content">${sanitizeOutput(s.content || '')}</div>
+        </div>`;
+      }).join('\n');
+
+      return `
+        <section class="part-section">
+          <h2>${sanitizeOutput(part.title)}</h2>
+          ${sectionHtml}
+        </section>
+      `;
+    }).join('\n');
+
+    return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>StudyForge Notes — ${analysisData.subject}</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 800px; margin: 0 auto; padding: 2rem; line-height: 1.75; color: #111827; }
+  h1, h2, h3 { font-weight: 700; }
+  h1 { font-size: 2rem; margin-bottom: 0.5rem; }
+  h2 { font-size: 1.5rem; margin-top: 3rem; border-bottom: 2px solid #E5E7EB; padding-bottom: 0.5rem; }
+  h3 { font-size: 1.2rem; margin-top: 2rem; }
+  table { width: 100%; border-collapse: collapse; margin: 1.5rem 0; }
+  th { background: #F3F4F6; padding: 0.75rem; border: 1px solid #E5E7EB; }
+  td { padding: 0.75rem; border: 1px solid #E5E7EB; }
+  code { background: #F3F4F6; padding: 0.2em 0.4em; border-radius: 4px; }
+  pre { background: #1F2937; color: #F9FAFB; padding: 1rem; border-radius: 8px; overflow-x: auto; }
+  .container-formula_box { background: #EEF2FF; border: 1px solid #C7D2FE; border-radius: 8px; padding: 1rem; margin: 1rem 0; }
+  .container-concept_box { border-left: 4px solid #2563EB; background: #EFF6FF; padding: 1rem; margin: 1rem 0; }
+  .container-story_box { background: #FFFBEB; border: 1px solid #FCD34D; border-radius: 8px; padding: 1rem; margin: 1rem 0; }
+  @media print { h2 { page-break-before: always; } }
+</style>
+</head>
+<body>
+${options.coverPage ? `
+  <div style="text-align:center; padding: 4rem 0; border-bottom: 2px solid #E5E7EB; margin-bottom: 3rem;">
+    <h1>${analysisData.subject}</h1>
+    <p style="color: #6B7280; font-size: 1.1rem;">${analysisData.subDiscipline}</p>
+    <p style="color: #9CA3AF;">Generated by StudyForge · ${new Date().toLocaleDateString()}</p>
+  </div>` : ''}
+${sections}
+</body>
+</html>`;
+  };
+
+  const handleDownload = () => {
+    if (format === 'html') {
+      const html = buildExportHTML();
+      const blob = new Blob([html], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `studyforge-${analysisData.subject?.replace(/\s+/g, '-')}.html`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } else if (format === 'print') {
+      window.print();
+    } else if (format === 'copy') {
+      const html = buildExportHTML();
+      navigator.clipboard.writeText(html);
+    }
+  };
+
+  return (
+    <div className="max-w-4xl mx-auto px-6 py-8">
+      <div className="text-center mb-8">
+        <h1 className="text-3xl font-bold text-gray-900">
+          🎉 {approvedCount} of {parts.length} parts approved!
+        </h1>
+        <p className="text-gray-500 mt-2">
+          Your study notes are ready to export
+        </p>
+      </div>
+
+      <div className="grid grid-cols-2 gap-6">
+        {/* Settings */}
+        <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+          <h2 className="font-bold text-gray-800 mb-4">Export Settings</h2>
+
+          {/* Format selection */}
+          <div className="mb-6">
+            <label className="text-sm font-semibold text-gray-700 block mb-2">
+              Format
+            </label>
+            <div className="space-y-2">
+              {[
+                { id: 'html', label: '📄 Single HTML File' },
+                { id: 'print', label: '🖨️ Print / Save as PDF' },
+                { id: 'copy', label: '📋 Copy HTML to Clipboard' }
+              ].map(f => (
+                <label key={f.id}
+                  className="flex items-center gap-3 cursor-pointer">
+                  <input type="radio" name="format" value={f.id}
+                    checked={format === f.id}
+                    onChange={() => setFormat(f.id)}
+                    className="text-blue-600" />
+                  <span className="text-sm text-gray-700">{f.label}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          {/* Include options */}
+          <div>
+            <label className="text-sm font-semibold text-gray-700 block mb-2">
+              Include
+            </label>
+            <div className="space-y-2">
+              {[
+                { id: 'coverPage', label: 'Cover page' },
+                { id: 'toc', label: 'Table of contents' },
+                { id: 'images', label: 'All generated images' },
+                { id: 'ca', label: 'Current affairs sections' },
+                { id: 'pyqs', label: 'PYQ sections' },
+                { id: 'sourceTags', label: 'Source tags (color labels)' },
+                { id: 'blueprintPrompts', label: 'Blueprint prompts (reference)' }
+              ].map(opt => (
+                <label key={opt.id}
+                  className="flex items-center gap-3 cursor-pointer">
+                  <input type="checkbox"
+                    checked={options[opt.id]}
+                    onChange={(e) =>
+                      setOptions({...options, [opt.id]: e.target.checked})}
+                    className="text-blue-600 rounded" />
+                  <span className="text-sm text-gray-700">{opt.label}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Preview */}
+        <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+          <h2 className="font-bold text-gray-800 mb-4">Preview</h2>
+          <div className="h-80 overflow-y-auto border border-gray-200 rounded-lg
+                          p-4 bg-gray-50 text-sm prose-content">
+            <h1 className="text-xl font-bold">{analysisData.subject}</h1>
+            <p className="text-gray-500">{analysisData.subDiscipline}</p>
+            <hr className="my-4" />
+            {parts.slice(0, 2).map(part => (
+              <div key={part.id} className="mb-4">
+                <h2 className="text-base font-bold">{part.title}</h2>
+                {(generated[part.id]?.sections || []).slice(0, 2).map((s, i) => (
+                  <div key={i} className="mb-2">
+                    <h3 className="text-sm font-semibold">{s.heading}</h3>
+                    <p className="text-xs text-gray-600 line-clamp-2">
+                      {s.content?.replace(/[#*`]/g, '').substring(0, 120)}...
+                    </p>
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Download button */}
+      <div className="flex gap-4 justify-center mt-8">
+        <button onClick={handleDownload}
+          className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3
+                     rounded-lg font-bold text-lg shadow-md hover:shadow-lg
+                     transition-all">
+          ⬇️ Download Notes
+        </button>
+      </div>
+    </div>
+  );
+};
+```
+
+---
+
+## GLOBAL UTILITY COMPONENTS
+
+### Modal Component
+
+```jsx
+const Modal = ({ title, children, onClose, wide }) => (
+  <div className="fixed inset-0 bg-black bg-opacity-50 z-50
+                  flex items-center justify-center p-4">
+    <div className={`bg-white rounded-xl shadow-xl
+                     ${wide ? 'max-w-2xl' : 'max-w-lg'} w-full
+                     max-h-screen overflow-y-auto`}>
+      <div className="flex items-center justify-between px-6 py-4 border-b">
+        <h2 className="font-bold text-gray-900">{title}</h2>
+        <button onClick={onClose}
+          className="text-gray-400 hover:text-gray-600 text-xl font-light">
+          ×
+        </button>
+      </div>
+      <div className="px-6 py-5">{children}</div>
+    </div>
+  </div>
+);
+```
+
+### Toggle Switch
+
+```jsx
+const ToggleSwitch = ({ value, onChange }) => (
+  <button
+    onClick={() => onChange(!value)}
+    className={`relative w-10 h-6 rounded-full transition-colors duration-200
+                flex-shrink-0
+      ${value ? 'bg-blue-600' : 'bg-gray-300'}`}>
+    <span className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white
+                      shadow transition-transform duration-200
+      ${value ? 'translate-x-4' : 'translate-x-0'}`} />
+  </button>
+);
+```
+
+### Source Tag
+
+```jsx
+const SourceTag = ({ type }) => {
+  const tags = {
+    source_backed: { label: 'Source', className: 'bg-green-100 text-green-700' },
+    ai_enriched:   { label: 'AI Added', className: 'bg-blue-100 text-blue-700' },
+    ca_integrated: { label: 'Current Affairs', className: 'bg-amber-100 text-amber-700' }
+  };
+  const tag = tags[type];
+  if (!tag) return null;
+  return (
+    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${tag.className}`}>
+      {tag.label}
+    </span>
+  );
+};
+```
+
+### Markdown Content Renderer
+
+```jsx
+const MarkdownContent = ({ content }) => {
+  if (!content) return null;
+
+  const parseMarkdown = (md) => {
+    if (typeof md !== 'string') return '';
+    return md
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.+?)\*/g, '<em>$1</em>')
+      .replace(/`(.+?)`/g, '<code>$1</code>')
+      .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+      .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+      .replace(/^# (.+)$/gm, '<h1>$1</h1>')
+      .replace(/^\* (.+)$/gm, '<li>$1</li>')
+      .replace(/^- (.+)$/gm, '<li>$1</li>')
+      .replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>')
+      .replace(/\n\n/g, '</p><p>')
+      .replace(/^(?!<[hlu])/m, '<p>')
+      .replace(/(?<![>])$/m, '</p>');
+  };
+
+  return (
+    <div className="prose-content text-sm"
+      dangerouslySetInnerHTML={{ __html: parseMarkdown(content) }} />
+  );
+};
+```
+
+### Error Modal
+
+```jsx
+const ErrorModal = ({ action, errorMessage, onRetry, onSkip, onClose }) => (
+  <Modal title="Something went wrong" onClose={onClose}>
+    <div className="space-y-4">
+      <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+        <p className="font-semibold text-red-800">Failed to {action}</p>
+        <p className="text-sm text-red-600 mt-1">{errorMessage}</p>
+      </div>
+      <p className="text-sm text-gray-600">What would you like to do?</p>
+      <div className="flex flex-wrap gap-3">
+        <button onClick={onRetry}
+          className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium">
+          Try Again
+        </button>
+        <button onClick={onSkip}
+          className="border border-gray-300 text-gray-700 px-4 py-2
+                     rounded-md text-sm font-medium hover:bg-gray-50">
+          Skip This Step
+        </button>
+        <button onClick={onClose}
+          className="text-gray-500 px-4 py-2 text-sm hover:text-gray-700">
+          Cancel
+        </button>
+      </div>
+    </div>
+  </Modal>
+);
+```
+
+### Prompt Center
+
+```jsx
+const PromptCenter = ({ prompts, onUpdate, onClose }) => {
+  const promptCards = [
+    { id: 'analysis', label: 'Material Analysis Prompt', screen: 'Screen 2-3' },
+    { id: 'parts', label: 'Part Splitting Prompt', screen: 'Screen 4' },
+    { id: 'blueprint', label: 'Blueprint Generation Prompt', screen: 'Screen 5' },
+    { id: 'generation', label: 'Notes Generation Prompt', screen: 'Screen 7' },
+    { id: 'image', label: 'Image Generation Prompt', screen: 'Screen 7' },
+    { id: 'ca', label: 'Current Affairs Search Prompt', screen: 'Screen 7' },
+    { id: 'validation', label: 'AI Validation Prompt', screen: 'Screen 7' },
+  ];
+
+  return (
+    <Modal title="🔧 Prompt Center" onClose={onClose} wide>
+      <p className="text-sm text-gray-500 mb-6">
+        View, edit, and copy the AI prompts used at each stage.
+        Changes affect all future generations.
+      </p>
+      <div className="space-y-4">
+        {promptCards.map(card => (
+          <details key={card.id}
+            className="border border-gray-200 rounded-lg overflow-hidden">
+            <summary className="flex items-center justify-between px-4 py-3
+                                bg-gray-50 cursor-pointer hover:bg-gray-100">
+              <div>
+                <span className="font-medium text-gray-800">{card.label}</span>
+                <span className="text-xs text-gray-500 ml-2">({card.screen})</span>
+              </div>
+              <span className="text-gray-400 text-xs">▼</span>
+            </summary>
+            <div className="p-4">
+              <textarea rows={8}
+                value={prompts[card.id] || ''}
+                onChange={(e) => onUpdate(card.id, e.target.value)}
+                className="w-full border border-gray-300 rounded-md px-3 py-2
+                           text-xs font-mono focus:ring-2 focus:ring-blue-500
+                           outline-none resize-y bg-gray-50" />
+              <div className="flex gap-2 mt-2">
+                <button
+                  onClick={() => navigator.clipboard.writeText(prompts[card.id] || '')}
+                  className="text-xs text-blue-600 hover:text-blue-800">
+                  📋 Copy
+                </button>
+              </div>
+            </div>
+          </details>
+        ))}
+      </div>
+    </Modal>
+  );
+};
+```
+
+---
+
+## HTML SANITIZATION — APPLY EVERYWHERE (Gap #12)
+
+```javascript
+// Sanitize before inserting into HTML or sending to AI
+const sanitizeInput = (str) => {
+  if (typeof str !== 'string') return String(str || '');
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+};
+
+// Sanitize output before rendering
+const sanitizeOutput = (str) => {
+  if (typeof str !== 'string') return '';
+  return str.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+};
+
+// Use sanitizeInput() on ALL user-typed prompt inputs before sending to AI
+// Use sanitizeOutput() on ALL AI responses before inserting into innerHTML
+```
+
+---
+
+## CONSTANTS
+
+### Visual Styles (35 options)
+
+```javascript
+const VISUAL_STYLES = [
+  // Process / Flow (7)
+  { id: "flowchart",      label: "Flowchart",              category: "Process" },
+  { id: "step_sequence",  label: "Step-by-Step Sequence",  category: "Process" },
+  { id: "decision_tree",  label: "Decision Tree",          category: "Process" },
+  { id: "sankey",         label: "Sankey Diagram",         category: "Process" },
+  { id: "process_map",    label: "Process Map",            category: "Process" },
+  { id: "timeline",       label: "Timeline",               category: "Process" },
+  { id: "gantt",          label: "Gantt Chart",            category: "Process" },
+  // Structural / Hierarchical (7)
+  { id: "erd",            label: "Entity Relationship Diagram", category: "Structural" },
+  { id: "hierarchy_tree", label: "Hierarchical Tree",      category: "Structural" },
+  { id: "network_diagram",label: "Network Diagram",        category: "Structural" },
+  { id: "sequence_diagram",label:"Sequence Diagram",       category: "Structural" },
+  { id: "use_case",       label: "Use Case Diagram",       category: "Structural" },
+  { id: "state_machine",  label: "State Machine Diagram",  category: "Structural" },
+  { id: "mind_map",       label: "Mind Map",               category: "Structural" },
+  // Data / Quantitative (10)
+  { id: "bar_chart",      label: "Bar Chart",              category: "Data" },
+  { id: "pie_chart",      label: "Pie Chart",              category: "Data" },
+  { id: "line_graph",     label: "Line Graph",             category: "Data" },
+  { id: "scatter_plot",   label: "Scatter Plot",           category: "Data" },
+  { id: "heat_map",       label: "Heat Map",               category: "Data" },
+  { id: "radar_chart",    label: "Radar Chart",            category: "Data" },
+  { id: "bubble_chart",   label: "Bubble Chart",           category: "Data" },
+  { id: "stacked_area",   label: "Stacked Area Chart",     category: "Data" },
+  { id: "pictograph",     label: "Pictograph",             category: "Data" },
+  { id: "heatmap_table",  label: "Heat-Map Table",         category: "Data" },
+  // Conceptual / Qualitative (11)
+  { id: "concept_map",    label: "Concept Map",            category: "Conceptual" },
+  { id: "venn_diagram",   label: "Venn Diagram",           category: "Conceptual" },
+  { id: "comparison_matrix",label:"Comparison Matrix",     category: "Conceptual" },
+  { id: "comic_story",    label: "Scenario / Comic Story", category: "Conceptual" },
+  { id: "infographic",    label: "Infographic Illustration",category:"Conceptual" },
+  { id: "3d_model",       label: "3D Model Render",        category: "Conceptual" },
+  { id: "icon_array",     label: "Icon Array",             category: "Conceptual" },
+  { id: "geo_map_overlay",label: "Geographic Map Overlay", category: "Conceptual" },
+  { id: "funnel_diagram", label: "Funnel Diagram",         category: "Conceptual" },
+  { id: "storyboard",     label: "Storyboard",             category: "Conceptual" },
+  { id: "table_diagram",  label: "Table Diagram",          category: "Conceptual" },
+  // Special (1)
+  { id: "mixed_multi",    label: "Mixed Multi-Style Visual",category:"Special" }
+];
+
+const SCREEN_NAMES = {
+  1: "Input",
+  2: "Reading",
+  3: "Understanding",
+  4: "Parts",
+  5: "Blueprint",
+  6: "Blueprint Detail",
+  7: "Generation",
+  8: "Export"
+};
+```
+
+---
+
+## BUILD SEQUENCE — EXECUTE IN ORDER
+
+```
+1. Write implementation plan (plan before any code)
+
+2. Build HTML shell:
+   - All CDN script tags
+   - Custom CSS (prose-content, containers, scrollbars, print)
+   - Root div
+
+3. Add AI functions section (plain JS script):
+   - geminiGenerateText() — copy exactly
+   - geminiSearchText() — copy exactly
+   - geminiImageCreation() — copy exactly
+
+4. Add constants (Babel script):
+   - VISUAL_STYLES (35 entries)
+   - FEATURE_CATEGORIES
+   - SCREEN_NAMES
+   - DEFAULT_PROMPTS
+
+5. Add utility functions:
+   - sanitizeInput(), sanitizeOutput()
+   - parseMarkdown()
+   - buildExportHTML()
+   - downloadFile()
+   - All prompt builder functions
+
+6. Add shared components:
+   - Modal, ToggleSwitch, SourceTag
+   - MarkdownContent
+   - ContentSection (all container types)
+   - AutoSaveIndicator, ErrorModal
+   - PromptCenter
+
+7. Build Screen 1 — Input (complete with all sections)
+
+8. Build Screen 2 — Reading (with real geminiGenerateText call)
+
+9. Build Screen 3 — Understanding (dynamic features)
+
+10. Build Screen 4 — Parts (with Edit Modal)
+
+11. Build Screen 5 — Blueprints (parallel generation)
+
+12. Build Screen 6 — Blueprint Detail (overlay + AI chat)
+
+13. Build Screen 7 — Generation Workspace:
+    - Sidebar + sticky top bar
+    - Part sections with all controls
+    - ContentSection renderer
+    - ImageCard with geminiImageCreation
+    - CurrentAffairsZone with geminiSearchText
+    - VisualizeThis popup
+    - ValidationModal with geminiGenerateText
+    - Approval system
+
+14. Build Screen 8 — Export
+
+15. Build TopBar + navigation
+
+16. Build App component with full state
+
+17. Wire everything together:
+    - All navigation logic (Gap #5 fix)
+    - Auto-save with debounce
+    - Session restore (Gap #3 fix)
+    - Error handling on every AI call
+
+18. Final check:
+    - Every button does something visible
+    - Every AI call wrapped in try/catch
+    - All user input sanitized
+    - Console shows no errors
+    - localStorage save/restore works
+    - All 8 screens reachable and functional
+```
+
+---
+
+## QUALITY REQUIREMENTS
+
+```
+Performance:
+  - Blueprint generation for all parts runs in parallel (Promise.all)
+  - Image generation is async — text shows immediately
+  - Never block UI thread
+
+Error Handling:
+  - Every geminiGenerateText() call in try/catch
+  - Every geminiSearchText() call in try/catch
+  - Every geminiImageCreation() call in try/catch
+  - Show ErrorModal with retry option on all failures
+  - Parse JSON safely with .replace() cleanup before JSON.parse()
+
+Code Quality:
+  - Comment every major section
+  - Use descriptive names
+  - Keep components focused and readable
+
+User Experience:
+  - Loading spinners on every async action
+  - Success messages on saves and approvals
+  - No dead buttons — every button does something
+  - Smooth CSS transitions between screens (0.3s fade)
+
+Security:
+  - sanitizeInput() on all user-typed prompts before AI call
+  - sanitizeOutput() on all AI responses before innerHTML
+  - No eval(), no innerHTML from unsanitized sources
+```
+
+---
+
+## FINAL INSTRUCTION
+
+You have everything needed. Do not ask for more information.
+
+Read the two attached documents fully.
+Write your complete plan first.
+Then build the complete single HTML file.
+
+The three AI functions are pre-built and ready to use.
+Call them — do not rewrite them.
+
+The file must:
+- Open directly in Gemini Canvas
+- Use only the three provided functions for all AI features
+- Have all 8 screens fully functional with real AI calls
+- Handle all 13 gaps identified in the gap report
+- Save and restore session from localStorage
+- Pass every requirement in this specification
+
+When complete, state:
+1. What was built
+2. How to test it
+3. Any known limitations
+
+Build now.
+```

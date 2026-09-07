@@ -1,0 +1,139 @@
+956:     const Step1 = {
+957:       async handleUpload(e) {
+958:         const file = e.target.files[0]; if(!file) return;
+959:         Logger.add('INFO', 'S1_EXTRACT', `PDF selected: ${file.name}`);
+960:         appState.fileName = file.name;
+961:         try {
+962:           const ab = await file.arrayBuffer();
+963:           const pdf = await pdfjsLib.getDocument(ab).promise;
+964:           let text = "";
+965:           for(let i=1; i<=pdf.numPages; i++) {
+966:             const p = await pdf.getPage(i);
+967:             const tc = await p.getTextContent();
+968:             text += tc.items.map(it => it.str).join(' ') + "\n";
+969:           }
+970:           appState.pdfText = text; appState.pageCount = pdf.numPages;
+971:           this.startAnalysis();
+972:         } catch(err) { Logger.add('ERROR', 'S1_EXTRACT', err.message); Toaster.show('Extraction failed', 'rose'); }
+973:       },
+974:       initPhases() {
+975:         const c = document.getElementById('s1-phases');
+976:         c.innerHTML = [1,2,3,4,5].map(i => `
+977:           <div id="ph-${i}" class="flex items-center gap-3 p-2 rounded-lg border-l-2 border-transparent text-slate-400">
+978:             <div id="ph-icon-${i}" class="w-5 h-5 rounded-full border-2 border-current flex items-center justify-center text-[10px] font-bold">${i}</div>
+979:             <span id="ph-txt-${i}" class="text-sm font-medium">Phase ${i} — ${['Reading', 'Identity', 'Topic Mapping', 'Exam Analysis', 'Partitioning'][i-1]}</span>
+980:           </div>`).join('');
+981:       },
+982:       setPhase(num, state) {
+983:         const el = document.getElementById(`ph-${num}`);
+984:         const ic = document.getElementById(`ph-icon-${num}`);
+985:         if(!el) return;
+986:         el.className = `flex items-center gap-3 p-2 rounded-lg border-l-2 transition-all ${state === 'active' ? 'border-indigo-500 bg-indigo-50 text-indigo-700' : state === 'done' ? 'border-emerald-500 bg-emerald-50 text-emerald-700' : 'border-transparent text-slate-400'}`;
+987:         if(state === 'active') { ic.classList.add('pulse-active'); ic.innerHTML = '<div class="w-2 h-2 bg-current rounded-full"></div>'; Logger.add('INFO', 'S1_PHASE', `Starting Phase ${num}`); }
+988:         if(state === 'done') { ic.classList.remove('pulse-active'); ic.innerHTML = '✔'; }
+989:       },
+990:       async startAnalysis() {
+991:         document.getElementById('s1-progress-panel').classList.remove('hidden');
+992:         document.getElementById('s1-output-tabs').classList.add('hidden');
+993:         this.initPhases();
+994:         this.setPhase(1, 'active');
+995:         const finalPrompt = appState.prompts.extractionPrompt.replace('{TOTAL_PAGES}', appState.pageCount).replace('{EXTRACTED_TEXT}', appState.pdfText);
+996:         const streamBox = document.getElementById('stage1-live-output');
+997:         const tokenBox = document.getElementById('s1-token-count');
+998:         
+999:         let currentPhase = 1;
+1000:         streamBox.parentNode.classList.remove('hidden');
+1001:         streamBox.textContent = "[SYSTEM: Contacting Gemini Core for initial extraction & partitioning... Please wait.]";
+1002: 
+1003:         try {
+1004:           const fullRes = await API.streamContent(finalPrompt, (chunk, accumulated) => {
+1005:             streamBox.textContent = accumulated; streamBox.scrollTop = streamBox.scrollHeight;
+1006:             tokenBox.textContent = `~${Math.round(accumulated.length / 4)} tokens`;
+1007:             if(currentPhase === 1 && accumulated.includes('SECTION 1')) { this.setPhase(1, 'done'); this.setPhase(2, 'active'); currentPhase = 2; }
+1008:             if(currentPhase === 2 && accumulated.includes('SECTION 2')) { this.setPhase(2, 'done'); this.setPhase(3, 'active'); currentPhase = 3; }
+1009:             if(currentPhase === 3 && accumulated.includes('SECTION 3')) { this.setPhase(3, 'done'); this.setPhase(4, 'active'); currentPhase = 4; }
+1010:             if(currentPhase === 4 && accumulated.includes('SECTION 4')) { this.setPhase(4, 'done'); this.setPhase(5, 'active'); currentPhase = 5; }
+1011:           }, { temp: 0.1 });
+1012:           this.setPhase(5, 'done');
+1013:           this.parseResult(fullRes);
+1014:         } catch(e) { Toaster.show('Analysis failed.', 'rose'); this.setPhase(currentPhase, 'pending'); }
+1015:       },
+1016:       parseResult(text) {
+1017:         appState.blueprint.rawContent = text;
+1018:         appState.documentIdentity = (text.match(/SECTION 1[\s\S]*?(?=SECTION 2)/) || [])[0] || 'Not found';
+1019:         appState.topicMap = (text.match(/SECTION 2[\s\S]*?(?=SECTION 3)/) || [])[0] || 'Not found';
+1020:         appState.examAnalysis = (text.match(/SECTION 3[\s\S]*?(?=SECTION 4)/) || [])[0] || 'Not found';
+1021:         appState.visualsList = (text.match(/SECTION 4[\s\S]*?(?=SECTION 5)/) || [])[0] || 'Not found';
+1022:         
+1023:         let rawSubjMatch = appState.documentIdentity.match(/Main subject:\s*(.*)/i) || appState.documentIdentity.match(/Subject:\s*(.*)/i);
+1024:         let rawSubjectText = rawSubjMatch ? rawSubjMatch[1].replace(/[*_]/g, '').trim() : '';
+1025:         let detectedSubj = 'Economics'; // default fallback
+1026:         if (/Polity/i.test(rawSubjectText)) detectedSubj = 'Polity';
+1027:         else if (/History/i.test(rawSubjectText)) detectedSubj = 'History';
+1028:         else if (/Geography/i.test(rawSubjectText)) detectedSubj = 'Geography';
+1029: 
+1030:         appState.subject = detectedSubj; appState.confidence = 'High Confidence';
+1031:         appState.category = 'MPPSC General';
+1032:         const partsTextIndex = text.indexOf('SECTION 5');
+1033:         const partsText = partsTextIndex !== -1 ? text.substring(partsTextIndex) : text;
+1034:         let blocks = partsText.split(/(?=\[?PART ID:\s*PART_\d+\]?)/i).filter(b => b.trim() && /PART_\d+/i.test(b));
+1035: 
+1036:         appState.blueprint.parts = [];
+1037:         blocks.forEach((block, index) => {
+1038:           let idMatch = block.match(/PART_(\d+)/i);
+1039:           let partNum = idMatch ? idMatch[1] : (index + 1);
+1040:           let partId = `PART_${partNum}`;
+1041:           const extractField = (pats) => { for (let p of pats) { let m = block.match(p); if (m) return m[1].trim().replace(/^\*\*|\*\*$/g, '').trim(); } return ""; };
+1042:           let title = extractField([/Part Title:\s*(.*)/i, /Title:\s*(.*)/i]) || `Part ${partNum}`;
+1043:           let pageSpan = extractField([/Approximate Page Span:\s*(.*)/i, /Page Span:\s*(.*)/i]);
+1044:           let topicsStr = block.match(/Topics Covered:\s*([\s\S]*?)(?=\n- |$)/i)?.[1] || "";
+1045:           let topicsCovered = topicsStr.split(/,|\n/).map(t => t.trim()).filter(Boolean);
+1046:           let rawData = block.split(/Exact Raw PDF Data:\s*/i)?.[1] || "";
+1047:           
+1048:           let caFlagMatch = block.match(/Likely useful for CA enrichment\??:\s*\[?(Yes|No)\]?/i);
+1049:           let currentAffairsFlag = caFlagMatch ? caFlagMatch[1].toLowerCase() === 'yes' : false;
+1050:           
+1051:           let mpFlagMatch = block.match(/Likely useful for MP-specific enrichment\??:\s*\[?(Yes|No)\]?/i);
+1052:           let mpSpecificFlag = mpFlagMatch ? mpFlagMatch[1].toLowerCase() === 'yes' : false;
+1053: 
+1054:           let visualFlagMatch = block.match(/Likely needs a visual asset\??:\s*\[?(Yes|No)\]?/i);
+1055:           let needsVisualFlag = visualFlagMatch ? visualFlagMatch[1].toLowerCase() === 'yes' : false;
+1056: 
+1057:           appState.blueprint.parts.push({
+1058:             id: partId, partNumber: parseInt(partNum), title, pageSpan, topicsCovered,
+1059:             rawData: rawData.substring(0, 30000), status: 'not_started',
+1060:             generatedText: '', generatedTextRaw: '', currentAffairsText: '', currentAffairsMerged: false,
+1061:             timelineData: [], images: [], versions: [], approved: false,
+1062:             currentAffairsFlag, mpSpecificFlag, needsVisualFlag
+1063:           });
+1064:         });
+1065:         Session.save(); this.showExtractionOutput();
+1066:       },
+1067:       showExtractionOutput() {
+1068:         document.getElementById('s1-progress-panel').classList.add('hidden');
+1069:         document.getElementById('s1-output-tabs').classList.remove('hidden');
+1070:         document.getElementById('s1-raw-textarea').value = appState.pdfText;
+1071:         document.getElementById('s1-raw-stats').textContent = `${appState.pageCount} Pages | ${appState.pdfText.length} Chars`;
+1072:         document.getElementById('s1-out-identity').innerHTML = marked.parse(appState.documentIdentity);
+1073:         document.getElementById('s1-out-topics').innerHTML = marked.parse(appState.topicMap);
+1074:         document.getElementById('s1-out-exam').innerHTML = marked.parse(appState.examAnalysis);
+1075:         document.getElementById('s1-out-visuals').innerHTML = marked.parse(appState.visualsList);
+1076:         
+1077:         const pc = document.getElementById('s1-tab-parts');
+1078:         pc.innerHTML = appState.blueprint.parts.map(p => `
+1079:           <div class="bg-white rounded-xl border border-indigo-200 shadow-sm p-4 mb-3 animate-fade-in">
+1080:             <span class="text-xs font-bold bg-indigo-600 text-white px-2 py-0.5 rounded">${p.id}</span>
+1081:             <span class="font-bold text-slate-800 text-sm ml-2">${p.title}</span>
+1082:             <p class="text-xs text-slate-500 mt-2">Topics: ${p.topicsCovered.join(', ')}</p>
+1083:           </div>`).join('');
+1084:         document.getElementById('s1-next-btn').disabled = false;
+1085:         Toaster.show('Stage 1 Complete.', 'emerald');
+1086:       },
+1087:       switchTab(id) { Helper.switchTabs('s1-tab-btn', 's1-tab-content', event.target, `s1-tab-${id}`); },
+1088:       showRawResponse() {
+1089:         const modal = document.getElementById('debug-modal');
+1090:         document.getElementById('debug-textarea').value = appState.blueprint.rawContent;
+1091:         modal.classList.remove('hidden');
+1092:       }
+1093:     };
+1094: 

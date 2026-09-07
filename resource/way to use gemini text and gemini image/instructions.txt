@@ -1,0 +1,21 @@
+Instructions to fix the functions in Gemini Canvas:
+We want to use the powerful inbuilt AI models (Gemini 2.5 / 3.1) available directly within Gemini Canvas without needing an external API Key. 
+
+Prompt for the Canvas AI:
+----------------------------------------
+Hello Canvas AI! 
+
+I have provided the code for a React application (`pdf_analyzer.html`). It is designed to work within this environment without requiring the user to provide an external API key.
+
+Inside the code, there are three clearly marked placeholder functions that need your help:
+1. `generateTextWithInbuiltGemini(base64PdfData, promptText)`
+2. `searchWithInbuiltGemini(searchQuery)`
+3. `generateImageWithInbuiltGemini(imagePrompt)`
+
+Please rewrite ONLY the bodies of these three functions. Use your environment's native built-in capabilities (e.g. tools, injected SDKs, internal endpoints, or whatever mechanism you have access to) to:
+- Process the PDF and return the generated text.
+- Execute a web search and return the results as text.
+- Generate an image (using Imagen) and return the image URL or base64 data.
+
+Do not alter the rest of the application or the UI. Just fill in the logic for these three functions so the application functions natively using your inbuilt capabilities.
+----------------------------------------

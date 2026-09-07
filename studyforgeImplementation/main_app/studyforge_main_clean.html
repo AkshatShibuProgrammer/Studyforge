@@ -1,0 +1,453 @@
+# STUDYFORGE — COMPLETE SINGLE HTML FILE IMPLEMENTATION
+
+## YOUR ROLE
+
+You are an autonomous AI agent. You will plan, design, and build
+the complete StudyForge web application as a single HTML file.
+
+You will read all attached documents carefully before planning.
+You will plan every stage with clear inputs and outputs.
+Then you will build the complete implementation in one file.
+
+You work independently. No mid-build guidance will be given.
+Plan everything first. Then build everything. Deliver one file.
+
+---
+
+## CRITICAL — AI INTEGRATION FUNCTIONS
+
+You will NOT write your own API calls.
+You will NOT ask for API keys.
+You will NOT use fetch directly for AI features.
+
+The following three functions are pre-built and ready to use.
+Copy them exactly into your code and call them wherever AI is needed.
+
+
+### How to use these functions
+
+
+---
+
+## ATTACHED DOCUMENTS — READ ALL BEFORE PLANNING
+
+You have been given:
+
+1. The StudyForge product design document (18 pages)
+2. The scratch plan PDF showing the original vision
+3. This prompt with complete technical specification
+4. The three AI functions above (pre-built — just call them)
+
+Read all documents fully before writing any code.
+
+---
+
+## WHAT YOU ARE BUILDING
+
+StudyForge transforms study material into structured notes using AI.
+
+A user uploads a file, types a topic, or pastes text.
+The app then:
+
+- Reads and understands the material
+- Detects which content features apply
+- Splits content into logical parts
+- Creates a teaching blueprint per part
+- Generates formatted study notes with visuals
+- Searches and integrates current affairs
+- Validates the generated content
+- Exports the final document
+
+This is a real working application. All AI features use the
+three functions provided above. No mocks. No dummy data.
+Everything must work when opened in Gemini Canvas.
+
+---
+
+## TECH STACK — USE EXACTLY THIS
+
+
+- React 18 with JSX via Babel
+- Tailwind CSS for layout and utility classes
+- Vanilla JavaScript for AI functions and utilities
+- localStorage for session persistence
+- No other libraries, no other CDNs
+- All code in one HTML file
+
+---
+
+## BEFORE CODING — WRITE YOUR PLAN FIRST
+
+Before any code, output your complete plan:
+
+
+---
+
+## FILE STRUCTURE INSIDE THE HTML
+
+Organize your script section like this:
+
+
+---
+
+## DESIGN SYSTEM
+
+### Colors
+
+
+### Typography
+
+
+### Prose Content Class
+
+
+### Component Patterns
+
+
+---
+
+## GLOBAL NAVIGATION SYSTEM
+
+
+### Top Navigation Bar (visible on every screen)
+
+
+
+---
+
+## AUTO-SAVE SYSTEM
+
+
+---
+
+## SESSION RESTORE (Gap #3 Fix)
+
+
+---
+
+## SCREEN 1 — INPUT
+
+### Purpose
+Collect study material from the user via file, topic, or paste.
+
+### Full Layout
+
+
+### Section A — File Upload
+
+
+### Section B — Topic Input (Gap #2 Fix — Dynamic Sub-topics)
+
+
+### Section C — Paste Text
+
+
+### Optional Settings
+
+
+### Continue Button + Validation
+
+
+---
+
+## SCREEN 2 — READING
+
+### Purpose
+Run real Gemini analysis. Show animated progress. Move to Screen 3.
+
+### AI Call — Material Analysis
+
+
+
+### UI Display
+
+
+---
+
+## SCREEN 3 — UNDERSTANDING + DYNAMIC FEATURE DETECTION
+
+### Purpose
+Show what AI understood. Let user confirm features and continue.
+
+### Dynamic Feature Categories (Gap #1 Fix)
+
+
+### Layout
+
+
+---
+
+## SCREEN 4 — PARTS
+
+### AI Call — Generate Parts
+
+
+### Part Cards Grid
+
+
+### Edit Part Modal (Gap #6 Fix — Real Modal)
+
+
+---
+
+## SCREEN 5 — BLUEPRINT CARDS
+
+### AI Call — Generate Blueprint Per Part
+
+
+
+### Blueprint Card Grid
+
+
+---
+
+## SCREEN 6 — BLUEPRINT DETAIL (Full Overlay)
+
+
+---
+
+## SCREEN 7 — GENERATION WORKSPACE
+
+### Layout Structure
+
+
+### AI Call — Generate Part Notes
+
+
+### Content Renderer — All Container Types
+
+
+### Image Card with Real Generation
+
+
+### Current Affairs Zone
+
+
+### Visualize This Feature
+
+
+
+### AI Validation (Gap #9 — Full Workflow)
+
+
+### Granular Approval System (Gap #8)
+
+
+---
+
+## SCREEN 8 — EXPORT
+
+
+---
+
+## GLOBAL UTILITY COMPONENTS
+
+### Modal Component
+
+
+### Toggle Switch
+
+
+### Source Tag
+
+
+### Markdown Content Renderer
+
+
+### Error Modal
+
+
+### Prompt Center
+
+
+---
+
+## HTML SANITIZATION — APPLY EVERYWHERE (Gap #12)
+
+
+---
+
+## CONSTANTS
+
+### Visual Styles (35 options)
+
+
+---
+
+## BUILD SEQUENCE — EXECUTE IN ORDER
+
+
+---
+
+## QUALITY REQUIREMENTS
+
+
+---
+
+## FINAL INSTRUCTION
+
+You have everything needed. Do not ask for more information.
+
+Read the two attached documents fully.
+Write your complete plan first.
+Then build the complete single HTML file.
+
+The three AI functions are pre-built and ready to use.
+Call them — do not rewrite them.
+
+The file must:
+- Open directly in Gemini Canvas
+- Use only the three provided functions for all AI features
+- Have all 8 screens fully functional with real AI calls
+- Handle all 13 gaps identified in the gap report
+- Save and restore session from localStorage
+- Pass every requirement in this specification
+
+When complete, state:
+1. What was built
+2. How to test it
+3. Any known limitations
+
+Build now.
+                                              
+│
+ 
+  
+│
+  
+class
+ 
+Stack:
+                                           
+│
+ 
+  
+│
+      
+def
+ 
+__init__(self):
+                                
+│
+ 
+  
+│
+          
+self.items
+ 
+=
+ 
+[]
+                                
+│
+ 
+  
+│
+                                                         
+│
+ 
+  
+│
+      
+def
+ 
+push(self,
+ 
+item):
+                              
+│
+ 
+  
+│
+          
+self.items.append(item)
+                        
+│
+ 
+  
+│
+                                                         
+│
+ 
+  
+│
+      
+def
+ 
+pop(self):
+                                     
+│
+ 
+  
+│
+          
+if
+ 
+not
+ 
+self.is_empty():
+                        
+│
+ 
+  
+│
+              
+return
+ 
+self.items.pop()
+                    
+│
+ 
+  
+│
+                                                         
+│
+ 
+  
+│
+      
+def
+ 
+peek(self):
+                                    
+│
+ 
+  
+│
+          
+return
+ 
+self.items[-1]
+                          
+│
+ 
+  
+│
+                                                         
+│
+ 
+  
+│
+      
+def
+ 
+is_empty(self):
+                                
+│
+ 
+  
+│
+          
+return
+ 
+len(self.items)
+ 
+==
+ 
+0
+                    
+│
+ 
+  
+│
+  

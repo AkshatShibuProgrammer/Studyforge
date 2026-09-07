@@ -1,0 +1,2492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StudyForge - AI Study Material Transformer v2.1</title>
+    
+    <!-- Load Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --font-inter: 'Inter', sans-serif;
+            --font-mono: 'Fira Code', monospace;
+            --radius-sm: 0.375rem;
+            --radius-md: 0.5rem;
+            --radius-lg: 0.75rem;
+            --radius-xl: 1rem;
+            
+            --bg-page: #f8fafc;
+            --bg-panel: #ffffff;
+            --border-light: #e2e8f0;
+            --border-medium: #cbd5e1;
+            
+            --tag-source-bg: #dcfce7; --tag-source-text: #166534;
+            --tag-research-bg: #dbeafe; --tag-research-text: #1e40af;
+            --tag-enrich-bg: #fef3c7; --tag-enrich-text: #b45309;
+
+            /* 22 MATTE PEDAGOGICAL CONTAINERS DESIGN TOKENS */
+            --c1-formula-bg: #f0f9ff; --c1-formula-border: #0ea5e9; --c1-formula-text: #075985;
+            --c2-story-bg: #fffbeb; --c2-story-border: #f59e0b; --c2-story-text: #78350f;
+            --c3-confusion-bg: #fff1f2; --c3-confusion-border: #f43f5e; --c3-confusion-text: #9f1239;
+            --c4-clarify-bg: #f0fdf4; --c4-clarify-border: #22c55e; --c4-clarify-text: #14532d;
+            --c5-legal-bg: #faf5ff; --c5-legal-border: #a855f7; --c5-legal-text: #6b21a8;
+            --c8-code-bg: #0f172a; --c8-code-text: #e2e8f0;
+            --c9-demo-bg: #f8fafc; --c9-demo-border: #94a3b8;
+            --c11-app-bg: #f1f5f9; --c11-app-border: #64748b; --c11-app-text: #334155;
+            --c12-concept-bg: #f5f3ff; --c12-concept-border: #818cf8; --c12-concept-text: #3730a3;
+            
+            /* New Bundle Matte Colors */
+            --c13-geo-bg: #f0fdfa; --c13-geo-border: #14b8a6; --c13-geo-text: #115e59;
+            --c14-person-bg: #e0e7ff; --c14-person-border: #6366f1; --c14-person-text: #3730a3;
+            --c15-data-bg: #ecfeff; --c15-data-border: #06b6d4; --c15-data-text: #155e75;
+            --c16-formops-bg: #f0f4f8; --c16-formops-border: #1e3a8a; --c16-formops-text: #172554;
+            --c17-admin-bg: #f8fafc; --c17-admin-border: #cbd5e1; --c17-admin-text: #334155;
+            --c18-ca-bg: #fff1f2; --c18-ca-border: #fda4af; --c18-ca-text: #9f1239;
+            --c19-analogy-bg: #f0fdf4; --c19-analogy-border: #a7f3d0; --c19-analogy-text: #166534;
+            --c20-process-bg: #fef3c7; --c20-process-border: #f59e0b; --c20-process-text: #78350f;
+            --c21-exp-bg: #ecfdf5; --c21-exp-border: #10b981; --c21-exp-text: #064e3b;
+            --c22-med-bg: #fff7ed; --c22-med-border: #ffedd5; --c22-med-text: #c2410c;
+        }
+
+        body {
+            font-family: var(--font-inter);
+            background: var(--bg-page);
+            color: #0f172a;
+            line-height: 1.5;
+        }
+
+        /* 22 Base Containers Custom Styles */
+        .p-container {
+            margin: 1.5rem 0;
+            padding: 1.25rem 1.25rem 1.25rem 3.5rem;
+            border-radius: var(--radius-lg);
+            position: relative;
+            border-left: 4px solid;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+        .p-icon {
+            position: absolute;
+            left: 1.25rem;
+            top: 1.25rem;
+            font-size: 1.25rem;
+        }
+
+        .c-formula { background: var(--c1-formula-bg); border-left-color: var(--c1-formula-border); color: var(--c1-formula-text); }
+        .c-story { background: var(--c2-story-bg); border-left-color: var(--c2-story-border); color: var(--c2-story-text); }
+        .c-confusion { background: var(--c3-confusion-bg); border-left-color: var(--c3-confusion-border); color: var(--c3-confusion-text); }
+        .c-clarify { background: var(--c4-clarify-bg); border-left-color: var(--c4-clarify-border); color: var(--c4-clarify-text); }
+        .c-legal { background: var(--c5-legal-bg); border-left-color: var(--c5-legal-border); color: var(--c5-legal-text); }
+        .c-app { background: var(--c11-app-bg); border-left-color: var(--c11-app-border); color: var(--c11-app-text); }
+        .c-concept { background: var(--c12-concept-bg); border: 2px solid var(--c12-concept-border); color: var(--c12-concept-text); }
+
+        .c-comparison, .c-complexity {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+            background: #fff;
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+        .c-comparison th, .c-complexity th {
+            background: #f1f5f9;
+            padding: 0.75rem 1rem;
+            text-align: left;
+            font-weight: 700;
+            border-bottom: 2px solid var(--border-light);
+        }
+        .c-comparison td, .c-complexity td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--border-light);
+        }
+        .c-comparison tr:nth-child(even) td { background: #f8fafc; }
+
+        .c-timeline {
+            border-left: 2px solid var(--border-medium);
+            padding-left: 1.5rem;
+            margin: 1.5rem 0 1.5rem 1rem;
+            position: relative;
+        }
+        .c-timeline-item { position: relative; margin-bottom: 1rem; }
+        .c-timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -1.85rem;
+            top: 0.25rem;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #6366f1;
+            border: 2px solid #fff;
+            box-shadow: 0 0 0 1px var(--border-medium);
+        }
+
+        .c-code {
+            background: var(--c8-code-bg);
+            color: var(--c8-code-text);
+            font-family: var(--font-mono);
+            padding: 1rem;
+            border-radius: var(--radius-md);
+            overflow-x: auto;
+            margin: 1.5rem 0;
+            font-size: 0.875rem;
+        }
+
+        .c-demo {
+            display: flex;
+            border: 1px solid var(--c9-demo-border);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            margin: 1.5rem 0;
+        }
+        .c-demo-in { flex: 1; padding: 1rem; background: #fff; }
+        .c-demo-out { flex: 1; padding: 1rem; background: var(--c9-demo-bg); border-left: 1px solid var(--c9-demo-border); font-family: var(--font-mono); }
+
+        /* New Bundle Containers */
+        .c-geo { background: var(--c13-geo-bg); border-left-color: var(--c13-geo-border); color: var(--c13-geo-text); }
+        .c-person { background: var(--c14-person-bg); border-left-color: var(--c14-person-border); color: var(--c14-person-text); }
+        .c-data { background: var(--c15-data-bg); border-left-color: var(--c15-data-border); color: var(--c15-data-text); }
+        .c-formops { background: var(--c16-formops-bg); border-left-color: var(--c16-formops-border); color: var(--c16-formops-text); }
+        .c-admin { background: var(--c17-admin-bg); border-left-color: var(--c17-admin-border); color: var(--c17-admin-text); }
+        .c-ca { background: var(--c18-ca-bg); border-left-color: var(--c18-ca-border); color: var(--c18-ca-text); }
+        .c-analogy { background: var(--c19-analogy-bg); border-left-color: var(--c19-analogy-border); color: var(--c19-analogy-text); }
+        .c-process { background: var(--c20-process-bg); border-left-color: var(--c20-process-border); color: var(--c20-process-text); }
+        .c-exp { background: var(--c21-exp-bg); border-left-color: var(--c21-exp-border); color: var(--c21-exp-text); }
+        .c-med { background: var(--c22-med-bg); border-left-color: var(--c22-med-border); color: var(--c22-med-text); }
+
+        /* General tags */
+        .tag-source { background: var(--tag-source-bg); color: var(--tag-source-text); font-size: 0.65rem; font-weight: 800; padding: 0.125rem 0.375rem; border-radius: 4px; text-transform: uppercase; }
+        .tag-research { background: var(--tag-research-bg); color: var(--tag-research-text); font-size: 0.65rem; font-weight: 800; padding: 0.125rem 0.375rem; border-radius: 4px; text-transform: uppercase; }
+        .tag-enrich { background: var(--tag-enrich-bg); color: var(--tag-enrich-text); font-size: 0.65rem; font-weight: 800; padding: 0.125rem 0.375rem; border-radius: 4px; text-transform: uppercase; }
+
+        /* Flow transitions */
+        .screen { display: none; }
+        .screen.active { display: block; animation: fadeIn 0.3s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        .drop-zone-active { border-color: #6366f1 !important; background-color: #f5f3ff !important; }
+        .locked-draft { opacity: 0.75; pointer-events: none; filter: grayscale(10%); }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col relative overflow-x-hidden">
+
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
+            <div class="flex items-center gap-2 cursor-pointer" onclick="app.navTo(1)">
+                <span class="text-2xl font-black text-indigo-600 tracking-tight">Forge</span>
+                <span class="text-lg font-bold text-slate-800 tracking-tight hidden sm:inline">StudyForge v2.1</span>
+            </div>
+            
+            <div class="flex-1 max-w-4xl px-2 overflow-x-auto no-scrollbar">
+                <div id="top-nav-steps" class="flex items-center justify-between min-w-[800px] py-1">
+                    <!-- Nav steps injected dynamically -->
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2 shrink-0">
+                <button id="btn-global-back" onclick="app.handleBack()" class="hidden text-xs font-bold text-slate-600 hover:text-slate-900 bg-white border border-slate-200 px-3 py-1.5 rounded-lg transition shadow-sm">
+                    ← Back
+                </button>
+                <button onclick="app.startOver()" class="text-xs font-bold text-red-600 hover:bg-red-50 bg-red-100/50 px-3 py-1.5 rounded-lg transition">
+                    ↺ Start Over
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="flex-1 flex max-w-7xl w-full mx-auto relative">
+        
+        <!-- SIDEBAR (Visible Screens 4+) -->
+        <aside id="global-sidebar" class="hidden w-64 bg-white border-r border-slate-200 flex-col h-[calc(100vh-64px)] sticky top-[64px] overflow-y-auto py-6 px-4 shrink-0 shadow-sm z-30">
+            <h3 class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-4">Stage Progress</h3>
+            <div id="sidebar-nav-steps" class="flex flex-col gap-2">
+                <!-- Injected via JS -->
+            </div>
+        </aside>
+
+        <main class="flex-1 p-4 md:p-8 overflow-x-hidden min-h-[calc(100vh-64px)] w-full">
+            
+            <!-- SCREEN 1: INPUT -->
+            <section id="screen-1" class="screen active max-w-6xl mx-auto">
+                <div class="mb-8">
+                    <h1 class="text-3xl font-black text-slate-900 tracking-tight mb-2">Provide Study Material</h1>
+                    <p class="text-slate-500 font-medium">Upload notes, type a topic name, or paste direct text to begin transformation.</p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                    
+                    <!-- Method 1: File Upload -->
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col h-full">
+                        <div class="flex items-center gap-3 mb-4">
+                            <span class="bg-indigo-100 text-indigo-700 w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm">1</span>
+                            <h2 class="font-bold text-slate-800 text-lg">Upload Notes</h2>
+                        </div>
+                        <p class="text-xs text-slate-500 mb-4">Accepts PDF, TXT, DOC, DOCX, HTML, MD, JPG, PNG</p>
+                        
+                        <div id="drop-zone" class="flex-1 border-2 border-dashed border-slate-300 rounded-xl bg-slate-50 flex flex-col items-center justify-center p-6 text-center cursor-pointer hover:bg-slate-100 transition relative">
+                            <input type="file" id="file-upload" accept=".pdf,.txt,.doc,.docx,.html,.md,.jpg,.jpeg,.png" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onchange="app.handleFileUpload(event)">
+                            <span class="text-4xl mb-3">📄</span>
+                            <p class="text-sm font-bold text-slate-600">Drag files here or click to browse</p>
+                            <p id="file-info" class="text-xs text-indigo-600 font-semibold mt-3 hidden"></p>
+                        </div>
+                    </div>
+
+                    <!-- Method 2: Type Topic -->
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col h-full">
+                        <div class="flex items-center gap-3 mb-4">
+                            <span class="bg-emerald-100 text-emerald-700 w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm">2</span>
+                            <h2 class="font-bold text-slate-800 text-lg">Type Topic Name</h2>
+                        </div>
+                        <p class="text-xs text-slate-500 mb-4">Draft detailed notes from custom topic parameters</p>
+                        
+                        <div class="flex-1 flex flex-col gap-3">
+                            <div>
+                                <label class="block text-[10px] font-extrabold text-slate-500 uppercase tracking-wide mb-1">Main Topic *</label>
+                                <input type="text" id="topic-main" placeholder="e.g., National Income" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-emerald-500 bg-slate-50/50" oninput="app.saveInputs()">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-[10px] font-extrabold text-slate-500 uppercase tracking-wide mb-1">Sub-topics</label>
+                                <div id="subtopics-container" class="space-y-2 max-h-40 overflow-y-auto pr-1">
+                                    <input type="text" class="subtopic-input w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-emerald-500 bg-slate-50/50" placeholder="e.g., GDP, GNP, NDP" oninput="app.saveInputs()">
+                                </div>
+                                <button onclick="app.addSubtopicField()" class="text-xs font-bold text-emerald-600 hover:text-emerald-700 mt-2 flex items-center gap-1">➕ Add another sub-topic</button>
+                            </div>
+
+                            <div>
+                                <label class="block text-[10px] font-extrabold text-slate-500 uppercase tracking-wide mb-1">Specific Focus</label>
+                                <input type="text" id="topic-focus" placeholder="e.g., Focus on Indian economy data" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-emerald-500 bg-slate-50/50" oninput="app.saveInputs()">
+                            </div>
+
+                            <button onclick="app.triggerAIDraftBridge()" class="w-full py-2.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-lg font-bold text-xs hover:bg-emerald-100 transition shadow-sm mt-2 flex items-center justify-center gap-1.5">
+                                ✨ AI Draft & Paste Below
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Method 3: Paste Text -->
+                    <div id="method-3-container" class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col h-full transition-all duration-300">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center gap-3">
+                                <span class="bg-amber-100 text-amber-700 w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm">3</span>
+                                <h2 class="font-bold text-slate-800 text-lg">Direct Paste Text</h2>
+                            </div>
+                            <div class="flex bg-slate-100 rounded-lg p-0.5 text-[10px] font-bold">
+                                <button onclick="app.toggleMethod3Tab('manual')" id="tab-m3-manual" class="px-2 py-1 rounded bg-white text-slate-800 shadow-xs">Manual</button>
+                                <button onclick="app.toggleMethod3Tab('ai')" id="tab-m3-ai" class="px-2 py-1 rounded text-slate-500 hover:text-slate-800">🪄 AI Assist</button>
+                            </div>
+                        </div>
+                        <p id="paste-desc" class="text-xs text-slate-500 mb-3">Paste your study material, chapters or text directly</p>
+                        
+                        <div class="flex-1 flex flex-col min-h-[250px]">
+                            <div id="ai-assist-prompt-zone" class="hidden mb-3">
+                                <label class="block text-[10px] font-extrabold text-slate-500 uppercase tracking-wide mb-1">Concept to Autowrite?</label>
+                                <div class="flex gap-2">
+                                    <input type="text" id="ai-assist-query" placeholder="e.g., Principles of Circular flow models" class="flex-1 px-3 py-2 border border-slate-200 rounded-lg text-xs outline-none focus:border-indigo-500 bg-slate-50">
+                                    <button onclick="app.triggerDirectAutoWrite()" class="px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-lg transition shrink-0">Auto-Write</button>
+                                </div>
+                            </div>
+                            <textarea id="paste-area" rows="10" placeholder="Paste your study material here..." class="w-full flex-1 p-3 border border-slate-200 rounded-lg text-sm outline-none focus:border-amber-500 transition font-mono bg-slate-50/50 resize-none" oninput="app.updateCharCount()"></textarea>
+                            <div class="text-right text-xs text-slate-400 font-bold mt-2" id="char-count">0 characters</div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm mb-8">
+                    <h3 class="font-bold text-slate-800 mb-4 flex items-center gap-2">⚙️ Optional Target Profile</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                        <div>
+                            <label class="block text-[10px] font-extrabold text-slate-500 uppercase tracking-wide mb-1">Target Exam</label>
+                            <select id="setting-exam" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-indigo-500 bg-slate-50/50" onchange="app.saveInputs()">
+                                <option value="">Select...</option>
+                                <option value="UPSC">UPSC</option>
+                                <option value="State PSC">State PSC</option>
+                                <option value="Academic">Academic</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-extrabold text-slate-500 uppercase tracking-wide mb-1">Objective</label>
+                            <select id="setting-objective" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-indigo-500 bg-slate-50/50" onchange="app.saveInputs()">
+                                <option value="">Select...</option>
+                                <option value="Notes">Notes</option>
+                                <option value="Answer Writing">Answer Writing</option>
+                                <option value="Revision">Revision</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-extrabold text-slate-500 uppercase tracking-wide mb-1">State Focus</label>
+                            <input type="text" id="setting-state" placeholder="MP, UP, Bihar..." class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-indigo-500 bg-slate-50/50" oninput="app.saveInputs()">
+                        </div>
+                        <div class="flex items-center pt-5">
+                            <label class="flex items-center gap-2 cursor-pointer select-none">
+                                <input type="checkbox" id="setting-ca" class="w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500" onchange="app.saveInputs()">
+                                <span class="text-sm font-bold text-slate-700">Include Current Affairs</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-end">
+                    <button onclick="app.validateAndProceed1()" class="px-8 py-3 bg-indigo-600 text-white font-extrabold text-sm rounded-xl shadow-md hover:bg-indigo-700 transition transform hover:-translate-y-0.5">
+                        Continue to Analysis →
+                    </button>
+                </div>
+            </section>
+
+            <section id="screen-2" class="screen max-w-xl mx-auto py-16">
+                <div class="bg-white rounded-3xl border border-slate-200 shadow-xl p-8 md:p-12 text-center">
+                    <div class="text-6xl mb-6 animate-bounce">📖</div>
+                    <h2 class="text-2xl font-black text-slate-800 mb-8">Reading your material...</h2>
+                    
+                    <div id="reading-checklist" class="text-left max-w-md mx-auto mb-8 space-y-4">
+                        <div class="flex items-center gap-3 text-sm font-semibold text-slate-400" id="r-step-1">
+                            <span class="w-5 h-5 rounded-full border-2 border-slate-300 flex items-center justify-center text-[10px] shrink-0 font-bold indicator"></span>
+                            <span id="r-text-1">File accepted...</span>
+                        </div>
+                        <div class="flex items-center gap-3 text-sm font-semibold text-slate-400" id="r-step-2">
+                            <span class="w-5 h-5 rounded-full border-2 border-slate-300 flex items-center justify-center text-[10px] shrink-0 font-bold indicator"></span>
+                            <span id="r-text-2">Extracted X pages of text...</span>
+                        </div>
+                        <div class="flex items-center gap-3 text-sm font-semibold text-slate-400" id="r-step-3">
+                            <span class="w-5 h-5 rounded-full border-2 border-slate-300 flex items-center justify-center text-[10px] shrink-0 font-bold indicator"></span>
+                            <span id="r-text-3">Found X images...</span>
+                        </div>
+                        <div class="flex items-center gap-3 text-sm font-semibold text-slate-400" id="r-step-4">
+                            <span class="w-5 h-5 rounded-full border-2 border-slate-300 flex items-center justify-center text-[10px] shrink-0 font-bold indicator"></span>
+                            <span>Cleaned up noise and watermarks</span>
+                        </div>
+                        <div class="flex items-center gap-3 text-sm font-semibold text-slate-400" id="r-step-5">
+                            <span class="w-5 h-5 rounded-full border-2 border-slate-300 flex items-center justify-center text-[10px] shrink-0 font-bold indicator"></span>
+                            <span>Understanding the content...</span>
+                        </div>
+                    </div>
+
+                    <div class="w-full bg-slate-100 h-3 rounded-full overflow-hidden mb-3">
+                        <div id="reading-progress-bar" class="bg-indigo-600 h-full w-0 transition-all duration-300 rounded-full"></div>
+                    </div>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">This may take 30-60 seconds</p>
+                </div>
+            </section>
+
+            <section id="screen-3" class="screen max-w-6xl mx-auto">
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                        <h2 class="text-xl font-black text-slate-800 mb-1" id="subject-heading">🎯 Subject: Economics (Macroeconomics)</h2>
+                        <p class="text-sm font-semibold text-indigo-600" id="purpose-heading">📋 Purpose: National Income Accounting</p>
+                        <p class="text-xs text-slate-500 font-bold mt-2 uppercase tracking-wide">📖 Detected Content Complexity: Intermediate - has math + policy</p>
+                    </div>
+                    <button onclick="app.toggleElement('expand-details-box')" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg border transition">
+                        See full details ▼
+                    </button>
+                </div>
+
+                <!-- See Full Details Expandable Section -->
+                <div id="expand-details-box" class="hidden bg-white p-6 rounded-2xl border border-slate-200 mb-6 max-h-96 overflow-y-auto">
+                    <h3 class="font-extrabold text-xs text-slate-400 uppercase tracking-widest mb-3">Definitions Found</h3>
+                    <table class="c-comparison mb-6">
+                        <thead>
+                            <tr><th>ID</th><th>Definition</th><th>Page</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>D-001</td><td>National Income means the total money value...</td><td>3</td></tr>
+                            <tr><td>D-002</td><td>GDP is the total market value...</td><td>4</td></tr>
+                            <tr><td>D-003</td><td>GNP is the total value...</td><td>10</td></tr>
+                            <tr><td>D-004</td><td>NDP = GDP - Depreciation...</td><td>12</td></tr>
+                            <tr><td>D-005</td><td>Per Capita Income = NI / Population...</td><td>15</td></tr>
+                        </tbody>
+                    </table>
+
+                    <h3 class="font-extrabold text-xs text-slate-400 uppercase tracking-widest mb-3">Formulas Found</h3>
+                    <table class="c-comparison mb-6">
+                        <thead>
+                            <tr><th>ID</th><th>Formula</th><th>Variables</th><th>Page</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>F-001</td><td>GDP at MP = C + I + G + NX(X-M)</td><td>C=Consumption, I=Investment</td><td>10</td></tr>
+                            <tr><td>F-002</td><td>GNP = GDP + NFIA</td><td>NFIA = Net Factor Income Abroad</td><td>11</td></tr>
+                            <tr><td>F-003</td><td>NDP = GDP - Depreciation</td><td>-</td><td>12</td></tr>
+                            <tr><td>F-004</td><td>Per Capita = NI / Population</td><td>NI = National Income</td><td>15</td></tr>
+                        </tbody>
+                    </table>
+
+                    <h3 class="font-extrabold text-xs text-slate-400 uppercase tracking-widest mb-3">PYQs Detected</h3>
+                    <table class="c-comparison">
+                        <thead>
+                            <tr><th>ID</th><th>Year</th><th>Type</th><th>Question</th><th>Answer</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>PYQ-001</td><td>2012</td><td>Prelims</td><td>The Multi-dimensional Poverty Index...</td><td>(a)</td></tr>
+                            <tr><td>PYQ-002</td><td>2013</td><td>Prelims</td><td>The national income of a country...</td><td>(a)</td></tr>
+                            <tr><td>PYQ-003</td><td>2018</td><td>Prelims</td><td>Increase in absolute and per capita...</td><td>(c)</td></tr>
+                            <tr><td>PYQ-004</td><td>2020</td><td>Mains</td><td>Define potential GDP and its...</td><td>10 Marks</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Detected counts section -->
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 mb-6">
+                    <h3 class="text-sm font-extrabold text-slate-400 uppercase tracking-widest mb-4 border-b pb-2">Analysis Detection Logs</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-5 gap-4 text-xs font-semibold text-slate-600">
+                        <div class="p-3 bg-slate-50 rounded-xl">🗺️ Geography: <span class="text-indigo-600 font-bold block text-sm">12 places</span></div>
+                        <div class="p-3 bg-slate-50 rounded-xl">👥 Personalities: <span class="text-indigo-600 font-bold block text-sm">8 people</span></div>
+                        <div class="p-3 bg-slate-50 rounded-xl">📊 Statistics: <span class="text-indigo-600 font-bold block text-sm">47 stats</span></div>
+                        <div class="p-3 bg-slate-50 rounded-xl">🧮 Formulas: <span class="text-indigo-600 font-bold block text-sm">12 elements</span></div>
+                        <div class="p-3 bg-slate-50 rounded-xl">📅 Timeline/Dates: <span class="text-indigo-600 font-bold block text-sm">34 references</span></div>
+                    </div>
+                </div>
+
+                <!-- DYNAMIC CATEGORY FEATURE BUNDLES -->
+                <h3 class="text-xl font-black text-slate-900 mb-4 flex items-center gap-2">🎯 Suggested Feature Bundles (12 Categories)</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8" id="bundles-grid-container">
+                    <!-- Loaded dynamically in JavaScript to respect spec defaults -->
+                </div>
+
+                <!-- Action Footer bar -->
+                <div class="flex flex-col md:flex-row justify-between items-center gap-4 bg-white p-5 border border-slate-200 rounded-2xl shadow-sm">
+                    <span id="feature-summary-desc" class="text-sm font-bold text-slate-500">47 features selected of 130 available across 12 categories</span>
+                    <div class="flex gap-2">
+                        <button onclick="app.showNotification('Running full analysis profile...')" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 border text-slate-700 text-xs font-bold rounded-lg transition">🔄 Re-analyze</button>
+                        <button onclick="app.showNotification('Fixing analysis logs manually...')" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 border text-slate-700 text-xs font-bold rounded-lg transition">✏️ Fix manually</button>
+                        <button onclick="app.saveTogglesAndProceed()" class="px-6 py-2.5 bg-indigo-600 text-white hover:bg-indigo-700 text-xs font-bold rounded-lg shadow-sm transition">Looks good → Continue</button>
+                    </div>
+                </div>
+            </section>
+
+            <section id="screen-4" class="screen max-w-4xl mx-auto">
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <h2 class="text-2xl font-black text-slate-950">📋 How I'll split your material (6 parts)</h2>
+                        <p class="text-slate-500 text-sm font-semibold">Organized syllabus sections mapped securely.</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="app.openMasterPrompt()" class="px-3 py-1.5 bg-indigo-50 border border-indigo-200 text-indigo-700 font-bold text-xs rounded-lg hover:bg-indigo-100 transition shadow-xs">👁️ View System Prompt (Stage 3 → 4)</button>
+                        <button onclick="app.addPart()" class="px-3 py-1.5 bg-white border border-slate-200 text-slate-700 font-bold text-xs rounded-lg hover:bg-slate-50 transition shadow-xs">➕ Add Part</button>
+                        <button onclick="app.showNotification('Select components to merge')" class="px-3 py-1.5 bg-white border border-slate-200 text-slate-700 font-bold text-xs rounded-lg hover:bg-slate-50 transition shadow-xs">🔀 Merge Parts</button>
+                    </div>
+                </div>
+
+                <div class="space-y-4 mb-8" id="screen4-parts-container">
+                    <!-- Standard parts list rendered inside JS -->
+                </div>
+
+                <div class="flex justify-between items-center border-t border-slate-200 pt-6">
+                    <button onclick="app.navigate(3)" class="px-4 py-2 bg-slate-100 text-slate-600 font-bold text-xs rounded-lg hover:bg-slate-200 transition">← Back</button>
+                    <button onclick="app.navigate(5)" class="px-6 py-2.5 bg-indigo-600 text-white font-extrabold text-xs rounded-lg hover:bg-indigo-700 transition shadow">Continue to Blueprint →</button>
+                </div>
+            </section>
+
+            <section id="screen-5" class="screen max-w-6xl mx-auto">
+                <div class="flex justify-between items-center mb-8 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex-wrap gap-4">
+                    <div>
+                        <h2 class="text-xl font-black text-slate-800">Blueprint Overview</h2>
+                        <p class="text-slate-500 text-xs font-semibold">Review teaching plans, applied feature bundles, and visual allocations.</p>
+                    </div>
+                    <button onclick="app.masterApproveBlueprints()" class="px-4 py-2 bg-emerald-600 text-white text-xs font-bold rounded-lg hover:bg-emerald-700 transition">
+                        ☑️ Approve All Blueprints
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8" id="blueprint-grid-container">
+                    <!-- Injected via JS -->
+                </div>
+
+                <div class="text-center py-6 border-t">
+                    <button id="btn-start-generation" disabled class="px-8 py-3.5 bg-slate-200 text-slate-400 font-extrabold text-sm rounded-xl cursor-not-allowed transition" onclick="app.navigate(6)">
+                        Approve & Start Generation →
+                    </button>
+                    <p id="bp-warning-desc" class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-2">All 6 Blueprints must be approved to unlock generation.</p>
+                </div>
+            </section>
+
+            <section id="screen-7" class="screen max-w-5xl mx-auto">
+                <div class="mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-4 border rounded-2xl shadow-sm sticky top-[72px] z-20">
+                    <div class="flex items-center gap-2">
+                        <button onclick="app.simulateParallelGeneration()" class="px-4 py-2 bg-indigo-600 text-white font-bold text-xs rounded-lg hover:bg-indigo-700 shadow-xs transition">
+                            ⚡ Generate All
+                        </button>
+                        <button onclick="app.approveAllGeneratedParts()" class="px-4 py-2 bg-emerald-600 text-white font-bold text-xs rounded-lg hover:bg-emerald-700 transition shadow-xs">
+                            ☑️ Approve All
+                        </button>
+                        <button onclick="app.showNotification('Running full AI document audit...')" class="px-4 py-2 bg-slate-900 text-white font-bold text-xs rounded-lg hover:bg-black transition shadow-xs">
+                            🔍 Run Global AI Validation
+                        </button>
+                    </div>
+                    
+                    <div class="flex items-center gap-3">
+                        <div class="text-right shrink-0">
+                            <span class="text-[10px] text-slate-400 font-extrabold uppercase block leading-none">Generation Done</span>
+                            <span id="gen-parts-done-text" class="text-xs font-bold text-slate-700">0/6 parts</span>
+                        </div>
+                        <div class="w-32 bg-slate-100 h-2.5 rounded-full overflow-hidden shrink-0">
+                            <div id="gen-overall-progress-bar" class="bg-indigo-600 h-full w-0 transition-all duration-300 rounded-full"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex items-start gap-6 relative">
+                    <!-- Left Sidebar Links -->
+                    <div class="hidden lg:block w-48 sticky top-[150px] shrink-0">
+                        <h4 class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-3">Quick Jump</h4>
+                        <div class="space-y-1" id="gen-quick-links">
+                            <!-- Injected JS -->
+                        </div>
+                    </div>
+
+                    <!-- Main Generation Scroll Container -->
+                    <div class="flex-1 space-y-8 mb-8">
+                        <div class="space-y-12" id="generation-main-stack">
+                            <!-- Standard stacked parts content dynamic template injected via JS -->
+                        </div>
+                        
+                        <!-- AI Add Part Button -->
+                        <div class="text-center pt-8 border-t border-slate-200 border-dashed">
+                            <button onclick="app.openAIAddPart()" class="px-6 py-3 bg-white border-2 border-dashed border-indigo-300 text-indigo-600 hover:bg-indigo-50 font-extrabold text-sm rounded-xl shadow-sm transition">
+                                ✨ Add Dynamic Part via AI
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-center py-8 border-t mt-4 flex flex-col items-center justify-center gap-3">
+                    <button onclick="app.approveAllGeneratedParts()" class="px-8 py-2.5 bg-emerald-100 text-emerald-800 font-bold text-sm rounded-xl hover:bg-emerald-200 transition">
+                        ☑️ Final Approve All Parts
+                    </button>
+                    <button onclick="app.navigate(7)" class="px-10 py-4 bg-slate-900 text-white font-bold text-base rounded-xl hover:bg-black transition shadow">
+                        Finish & Go to Export →
+                    </button>
+                </div>
+            </section>
+
+            <section id="screen-8" class="screen max-w-5xl mx-auto">
+                <div class="text-center mb-8">
+                    <span class="text-5xl block animate-bounce">✅</span>
+                    <h2 class="text-3xl font-black text-slate-800 mt-2 mb-1">All parts approved!</h2>
+                    <p class="text-slate-500 text-sm font-semibold">Your study material is completely transformed and ready for download.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-8 mb-8">
+                    <div class="md:col-span-5 bg-white p-6 rounded-3xl border border-slate-200 shadow-sm h-max">
+                        <h3 class="font-bold text-slate-800 mb-4 pb-2 border-b">Export Settings</h3>
+                        
+                        <div class="mb-4">
+                            <span class="block text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-2">Format</span>
+                            <div class="space-y-2">
+                                <label class="flex items-center gap-2 cursor-pointer text-sm font-bold text-slate-700">
+                                    <input type="radio" name="exp-fmt" value="html" checked class="w-4 h-4 text-indigo-600">
+                                    <span>HTML (styled webpage)</span>
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer text-sm font-bold text-slate-700">
+                                    <input type="radio" name="exp-fmt" value="pdf" class="w-4 h-4 text-indigo-600">
+                                    <span>PDF (via browser print)</span>
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer text-sm font-bold text-slate-700">
+                                    <input type="radio" name="exp-fmt" value="md" class="w-4 h-4 text-indigo-600">
+                                    <span>Markdown (plain text with formatting)</span>
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer text-sm font-bold text-slate-700">
+                                    <input type="radio" name="exp-fmt" value="copy" class="w-4 h-4 text-indigo-600">
+                                    <span>Copy to clipboard</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="mb-6">
+                            <span class="block text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-2">Include Elements</span>
+                            <div class="space-y-2 max-h-56 overflow-y-auto pr-1">
+                                <label class="flex items-center gap-2 text-xs font-bold text-slate-600 cursor-pointer">
+                                    <input type="checkbox" id="ex-cover" checked class="w-4 h-4 rounded text-indigo-600">
+                                    <span>Cover page (topic name, date, exam)</span>
+                                </label>
+                                <label class="flex items-center gap-2 text-xs font-bold text-slate-600 cursor-pointer">
+                                    <input type="checkbox" id="ex-toc" checked class="w-4 h-4 rounded text-indigo-600">
+                                    <span>Table of contents</span>
+                                </label>
+                                <label class="flex items-center gap-2 text-xs font-bold text-slate-600 cursor-pointer">
+                                    <input type="checkbox" id="ex-images" checked class="w-4 h-4 rounded text-indigo-600">
+                                    <span>All generated images (inline)</span>
+                                </label>
+                                <label class="flex items-center gap-2 text-xs font-bold text-slate-600 cursor-pointer">
+                                    <input type="checkbox" id="ex-ca" checked class="w-4 h-4 rounded text-indigo-600">
+                                    <span>Current affairs sections</span>
+                                </label>
+                                <label class="flex items-center gap-2 text-xs font-bold text-slate-600 cursor-pointer">
+                                    <input type="checkbox" id="ex-pyq" checked class="w-4 h-4 rounded text-indigo-600">
+                                    <span>PYQ section</span>
+                                </label>
+                                <label class="flex items-center gap-2 text-xs font-bold text-slate-600 cursor-pointer">
+                                    <input type="checkbox" id="ex-tags" checked class="w-4 h-4 rounded text-indigo-600">
+                                    <span>Source tags (green/blue/gold labels)</span>
+                                </label>
+                                <label class="flex items-center gap-2 text-xs font-bold text-slate-600 cursor-pointer">
+                                    <input type="checkbox" id="ex-geo" checked class="w-4 h-4 rounded text-indigo-600">
+                                    <span>Geography maps and location boxes</span>
+                                </label>
+                                <label class="flex items-center gap-2 text-xs font-bold text-slate-600 cursor-pointer">
+                                    <input type="checkbox" id="ex-person" checked class="w-4 h-4 rounded text-indigo-600">
+                                    <span>Personality bio cards</span>
+                                </label>
+                                <label class="flex items-center gap-2 text-xs font-bold text-slate-600 cursor-pointer">
+                                    <input type="checkbox" id="ex-formops" checked class="w-4 h-4 rounded text-indigo-600">
+                                    <span>Formula operation boxes</span>
+                                </label>
+                                <label class="flex items-center gap-2 text-xs font-bold text-slate-600 cursor-pointer">
+                                    <input type="checkbox" id="ex-data" checked class="w-4 h-4 rounded text-indigo-600">
+                                    <span>Data insight boxes</span>
+                                </label>
+                                <label class="flex items-center gap-2 text-xs font-bold text-slate-600 cursor-pointer">
+                                    <input type="checkbox" id="ex-admin" checked class="w-4 h-4 rounded text-indigo-600">
+                                    <span>Institution/admin boxes</span>
+                                </label>
+                                <label class="flex items-center gap-2 text-xs font-bold text-slate-600 cursor-pointer">
+                                    <input type="checkbox" id="ex-timeline" checked class="w-4 h-4 rounded text-indigo-600">
+                                    <span>Timeline strips</span>
+                                </label>
+                                <label class="flex items-center gap-2 text-xs font-bold text-slate-600 cursor-pointer">
+                                    <input type="checkbox" id="ex-legal" checked class="w-4 h-4 rounded text-indigo-600">
+                                    <span>Legal reference boxes</span>
+                                </label>
+                                <label class="flex items-center gap-2 text-xs font-bold text-slate-400 cursor-pointer">
+                                    <input type="checkbox" id="ex-bp" class="w-4 h-4 rounded text-indigo-600">
+                                    <span>Blueprint prompts (for reference)</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="flex gap-2">
+                            <button onclick="app.openPreview()" class="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-extrabold text-xs rounded-xl shadow-xs transition">👁️ Preview</button>
+                            <button onclick="app.downloadExported()" class="flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-xs rounded-xl shadow transition">📥 Download</button>
+                        </div>
+                    </div>
+
+                    <!-- Visual Sandbox -->
+                    <div class="md:col-span-7 bg-white p-6 rounded-3xl border border-slate-200 shadow-sm flex flex-col h-full overflow-hidden">
+                        <h4 class="font-bold text-slate-800 mb-4 pb-2 border-b">Document Render Sandbox</h4>
+                        <div class="flex-1 overflow-y-auto min-h-[450px] bg-slate-50 p-6 md:p-8 rounded-xl border border-slate-200 relative shadow-inner text-xs" style="max-height: 600px;">
+                            
+                            <!-- Cover Section -->
+                            <div class="border-b-4 border-slate-800 pb-6 mb-6 text-center mt-4">
+                                <h1 class="font-black text-2xl text-slate-900 tracking-tight" id="export-doc-title">NATIONAL INCOME</h1>
+                                <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">Comprehensive Study Notes</p>
+                                <p class="text-xs text-slate-600 font-semibold mt-4" id="export-doc-meta">Target: MPSC | State Focus: MP</p>
+                                <p class="text-xs text-slate-400 mt-1 font-medium">Generated: January 2025</p>
+                            </div>
+                            
+                            <h5 class="font-extrabold uppercase tracking-wider text-slate-800 mb-3">TABLE OF CONTENTS</h5>
+                            <div class="space-y-1.5 text-slate-700 font-semibold mb-6 pb-4 border-b">
+                                <div class="flex justify-between items-center"><span class="leading-none">1. Foundations of National Income</span><span>p.1</span></div>
+                                <div class="flex justify-between items-center"><span class="leading-none">2. Types of GDP & Measurement Methods</span><span>p.5</span></div>
+                                <div class="flex justify-between items-center"><span class="leading-none">3. NDP, GNP, NNP & Other Measures</span><span>p.12</span></div>
+                                <div class="flex justify-between items-center"><span class="leading-none">4. GDP Deflator, Base Year, India's GDP</span><span>p.18</span></div>
+                                <div class="flex justify-between items-center"><span class="leading-none">5. GDP, Welfare & Alternative Measures</span><span>p.23</span></div>
+                                <div class="flex justify-between items-center"><span class="leading-none">6. HDI, Indices & Previous Year Questions</span><span>p.28</span></div>
+                            </div>
+                            
+                            <div class="text-center text-slate-400 font-bold text-[10px] uppercase tracking-widest">[Full rendered preview scrollable here]</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- SCREEN 6: OVERLAY COMPACT DETAILED BLUEPRINT WORKSPACE -->
+    <div id="overlay-blueprint" class="fixed inset-0 bg-slate-900/60 z-50 hidden flex-col transition-all backdrop-blur-xs">
+        <div class="bg-white w-full h-full flex flex-col lg:flex-row overflow-hidden shadow-2xl">
+            <!-- Left Side Blueprint Data -->
+            <div class="flex-1 h-full overflow-y-auto p-6 md:p-10 bg-slate-50 relative pb-28 custom-scrollbar">
+                <button class="flex items-center gap-2 font-extrabold text-slate-500 hover:text-indigo-600 transition mb-6" onclick="app.closeOverlay('overlay-blueprint')">
+                    ← Back to Blueprint Cards
+                </button>
+                
+                <h2 class="text-3xl font-black text-slate-900 mb-6" id="overlay-bp-part-title">Part 2: Types of GDP & Measurement Methods</h2>
+
+                <div class="space-y-6" id="overlay-bp-scroll-pane">
+                    <!-- Standard blueprint panels loaded inside script -->
+                </div>
+
+                <div class="mt-8 pt-6 border-t flex gap-4 sticky bottom-0 bg-slate-50 py-4 shadow-inner">
+                    <button class="px-8 py-3 bg-emerald-600 text-white font-extrabold text-sm rounded-xl" id="overlay-btn-approve">☑️ Approve this Part's Blueprint</button>
+                    <button class="px-8 py-3 bg-white border border-slate-200 text-slate-700 font-extrabold text-sm rounded-xl hover:bg-slate-50 transition" onclick="app.closeOverlay('overlay-blueprint')">💾 Save Changes</button>
+                </div>
+            </div>
+
+            <!-- Right Sticky Chat -->
+            <div class="w-full lg:w-[350px] bg-white border-l border-slate-200 flex flex-col h-[50vh] lg:h-full shrink-0">
+                <div class="p-5 bg-indigo-50 border-b border-indigo-100 flex items-center gap-3">
+                    <span class="text-2xl">🤖</span>
+                    <div>
+                        <h3 class="font-extrabold text-indigo-950 text-sm">AI Assistant</h3>
+                        <p class="text-[9px] text-indigo-600 font-bold uppercase tracking-widest mt-0.5">Refining study plans dynamically</p>
+                    </div>
+                </div>
+
+                <!-- Chat timeline -->
+                <div class="flex-1 overflow-y-auto p-4 flex flex-col gap-3 text-xs bg-slate-50/50" id="bp-chat-history">
+                    <div class="self-end bg-indigo-600 text-white p-3 rounded-2xl rounded-tr-xs max-w-[85%]">Add more focus on formulas</div>
+                    <div class="self-start bg-white text-slate-800 p-3 rounded-2xl rounded-tl-xs max-w-[85%] border shadow-xs">I'll add more formula breakdown boxes to text plan</div>
+                    <div class="self-end bg-indigo-600 text-white p-3 rounded-2xl rounded-tr-xs max-w-[85%]">Remove the comic for Shyam, make it a flowchart</div>
+                    <div class="self-start bg-white text-slate-800 p-3 rounded-2xl rounded-tl-xs max-w-[85%] border shadow-xs">Changed Image 2 style from Comic to Flowchart</div>
+                    <div class="self-end bg-indigo-600 text-white p-3 rounded-2xl rounded-tr-xs max-w-[85%]">Add MP GSDP comparison with India GDP</div>
+                    <div class="self-start bg-white text-slate-800 p-3 rounded-2xl rounded-tl-xs max-w-[85%] border shadow-xs">Added new image plan + CA search query</div>
+                </div>
+
+                <div class="p-4 border-t border-slate-200 bg-white">
+                    <p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest text-center mb-2">Ask me to modify anything about this part's plan</p>
+                    <form onsubmit="app.handleAssistantSend(event)" class="flex gap-2">
+                        <input type="text" id="bp-assistant-text" placeholder="Type here..." class="flex-1 px-3 py-2 bg-slate-50 border rounded-lg text-xs outline-none">
+                        <button type="submit" class="px-4 bg-indigo-600 text-white font-bold rounded-lg text-xs">Send</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- NEW: MASTER PROMPT OVERLAY -->
+    <div id="overlay-master-prompt" class="fixed inset-0 bg-slate-900/60 z-[100] hidden items-center justify-center p-4 backdrop-blur-xs">
+        <div class="bg-white rounded-2xl p-6 max-w-3xl w-full shadow-2xl flex flex-col max-h-[80vh]">
+            <div class="flex justify-between items-center mb-4 pb-2 border-b">
+                <h3 class="text-lg font-black text-slate-900">👁️ Master System Prompt (Stage 3 → Stage 4)</h3>
+                <button onclick="app.closeOverlay('overlay-master-prompt')" class="text-slate-400 hover:text-slate-800 text-xl font-bold">&times;</button>
+            </div>
+            <div class="flex-1 overflow-y-auto bg-slate-800 rounded-xl p-4 text-slate-300 font-mono text-xs whitespace-pre-wrap">
+SYSTEM INSTRUCTION: You are StudyForge Core Intelligence.
+Read the user's provided material and the selected pedagogical feature bundles (Geography=true, Formulas=true...). 
+Your task is to partition the syllabus into 6 logical "Parts".
+For each part, define: Title, Page Range, Topic Count, Def/Formula Count, and a 1-sentence description.
+Ensure logical flow and prerequisite mapping. Do not output anything but the JSON partition list.
+            </div>
+            <div class="mt-4 pt-4 border-t text-right">
+                <button onclick="app.closeOverlay('overlay-master-prompt')" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-lg">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- NEW: EXECUTION PROMPTS OVERLAY -->
+    <div id="overlay-execution-prompts" class="fixed inset-0 bg-slate-900/60 z-[100] hidden items-center justify-center p-4 backdrop-blur-xs">
+        <div class="bg-white rounded-2xl p-6 max-w-3xl w-full shadow-2xl flex flex-col max-h-[85vh]">
+            <div class="flex justify-between items-center mb-4 pb-2 border-b">
+                <h3 class="text-lg font-black text-slate-900" id="exec-prompt-title">👁️ Execution Prompts for Part X</h3>
+                <button onclick="app.closeOverlay('overlay-execution-prompts')" class="text-slate-400 hover:text-slate-800 text-xl font-bold">&times;</button>
+            </div>
+            <div class="flex-1 overflow-y-auto space-y-4">
+                <div>
+                    <h4 class="text-xs font-bold text-indigo-600 uppercase tracking-widest mb-1">Text Generation Prompt</h4>
+                    <div class="bg-slate-800 rounded-xl p-3 text-slate-300 font-mono text-xs whitespace-pre-wrap">Write comprehensive notes covering Nominal vs Real, all 3 methods... Ensure the text includes a Formula Derivation Box, Story Scenario Box, and matches the Exam Profile: MPSC.</div>
+                </div>
+                <div>
+                    <h4 class="text-xs font-bold text-indigo-600 uppercase tracking-widest mb-1">Image Generation Prompt (Image 1)</h4>
+                    <div class="bg-slate-800 rounded-xl p-3 text-slate-300 font-mono text-xs whitespace-pre-wrap">Create a split-screen infographic comparing nominal vs real value. Labels: Nominal Value, Real Value, Prices, Inflation. Style: Infographic.</div>
+                </div>
+                <div>
+                    <h4 class="text-xs font-bold text-indigo-600 uppercase tracking-widest mb-1">CA Search Queries Generated</h4>
+                    <div class="bg-slate-800 rounded-xl p-3 text-slate-300 font-mono text-xs whitespace-pre-wrap">- "India GDP growth rate 2024 latest quarterly"
+- "Madhya Pradesh GSDP 2024 growth economic"</div>
+                </div>
+            </div>
+            <div class="mt-4 pt-4 border-t text-right">
+                <button onclick="app.closeOverlay('overlay-execution-prompts')" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-lg">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- NEW: ADD DYNAMIC PART VIA AI OVERLAY -->
+    <div id="overlay-ai-add-part" class="fixed inset-0 bg-slate-900/60 z-[100] hidden items-center justify-center p-4 backdrop-blur-xs">
+        <div class="bg-white rounded-2xl p-6 max-w-lg w-full shadow-2xl border-t-4 border-indigo-500">
+            <h3 class="text-lg font-black text-slate-900 mb-2">✨ Add Dynamic Part via AI</h3>
+            <p class="text-xs text-slate-500 mb-4">Input a topic and AI will instantly generate the text, formulate images, and find Current Affairs to inject directly into your notes stack.</p>
+            
+            <form onsubmit="app.submitAIAddPart(event)" class="space-y-4">
+                <div>
+                    <label class="block text-[10px] font-extrabold text-slate-500 uppercase tracking-wide mb-1">Topic Name *</label>
+                    <input type="text" id="ai-add-topic" required placeholder="e.g., Inflation Indices" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-indigo-500 bg-slate-50">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-extrabold text-slate-500 uppercase tracking-wide mb-1">Sub-topics to cover</label>
+                    <input type="text" placeholder="e.g., CPI, WPI, Core vs Headline" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-indigo-500 bg-slate-50">
+                </div>
+                <div class="flex items-center gap-2">
+                    <input type="checkbox" id="ai-add-ca" class="w-4 h-4 rounded text-indigo-600 border-slate-300">
+                    <label class="text-xs font-bold text-slate-700">Fetch latest Current Affairs for this topic</label>
+                </div>
+                
+                <div class="flex justify-end gap-2 pt-4 border-t">
+                    <button type="button" onclick="app.closeOverlay('overlay-ai-add-part')" class="px-4 py-2 bg-slate-100 text-slate-600 font-bold text-xs rounded-lg hover:bg-slate-200">Cancel</button>
+                    <button type="submit" class="px-6 py-2 bg-indigo-600 text-white font-bold text-xs rounded-lg hover:bg-indigo-700 shadow-sm">Generate & Inject Part</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- NEW: PART SETTINGS OVERLAY -->
+    <div id="overlay-part-settings" class="fixed inset-0 bg-slate-900/60 z-[100] hidden items-center justify-center p-4 backdrop-blur-xs">
+        <div class="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl">
+            <h3 class="text-lg font-black text-slate-900 mb-4">⚙️ Edit Part Configuration</h3>
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-1">Part Title</label>
+                    <input type="text" id="stg-part-title" class="w-full px-3 py-2 border rounded-lg text-sm outline-none bg-slate-50">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-1">Page Range Alignment</label>
+                    <input type="text" id="stg-part-pages" class="w-full px-3 py-2 border rounded-lg text-sm outline-none bg-slate-50">
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 mt-6">
+                <button onclick="app.closeOverlay('overlay-part-settings')" class="px-4 py-2 bg-slate-100 text-slate-600 font-bold text-xs rounded-lg">Cancel</button>
+                <button onclick="app.savePartSettings()" class="px-4 py-2 bg-indigo-600 text-white font-bold text-xs rounded-lg">Save Config</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ERROR POPUP (Universal handler) -->
+    <div id="overlay-error-popup" class="fixed inset-0 bg-slate-900/60 z-[100] hidden items-center justify-center p-4 backdrop-blur-xs">
+        <div class="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl border-t-4 border-red-500 scale-100">
+            <h3 class="text-lg font-black text-slate-900 mb-2 flex items-center gap-2">
+                <span>❌</span> Failed to <span id="error-action-name" class="font-bold underline decoration-red-300">compile</span>
+            </h3>
+            <div class="bg-red-50 text-red-900 p-3 rounded-xl text-xs font-mono mb-4 leading-relaxed border border-red-100">
+                Reason: AI generation timeout during compilation pipeline.
+            </div>
+            
+            <div class="flex flex-col gap-2 font-bold text-xs">
+                <button class="w-full py-2.5 bg-slate-900 text-white rounded-lg shadow hover:bg-black transition" onclick="app.closeOverlay('overlay-error-popup')">🔄 Try Again</button>
+                <button class="w-full py-2.5 bg-white border border-slate-200 text-slate-700 rounded-lg hover:bg-slate-50 transition" onclick="app.closeOverlay('overlay-error-popup')">✏️ Modify Prompt & Try Again</button>
+                <button class="w-full py-2.5 bg-white border border-slate-200 text-slate-500 rounded-lg hover:bg-slate-50 transition" onclick="app.closeOverlay('overlay-error-popup')">⏭️ Skip This Step</button>
+                <button class="w-full py-2.5 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition" onclick="app.closeOverlay('overlay-error-popup')">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PREVIEW EXPANDABLE SANDBOX MODAL -->
+    <div id="overlay-preview" class="fixed inset-0 bg-slate-900/70 z-50 hidden items-center justify-center p-4 backdrop-blur-xs">
+        <div class="bg-slate-100 rounded-3xl w-full max-w-4xl max-h-[85vh] flex flex-col overflow-hidden shadow-2xl">
+            <div class="p-4 border-b flex justify-between items-center bg-white">
+                <h3 class="font-extrabold text-slate-800 text-xs uppercase tracking-widest">HTML Render Preview</h3>
+                <button onclick="app.closeOverlay('overlay-preview')" class="text-xs font-bold text-slate-500 bg-slate-100 border px-4 py-2 rounded-lg hover:bg-slate-200 transition">Close</button>
+            </div>
+            <div class="flex-1 overflow-y-auto p-4 md:p-8" id="export-preview-canvas">
+                <!-- Sandbox rendering injected -->
+            </div>
+        </div>
+    </div>
+
+    <!-- FLOATING HIGHLIGHT BUTTON (7.42) -->
+    <div id="floating-highlighter" class="absolute z-100 hidden">
+        <button onclick="app.openHighlightVisualizer()" class="bg-indigo-600 text-white font-extrabold text-xs px-3 py-1.5 rounded-lg shadow-xl hover:bg-indigo-700 transition flex items-center gap-1 border border-indigo-400">
+            🎨 Visualize This
+        </button>
+    </div>
+
+    <!-- HIGHLIGHT VISUALIZER OVERLAY (7.43 - 7.50) -->
+    <div id="overlay-visualizer" class="fixed inset-0 bg-slate-900/70 z-50 hidden items-center justify-center p-4 backdrop-blur-xs">
+        <div class="bg-white rounded-2xl p-6 max-w-2xl w-full shadow-2xl max-h-[90vh] flex flex-col overflow-hidden">
+            <h3 class="text-lg font-black text-slate-900 mb-4 flex items-center gap-2">
+                <span>🖼️</span> Visualize Selected Text
+            </h3>
+            
+            <div class="flex-1 overflow-y-auto space-y-4 mb-4 pr-1">
+                <div>
+                    <label class="block text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-1">Selected Passage</label>
+                    <p class="text-xs bg-slate-50 border p-3 rounded-lg font-semibold text-slate-700 leading-relaxed shadow-inner" id="vis-selected-passage"></p>
+                </div>
+                
+                <div>
+                    <label class="block text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-1">Auto-Generated Prompt</label>
+                    <textarea id="vis-edit-prompt" class="w-full p-3 border rounded-lg text-xs font-mono outline-none" rows="3">Create an infographic diagram breakdown...</textarea>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-50 p-3 rounded-lg border">
+                    <div>
+                        <label class="block text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-1">Change Style ▼</label>
+                        <select id="vis-style-choice" class="w-full px-2 py-1.5 border rounded text-xs font-bold bg-white text-slate-700">
+                            <!-- All 35 styles loaded dynamically -->
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-1">Recommended Styles</label>
+                        <div class="space-y-1 text-[10px] font-bold text-slate-600">
+                            <p>★ Pictograph/Icon Array <span class="text-slate-400 font-medium font-mono">(formula best)</span></p>
+                            <p>○ Mind Map <span class="text-slate-400 font-medium font-mono">(structural)</span></p>
+                            <p>○ Infographic <span class="text-slate-400 font-medium font-mono">(comprehensive)</span></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-1">OR describe your own vision</label>
+                    <textarea id="vis-custom-vision" placeholder="I want a pie chart showing rough percentage..." class="w-full p-2 border rounded-lg text-xs font-medium outline-none" rows="2"></textarea>
+                </div>
+
+                <!-- Sandbox Render box (7.49) -->
+                <div id="vis-render-sandbox" class="hidden border bg-indigo-50/20 p-4 rounded-xl text-center shadow-inner">
+                    <div class="w-full h-32 bg-white rounded-lg flex flex-col items-center justify-center text-slate-400 border border-dashed shadow-xs relative">
+                        <span class="text-xs font-extrabold uppercase tracking-wider mb-1 text-slate-400">Generated Image Preview</span>
+                        <p class="text-[10px] font-bold text-slate-600 px-4" id="vis-render-prompt-preview"></p>
+                    </div>
+                    <div class="flex flex-wrap justify-center gap-2 mt-3 font-bold text-[9px] uppercase tracking-wider">
+                        <button class="px-3 py-1.5 bg-emerald-600 text-white rounded shadow" onclick="app.insertVisualizedImage()">✅ Insert Here</button>
+                        <button class="px-3 py-1.5 bg-white text-slate-700 border rounded shadow-xs" onclick="app.renderVisualizeSandbox()">🔄 Regen Same Style</button>
+                        <button class="px-3 py-1.5 bg-white text-indigo-600 border rounded shadow-xs" onclick="document.getElementById('vis-style-choice').focus()">Diff Style ▼</button>
+                        <button class="px-3 py-1.5 bg-white text-slate-700 border rounded shadow-xs" onclick="document.getElementById('vis-edit-prompt').focus()">✏️ Edit Prompt</button>
+                        <button class="px-3 py-1.5 bg-red-50 text-red-600 rounded" onclick="app.discardVisualizeSandbox()">❌ Discard</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-3 font-extrabold text-xs shrink-0 pt-3 border-t">
+                <button onclick="app.closeOverlay('overlay-visualizer')" class="px-4 py-2 bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200 transition">Cancel</button>
+                <button onclick="app.renderVisualizeSandbox()" class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 shadow-xs transition">Generate Image</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom toast element -->
+    <div id="custom-toast" class="fixed bottom-4 right-4 bg-slate-900 text-white px-4 py-3 rounded-lg text-xs font-semibold z-[200] opacity-0 pointer-events-none transition-all duration-300 shadow-lg border border-slate-800"></div>
+
+    <script>
+        const STYLES_LIST_35 = [
+            "Flowchart", "Step-by-Step", "Decision Tree", "Sankey", "Process Map", "Timeline", "Gantt",
+            "Entity Diagram", "Hierarchical Tree", "Network", "Sequence Diagram", "Use Case", "State Machine", "Mind Map",
+            "Bar Chart", "Pie Chart", "Line Graph", "Scatter Plot", "Heat Map", "Radar", "Bubble Chart", "Stacked Area",
+            "Pictograph", "Heat-Map Table", "Concept Map", "Venn Diagram", "Comparison Matrix", "Comic Story",
+            "Infographic", "3D Model", "Icon Array", "Geographic Map", "Funnel", "Storyboard", "Table Diagram"
+        ];
+
+        const app = {
+            screens: ['screen-1', 'screen-2', 'screen-3', 'screen-4', 'screen-5', 'screen-7', 'screen-8'],
+            screenNames: [
+                '1. Input', '2. Reading', '3. Understanding', '4. Parts', 
+                '5. Blueprint', '6. Generation', '7. Export'
+            ],
+
+            state: {
+                currentScreen: 1,
+                maxScreen: 1,
+                
+                fileName: "", fileSize: "", mainTopic: "", subTopics: [],
+                focusArea: "", pastedText: "", examType: "", objective: "",
+                stateFocus: "", currentAffairs: false,
+
+                // Collapsible Bundle Categories
+                featureCategories: [
+                    { id: 'cat_geo', name: '1. Geography Features', detected: true, count: '12 places detected', icon: '🗺️', items: [
+                        { name: 'Location Maps (for each place)', active: true }, { name: 'Neighboring Places Analysis (auto-detect borders)', active: true }, { name: 'Regional Context Boxes (population, area, terrain)', active: true }, { name: 'Current News About Places', active: true }, { name: 'Notable Personalities From These Places', active: true },
+                        { name: 'Physical Features Overlay (rivers, mountains)', active: false }, { name: 'Political Boundaries Detail', active: false }, { name: 'Climate Zone Maps', active: false }, { name: 'Resource Distribution (minerals, agriculture)', active: false }, { name: 'Connectivity Maps (roads, rail, ports)', active: false }, { name: 'Strategic Importance Box', active: false }, { name: 'Historical Rulers Timeline for Each Place', active: false }, { name: 'Cultural Heritage Box (languages, festivals)', active: false }, { name: 'Comparison With Similar Places', active: false }, { name: 'Distance/Route Diagrams', active: false }
+                    ]},
+                    { id: 'cat_bio', name: '2. Personality/Biography Features', detected: true, count: '8 people referenced', icon: '👥', items: [
+                        { name: 'Bio Cards (birth, death, key facts)', active: true }, { name: 'Contemporary Personalities Network', active: true }, { name: 'Key Contributions Timeline', active: true }, { name: 'Recent News About Persons', active: true }, { name: 'Famous Quotes Boxes', active: true },
+                        { name: 'Family/Lineage Trees', active: false }, { name: 'Works & Writings Box', active: false }, { name: 'Awards & Recognition Table', active: false }, { name: 'Influenced By / Influenced Whom (network diagram)', active: false }, { name: 'Places Associated Maps (birthplace, workplaces)', active: false }, { name: 'Legacy & Modern Relevance Box', active: false }, { name: 'Related Personalities Discovery', active: false }
+                    ]},
+                    { id: 'cat_form', name: '3. Formula Operations', detected: true, count: '12 formulas', icon: '🧮', items: [
+                        { name: 'Formula Derivation Steps (how formula came to be)', active: true }, { name: 'Formula Facts Extraction (relationships/insights)', active: true }, { name: 'Variable Deep Dive (what each variable means)', active: true }, { name: 'Substitution Examples (real numbers, solve)', active: true }, { name: 'Common Mistakes Box', active: true }, { name: 'Real-World Applications', active: true },
+                        { name: 'Edge Cases Analysis (extremes, 0, infinity)', active: false }, { name: 'Unit Analysis (dimensional consistency)', active: false }, { name: 'Formula Family Tree (related formulas)', active: false }, { name: 'Formula Transformation (rearranging)', active: false }, { name: 'Sensitivity Analysis (change one variable)', active: false }, { name: 'Comparison Formula Tables (side-by-side)', active: false }, { name: 'Historical Evolution of Formula', active: false }
+                    ]},
+                    { id: 'cat_data', name: '4. Chart/Data Operations', detected: true, count: '47 stats detected', icon: '📊', items: [
+                        { name: 'Auto-Extract Chart Facts ("India GDP grew 8x in 20 years")', active: true }, { name: 'Trend Analysis Boxes (direction, rate of change)', active: true }, { name: 'Peak/Valley Identification (highest, lowest, average)', active: true }, { name: 'Percentage Change Calculations (YoY, decade-over-decade)', active: true }, { name: 'Multiple Chart Type Alternatives (bar + pie + line for same data)', active: true }, { name: 'Data Story Narrative', active: true },
+                        { name: 'Correlation Detection (when X↑, Y↑)', active: false }, { name: 'Anomaly Detection (outliers)', active: false }, { name: 'What-If Scenarios (projections)', active: false }, { name: 'Chart Reading Skills Box (how to interpret)', active: false }, { name: 'Related Data Suggestions', active: false }, { name: 'Chart Q&A (questions this answers)', active: false }, { name: 'Historical Data Overlays', active: false }
+                    ]},
+                    { id: 'cat_admin', name: '5. Administration Features', detected: true, count: '6 institutions', icon: '🏛️', items: [
+                        { name: 'Organizational Hierarchy Charts', active: true }, { name: 'Powers & Functions Tables', active: true }, { name: 'Current Officeholders', active: true }, { name: 'Recent Amendments Timeline', active: true },
+                        { name: 'Appointment Process Flowchart', active: false }, { name: 'Term & Tenure Boxes', active: false }, { name: 'Salary & Perks Tables', active: false }, { name: 'Landmark Cases/Decisions', active: false }, { name: 'Constitutional Provisions Box', active: false }, { name: 'International Comparison', active: false }, { name: 'Committee Recommendations', active: false }, { name: 'Related Institutions Network', active: false }, { name: 'Reform Suggestions Box', active: false }
+                    ]},
+                    { id: 'cat_story', name: '6. Storytelling Features', detected: true, count: '7 concepts', icon: '📖', items: [
+                        { name: 'Character-Based Story Boxes (like Shyam bread)', active: true }, { name: 'Case Study Boxes (real company/person example)', active: true }, { name: 'Analogy Boxes ("GDP is like household budget...")', active: true },
+                        { name: 'Historical Event Stories', active: false }, { name: 'Day-in-the-Life Stories', active: false }, { name: 'Contrasting Stories (two scenarios, different outcomes)', active: false }, { name: 'Hypothetical Scenarios ("imagine if...")', active: false }, { name: 'Personal Journey Boxes (first-person)', active: false }, { name: 'Dialogue Boxes (two characters explaining)', active: false }, { name: 'Village/City Scenario Boxes', active: false }
+                    ]},
+                    { id: 'cat_hist', name: '7. Historical Features', detected: true, count: '34 dates detected', icon: '📅', items: [
+                        { name: 'Master Timeline', active: true }, { name: 'Cause & Effect Chains', active: true }, { name: 'Contemporary World Events', active: true }, { name: 'Rise & Fall Analysis', active: true },
+                        { name: 'Empire/Era Extent Maps', active: false }, { name: 'Dynasty/Succession Trees', active: false }, { name: 'Battle/War Maps', active: false }, { name: 'Architecture/Monuments Gallery', active: false }, { name: 'Cultural Achievements Box', active: false }, { name: 'Administrative Structure Diagram', active: false }, { name: 'Economy of the Era Box', active: false }, { name: 'Legacy Box', active: false }, { name: 'Sources of Information Box', active: false }
+                    ]},
+                    { id: 'cat_legal', name: '8. Legal/Constitutional Features', detected: true, count: '3 articles, 2 acts', icon: '⚖️', items: [
+                        { name: 'Article/Section Deep Dive', active: true }, { name: 'Landmark Judgments Box', active: true }, { name: 'Amendment History Timeline', active: true },
+                        { name: 'Comparative Constitution Box', active: false }, { name: 'Enforcement Mechanism Diagram', active: false }, { name: 'Penalties & Punishments Table', active: false }, { name: 'Exceptions & Exemptions Box', active: false }, { name: 'Related Laws Network', active: false }, { name: 'Recent Controversies Box', active: false }, { name: 'Committee Reports Box', active: false }
+                    ]},
+                    { id: 'cat_sci', name: '9. Scientific/Experiment Features', detected: false, count: 'Not detected', icon: '🔬', items: [
+                        { name: 'Experiment Setup Diagrams', active: false }, { name: 'Procedure Steps', active: false }, { name: 'Expected Results', active: false }, { name: 'Observations Table', active: false },
+                        { name: 'Precautions Box', active: false }, { name: 'Variables Definition', active: false }, { name: 'Lab Equipment Used', active: false }
+                    ]},
+                    { id: 'cat_med', name: '10. Medical Features', detected: false, count: 'Not detected', icon: '🩺', items: [
+                        { name: 'Anatomy Diagrams', active: false }, { name: 'Physiological Process', active: false }, { name: 'Disease Progression', active: false }, { name: 'Symptom Checker', active: false },
+                        { name: 'Treatment Comparison', active: false }, { name: 'Pharmacology Profile', active: false }, { name: 'Patient Case Study', active: false }
+                    ]},
+                    { id: 'cat_cs', name: '11. Computer Science Features', detected: false, count: 'Not detected', icon: '💻', items: [
+                        { name: 'Code Blocks', active: false }, { name: 'Algorithm Pseudocode', active: false }, { name: 'Complexity Analysis', active: false }, { name: 'Data Structure Visualization', active: false },
+                        { name: 'UML Diagrams', active: false }, { name: 'Architecture Flow', active: false }, { name: 'Input/Output Demo', active: false }
+                    ]},
+                    { id: 'cat_ca', name: '12. Current Affairs Layers', detected: true, count: 'Context detected', icon: '📰', items: [
+                        { name: 'Recent News (7 days)', active: true }, { name: 'Recent News (30 days)', active: true }, { name: 'Recent News (1 year)', active: true }, { name: 'Landmark Events (5 years)', active: true }, { name: 'Related Places News (neighboring/connected)', active: true }, { name: 'Related Personalities News', active: true },
+                        { name: 'International Perspective', active: false }, { name: 'Committee/Commission Reports', active: false }, { name: 'Government Schemes Related', active: false }, { name: 'Upcoming Events (future dates)', active: false }, { name: 'Controversies & Debates', active: false }, { name: 'Data & Statistics Updates', active: false }
+                    ]}
+                ],
+
+                parts: [
+                    { num: 1, title: "Foundations of National Income", pages: "3-5", topics: 3, defs: 6, desc: "What NI means, why it matters, problems." },
+                    { num: 2, title: "Types of GDP & Measurement Methods", pages: "6-10", topics: 4, defs: 5, desc: "Nominal/Real GDP, Value Added, Income, Expenditure methods." },
+                    { num: 3, title: "NDP, GNP, NNP & Other Measures", pages: "10-13", topics: 5, defs: 4, desc: "All income measures, Personal Income, Per Capita Income." },
+                    { num: 4, title: "GDP Deflator, Base Year, India's GDP", pages: "13-16", topics: 4, defs: 1, desc: "How India calculates GDP, NAS changes, GVA vs GDP gap." },
+                    { num: 5, title: "GDP, Welfare & Alternative Measures", pages: "17-20", topics: 4, defs: 0, desc: "Green GDP, GNHI, limitations of GDP." },
+                    { num: 6, title: "HDI, Indices & Previous Year Questions", pages: "20-22", topics: 3, defs: 4, desc: "HDI components, Thriving Places, PYQs." }
+                ],
+
+                blueprintsApproved: { p1: false, p2: false, p3: false, p4: false, p5: false, p6: false },
+                generationStatuses: { p1: 'pending', p2: 'pending', p3: 'pending', p4: 'pending', p5: 'pending', p6: 'pending' },
+                approvedParts: { p1: false, p2: false, p3: false, p4: false, p5: false, p6: false },
+                textApproved: { p1: false, p2: false, p3: false, p4: false, p5: false, p6: false },
+                imagesApproved: { p1: false, p2: false, p3: false, p4: false, p5: false, p6: false },
+                
+                expandedCategories: {},
+                insertedVisuals: {},
+                editingPartSettings: null
+            },
+
+            init() {
+                try {
+                    const localData = localStorage.getItem('studyforge_v21_skeleton_state');
+                    if (localData) {
+                        this.state = { ...this.state, ...JSON.parse(localData) };
+                    }
+                    
+                    this.renderTopNav();
+                    this.renderSidebarSteps();
+                    this.renderBundlesList();
+                    this.renderPartsLayout();
+                    this.renderBlueprints();
+                    this.renderScreen7Stack();
+                    this.setupVisualizerListeners();
+
+                    const dz = document.getElementById('drop-zone');
+                    if(dz) {
+                        dz.addEventListener('dragover', (e) => { e.preventDefault(); dz.classList.add('drop-zone-active'); });
+                        dz.addEventListener('dragleave', () => dz.classList.remove('drop-zone-active'));
+                        dz.addEventListener('drop', (e) => {
+                            e.preventDefault();
+                            dz.classList.remove('drop-zone-active');
+                            if (e.dataTransfer.files[0]) {
+                                const f = e.dataTransfer.files[0];
+                                this.state.fileName = f.name;
+                                this.state.fileSize = `${(f.size / 1024).toFixed(1)} KB`;
+                                this.renderFileInfo();
+                                this.save();
+                            }
+                        });
+                    }
+
+                    const visStyleChoice = document.getElementById('vis-style-choice');
+                    if (visStyleChoice) {
+                        const opts = STYLES_LIST_35.map(s => `<option value="${s}">${s}</option>`).join('');
+                        visStyleChoice.innerHTML = `<option value="" disabled selected>Select from 35 styles...</option>` + opts;
+                    }
+
+                    // Strict routing resolution mapping fix applied
+                    this.navigate(this.state.currentScreen, true);
+                } catch (e) {
+                    console.error("Initialization failed: ", e);
+                }
+            },
+
+            save() {
+                localStorage.setItem('studyforge_v21_skeleton_state', JSON.stringify(this.state));
+                this.renderTopNav();
+                this.renderSidebarSteps();
+                this.updateFeatureCounts();
+            },
+
+            startOver() {
+                if (confirm("Reset application skeleton and clear all state?")) {
+                    localStorage.removeItem('studyforge_v21_skeleton_state');
+                    location.reload();
+                }
+            },
+
+            showNotification(text) {
+                const toast = document.getElementById('custom-toast');
+                toast.innerText = text;
+                toast.style.opacity = "1";
+                toast.style.transform = "translateY(-5px)";
+                setTimeout(() => {
+                    toast.style.opacity = "0";
+                    toast.style.transform = "none";
+                }, 3000);
+            },
+
+            renderTopNav() {
+                const nav = document.getElementById('top-nav-steps');
+                if (!nav) return;
+                nav.innerHTML = this.screenNames.map((name, i) => {
+                    const num = i + 1;
+                    const isActive = num === this.state.currentScreen;
+                    const isCompleted = num <= this.state.maxScreen;
+                    
+                    let cls = "text-[11px] font-extrabold px-3 py-1.5 rounded-lg transition shrink-0 select-none flex items-center gap-1 ";
+                    if (isActive) cls += "bg-indigo-600 text-white shadow";
+                    else if (isCompleted) cls += "bg-emerald-50 text-emerald-700 hover:bg-emerald-100 cursor-pointer shadow-xs";
+                    else cls += "text-slate-400 bg-slate-50 cursor-not-allowed border border-slate-200";
+
+                    return `<div class="${cls}" ${isCompleted ? `onclick="app.navigate(${num})"` : ''} title="${name}">
+                        <span>${num}.</span> ${name.split('. ')[1] || name}
+                    </div>`;
+                }).join('<span class="text-slate-300 font-extrabold shrink-0 mx-1 text-base">›</span>');
+            },
+
+            renderSidebarSteps() {
+                const side = document.getElementById('sidebar-nav-steps');
+                if (!side) return;
+                side.innerHTML = this.screenNames.map((name, i) => {
+                    const num = i + 1;
+                    const isActive = num === this.state.currentScreen;
+                    const isCompleted = num <= this.state.maxScreen;
+                    let icon = isCompleted ? "✅" : "⬜";
+                    let bgCls = isActive ? "bg-indigo-50 text-indigo-700 font-bold" : (isCompleted ? "hover:bg-slate-50 text-slate-700" : "text-slate-400 opacity-60 pointer-events-none");
+                    return `
+                        <div class="p-2.5 rounded-xl border border-transparent transition cursor-pointer text-xs font-semibold ${bgCls}" ${isCompleted ? `onclick="app.navigate(${num})"` : ''}>
+                            <div class="flex items-center justify-between">
+                                <span>${name}</span>
+                                <span>${icon}</span>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            },
+
+            handleBack() {
+                if (this.state.currentScreen > 1) {
+                    this.navigate(this.state.currentScreen - 1);
+                }
+            },
+
+            navTo(screenNum) {
+                // Strict check wrapper removed. Overriding for direct access
+                this.navigate(screenNum);
+            },
+
+            navigate(screenNum, isInit = false) {
+                let id = `screen-${screenNum}`;
+                if (screenNum === 6) id = 'screen-7'; 
+                if (screenNum === 7) id = 'screen-8'; 
+                
+                this.screens.forEach(s => {
+                    const el = document.getElementById(s);
+                    if (el) el.classList.remove('active');
+                });
+                
+                const target = document.getElementById(id);
+                if (target) target.classList.add('active');
+
+                const sidebar = document.getElementById('global-sidebar');
+                if (sidebar) {
+                    if (screenNum >= 4) {
+                        sidebar.classList.remove('hidden');
+                        sidebar.classList.add('flex');
+                    } else {
+                        sidebar.classList.remove('flex');
+                        sidebar.classList.add('hidden');
+                    }
+                }
+
+                const backBtn = document.getElementById('btn-global-back');
+                if (backBtn) {
+                    if (screenNum === 1) backBtn.classList.add('hidden');
+                    else backBtn.classList.remove('hidden');
+                }
+
+                this.state.currentScreen = screenNum;
+                if (screenNum > this.state.maxScreen) this.state.maxScreen = screenNum;
+
+                this.save();
+                window.scrollTo(0, 0);
+
+                if (screenNum === 2 && !isInit) this.playReadingProgress();
+                if (screenNum === 5) this.renderBlueprints();
+                if (screenNum === 6) this.renderScreen7Stack();
+                if (screenNum === 7) this.prepareExport();
+            },
+
+            handleFileUpload(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    this.state.fileName = file.name;
+                    this.state.fileSize = `${(file.size / 1024).toFixed(1)} KB`;
+                    this.renderFileInfo();
+                    this.save();
+                }
+            },
+
+            renderFileInfo() {
+                const info = document.getElementById('file-info');
+                if (info && this.state.fileName) {
+                    info.innerHTML = `Selected: <strong>${this.state.fileName}</strong> (${this.state.fileSize})`;
+                    info.classList.remove('hidden');
+                }
+            },
+
+            addSubtopicField() {
+                const container = document.getElementById('subtopics-container');
+                const fields = container.querySelectorAll('.subtopic-input');
+                if (fields.length >= 10) {
+                    this.showNotification("Enforced Limit: Maximum 10 subtopics allowed.");
+                    return;
+                }
+                const input = document.createElement('input');
+                input.type = "text";
+                input.className = "subtopic-input w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-emerald-500 bg-slate-50/50 mt-2";
+                input.placeholder = "e.g., Circular Flow Models";
+                input.oninput = () => app.saveInputs();
+                container.appendChild(input);
+            },
+
+            updateCharCount() {
+                const text = document.getElementById('paste-area').value;
+                this.state.pastedText = text;
+                document.getElementById('char-count').innerText = `${text.length} characters`;
+            },
+
+            toggleMethod3Tab(tab) {
+                const mTab = document.getElementById('tab-m3-manual');
+                const aiTab = document.getElementById('tab-m3-ai');
+                const desc = document.getElementById('paste-desc');
+                const zone = document.getElementById('ai-assist-prompt-zone');
+
+                if (tab === 'ai') {
+                    aiTab.className = "px-2 py-1 rounded bg-white text-slate-800 shadow-sm";
+                    mTab.className = "px-2 py-1 rounded text-slate-500 hover:text-slate-800";
+                    desc.innerText = "Explain a concept to generate structured notes inline";
+                    zone.classList.remove('hidden');
+                } else {
+                    mTab.className = "px-2 py-1 rounded bg-white text-slate-800 shadow-sm";
+                    aiTab.className = "px-2 py-1 rounded text-slate-500 hover:text-slate-800";
+                    desc.innerText = "Paste your study material, chapters or text directly";
+                    zone.classList.add('hidden');
+                }
+            },
+
+            triggerDirectAutoWrite() {
+                const query = document.getElementById('ai-assist-query').value.trim();
+                if (!query) {
+                    this.showNotification("Please provide a concept focus first.");
+                    return;
+                }
+                const textarea = document.getElementById('paste-area');
+                textarea.value = `AI Generation starting for: "${query}"...\nAnalyzing pedagogical frameworks...`;
+                setTimeout(() => {
+                    const dummyOutput = `# STUDY NOTES: ${query.toUpperCase()}\n\n## Conceptual Overview\nThis syllabus outlines structural definitions, analytical models, and historical developments associated with ${query}.\n\n## Key Factors & Core Variables\n1. Input Thresholds\n2. Output Variables\n3. Marginal Deficit Metrics\n\n*(Auto-written via StudyForge Direct AI Assist)*`;
+                    textarea.value = dummyOutput;
+                    this.updateCharCount();
+                    this.saveInputs();
+                    this.showNotification("Draft text generated!");
+                }, 1200);
+            },
+
+            triggerAIDraftBridge() {
+                const main = document.getElementById('topic-main').value.trim();
+                if (!main) {
+                    this.showNotification("Please specify a Main Topic first.");
+                    return;
+                }
+                this.showNotification("Compiling structured markdown drafts...");
+                setTimeout(() => {
+                    const text = `# NOTES: ${main.toUpperCase()}\n\n## Introduction to Principles\nNational index calculations outline production capacities, circular parameters, and factor allocations inside domestic territories.\n\n## Value Added Concept\nAssume a miller sells flour for ₹50 to Shyam, who bakes bread and sells it for ₹100. Shyam has added ₹50 of economic margin.\n\n## Formula Deep-Dive\nC + I + G + NX (Expenditure Method representation).`;
+                    const area = document.getElementById('paste-area');
+                    area.value = text;
+                    this.updateCharCount();
+                    this.saveInputs();
+
+                    const block = document.getElementById('method-3-container');
+                    block.classList.add('ring-4', 'ring-indigo-300', 'bg-indigo-50/50');
+                    block.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    setTimeout(() => block.classList.remove('ring-4', 'ring-indigo-300', 'bg-indigo-50/50'), 2000);
+                }, 1000);
+            },
+
+            saveInputs() {
+                this.state.mainTopic = document.getElementById('topic-main').value;
+                this.state.focusArea = document.getElementById('topic-focus').value;
+                this.state.pastedText = document.getElementById('paste-area').value;
+                this.state.examType = document.getElementById('setting-exam').value;
+                this.state.objective = document.getElementById('setting-objective').value;
+                this.state.stateFocus = document.getElementById('setting-state').value;
+                this.state.currentAffairs = document.getElementById('setting-ca').checked;
+                
+                const subInputs = document.querySelectorAll('.subtopic-input');
+                this.state.subTopics = Array.from(subInputs).map(i => i.value.trim()).filter(v => v !== "");
+                this.save();
+            },
+
+            validateAndProceed1() {
+                this.saveInputs();
+                if (!this.state.fileName && !this.state.mainTopic && !this.state.pastedText) {
+                    alert("Please upload a file, type a topic, or paste text to continue.");
+                    return;
+                }
+                this.navigate(2);
+            },
+
+            playReadingProgress() {
+                let step = 1;
+                const bar = document.getElementById('reading-progress-bar');
+                bar.style.width = "0%";
+
+                const dynamicInfo = this.state.fileName ? `File: ${this.state.fileName}` : (this.state.mainTopic ? `Topic: ${this.state.mainTopic}` : "Pasted Text Material");
+                document.getElementById('r-text-1').innerText = `File accepted (${dynamicInfo})`;
+                
+                const pages = Math.floor(Math.random() * 16) + 15; 
+                const images = Math.floor(Math.random() * 6) + 3;  
+                document.getElementById('r-text-2').innerText = `Extracted ${pages} pages of text`;
+                document.getElementById('r-text-3').innerText = `Found ${images} images — reading text from them`;
+
+                for (let i = 1; i <= 5; i++) {
+                    const stepEl = document.getElementById(`r-step-${i}`);
+                    if (stepEl) {
+                        stepEl.className = "flex items-center gap-3 text-sm font-semibold text-slate-400";
+                        stepEl.querySelector('.indicator').innerText = "";
+                    }
+                }
+
+                const handle = setInterval(() => {
+                    if (step <= 5) {
+                        const row = document.getElementById(`r-step-${step}`);
+                        if (row) {
+                            row.className = "flex items-center gap-3 text-sm font-bold text-slate-800 transition-colors duration-200";
+                            row.querySelector('.indicator').innerText = "✓";
+                        }
+                        bar.style.width = `${step * 20}%`;
+                        step++;
+                    } else {
+                        clearInterval(handle);
+                        setTimeout(() => this.navigate(3), 800);
+                    }
+                }, 1000);
+            },
+
+            renderBundlesList() {
+                const container = document.getElementById('bundles-grid-container');
+                if (!container) return;
+                container.innerHTML = "";
+
+                this.state.featureCategories.forEach((cat) => {
+                    const showAll = !!this.state.expandedCategories[cat.id];
+                    const activeHeader = cat.detected;
+                    
+                    const headerBg = activeHeader ? 'bg-slate-50' : 'bg-slate-100 opacity-70';
+                    const countsLabel = activeHeader ? cat.count : 'Not detected — force enable';
+                    const countsCls = activeHeader ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-500';
+
+                    const visibleItems = showAll ? cat.items : cat.items.slice(0, 5);
+                    const remainingCount = cat.items.length - 5;
+
+                    let itemsHtml = visibleItems.map((item, idx) => `
+                        <label class="flex items-center gap-2.5 text-xs font-bold text-slate-700 cursor-pointer p-1 rounded hover:bg-slate-50 select-none">
+                            <input type="checkbox" ${item.active ? 'checked' : ''} ${!activeHeader ? 'disabled' : ''} onchange="app.toggleBundleFeature('${cat.id}', ${idx})" class="w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500 shadow-xs">
+                            <span class="${!activeHeader ? 'text-slate-400' : ''}">${item.name}</span>
+                        </label>
+                    `).join('');
+
+                    let showMoreBtn = "";
+                    if (remainingCount > 0) {
+                        showMoreBtn = `
+                            <button onclick="app.toggleCategoryExpansion('${cat.id}')" class="text-[10px] font-extrabold text-indigo-600 uppercase tracking-wider hover:text-indigo-800 mt-2 block w-full text-left">
+                                ${showAll ? '▲ Show less' : `▼ Show ${remainingCount} more features`}
+                            </button>
+                        `;
+                    }
+
+                    let forceEnableBtn = "";
+                    if (!activeHeader) {
+                        forceEnableBtn = `
+                            <button onclick="app.forceEnableCategory('${cat.id}')" class="text-[10px] font-extrabold bg-indigo-600 text-white rounded px-2.5 py-1 uppercase tracking-wider hover:bg-indigo-700 transition">
+                                Force Enable
+                            </button>
+                        `;
+                    }
+
+                    container.innerHTML += `
+                        <div class="bg-white border-2 border-slate-200 rounded-2xl shadow-xs overflow-hidden flex flex-col h-full">
+                            <div class="p-4 border-b border-slate-100 flex flex-col gap-1.5 ${headerBg}">
+                                <div class="flex items-center justify-between">
+                                    <h4 class="font-extrabold text-slate-800 text-xs">${cat.icon} ${cat.name}</h4>
+                                    ${forceEnableBtn}
+                                </div>
+                                <span class="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 border rounded w-max ${countsCls}">
+                                    ${countsLabel}
+                                </span>
+                            </div>
+                            <div class="p-4 space-y-2.5 flex-1">
+                                ${itemsHtml}
+                                ${showMoreBtn}
+                            </div>
+                        </div>
+                    `;
+                });
+
+                this.updateFeatureCounts();
+            },
+
+            toggleCategoryExpansion(catId) {
+                this.state.expandedCategories[catId] = !this.state.expandedCategories[catId];
+                this.renderBundlesList();
+                this.save();
+            },
+
+            forceEnableCategory(catId) {
+                const cat = this.state.featureCategories.find(c => c.id === catId);
+                if (cat) {
+                    cat.detected = true;
+                    cat.count = "Forced enabled by user";
+                    cat.items.forEach((item, index) => {
+                        if (index < 5) item.active = true;
+                    });
+                    this.renderBundlesList();
+                    this.save();
+                    this.showNotification(`${cat.name} successfully activated.`);
+                }
+            },
+
+            toggleBundleFeature(catId, idx) {
+                const cat = this.state.featureCategories.find(c => c.id === catId);
+                if (cat && cat.items[idx]) {
+                    cat.items[idx].active = !cat.items[idx].active;
+                    this.updateFeatureCounts();
+                    this.save();
+                }
+            },
+
+            updateFeatureCounts() {
+                let total = 0;
+                let active = 0;
+                this.state.featureCategories.forEach(cat => {
+                    cat.items.forEach(item => {
+                        total++;
+                        if (item.active && cat.detected) active++;
+                    });
+                });
+                const summary = document.getElementById('feature-summary-desc');
+                if (summary) {
+                    summary.innerText = `${active} features selected of ${total} available across 12 categories`;
+                }
+            },
+
+            saveTogglesAndProceed() {
+                this.save();
+                this.navigate(4);
+            },
+
+            renderPartsLayout() {
+                const container = document.getElementById('screen4-parts-container');
+                if (!container) return;
+
+                container.innerHTML = this.state.parts.map((p) => `
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex flex-col md:flex-row gap-4 items-start justify-between hover:border-indigo-300 transition-colors">
+                        <div class="flex-1 w-full">
+                            <div class="flex items-center gap-2 mb-2 flex-wrap">
+                                <span class="px-2 py-0.5 bg-slate-800 text-white text-[9px] font-black rounded uppercase tracking-wider">Part ${p.num}</span>
+                                <input type="text" value="${p.title}" onchange="app.updatePartTitle(${p.num}, this.value)" class="font-extrabold text-slate-900 text-sm bg-transparent border-b border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-slate-50 px-2 py-1 outline-none transition rounded-md flex-1">
+                            </div>
+                            <div class="flex flex-wrap gap-3 text-[9px] font-extrabold text-slate-400 uppercase tracking-widest mb-2 bg-slate-50 p-2 rounded-lg inline-flex">
+                                <span>📄 Pages: ${p.pages}</span>
+                                <span>📚 Topics: ${p.topics}</span>
+                                <span>📐 Variables: ${p.defs}</span>
+                            </div>
+                            <p class="text-xs text-slate-600 leading-relaxed font-semibold">${p.desc}</p>
+                        </div>
+                        <button onclick="app.openPartSettings(${p.num})" class="px-3 py-1.5 bg-slate-50 hover:bg-slate-100 text-slate-700 font-extrabold text-[10px] rounded-lg border transition">✏️ Edit Settings</button>
+                    </div>
+                `).join('');
+            },
+
+            updatePartTitle(num, val) {
+                const part = this.state.parts.find(p => p.num === num);
+                if (part) {
+                    part.title = val.trim();
+                    this.save();
+                    this.renderPartsLayout();
+                }
+            },
+
+            addPart() {
+                const num = this.state.parts.length + 1;
+                this.state.parts.push({
+                    num: num,
+                    title: `Custom Module Part ${num}`,
+                    pages: "22-25",
+                    topics: 3,
+                    defs: 2,
+                    desc: "Syllabus focus compiled by user parameters."
+                });
+                // Seed generation statuses map
+                this.state.generationStatuses[`p${num}`] = 'pending';
+                this.save();
+                this.renderPartsLayout();
+                this.renderBlueprints();
+                this.renderScreen7Stack();
+            },
+
+            removePartScreen7(num) {
+                this.state.parts = this.state.parts.filter(p => p.num !== num);
+                this.save();
+                this.renderScreen7Stack();
+            },
+
+            openPartSettings(num) {
+                const p = this.state.parts.find(pt => pt.num === num);
+                if(p) {
+                    this.state.editingPartSettings = num;
+                    document.getElementById('stg-part-title').value = p.title;
+                    document.getElementById('stg-part-pages').value = p.pages;
+                    this.openOverlay('overlay-part-settings');
+                }
+            },
+            savePartSettings() {
+                const num = this.state.editingPartSettings;
+                const p = this.state.parts.find(pt => pt.num === num);
+                if(p) {
+                    p.title = document.getElementById('stg-part-title').value;
+                    p.pages = document.getElementById('stg-part-pages').value;
+                    this.save();
+                    this.renderPartsLayout();
+                }
+                this.closeOverlay('overlay-part-settings');
+            },
+            openMasterPrompt() {
+                this.openOverlay('overlay-master-prompt');
+            },
+            openExecutionPrompts(num) {
+                document.getElementById('exec-prompt-title').innerHTML = `👁️ Execution Prompts for Part ${num}`;
+                this.openOverlay('overlay-execution-prompts');
+            },
+
+            renderBlueprints() {
+                const grid = document.getElementById('blueprint-grid-container');
+                if (!grid) return;
+
+                grid.innerHTML = this.state.parts.map((p) => {
+                    const isApproved = !!this.state.blueprintsApproved[`p${p.num}`];
+                    const borderCls = isApproved ? 'border-emerald-500 ring-4 ring-emerald-50' : 'border-slate-200';
+                    
+                    const activeIcons = this.state.featureCategories
+                        .filter(c => c.detected && c.items.some(i => i.active))
+                        .slice(0, 5)
+                        .map(c => `<span class="cursor-help" title="${c.name}">${c.icon}</span>`)
+                        .join(' ');
+
+                    return `
+                        <div class="bg-white p-5 rounded-3xl border-2 ${borderCls} shadow-xs flex flex-col h-full transition duration-300">
+                            <div class="flex justify-between items-start mb-4 border-b pb-3">
+                                <h3 class="font-extrabold text-slate-800 text-xs leading-tight">
+                                    <span class="text-indigo-600 font-black block mb-1">PART ${p.num}</span> ${p.title}
+                                </h3>
+                            </div>
+                            
+                            <div class="space-y-4 text-xs font-semibold text-slate-600 flex-1 mb-4">
+                                <div class="bg-slate-50 p-3 rounded-xl border space-y-1">
+                                    <span class="font-bold text-[10px] text-slate-400 uppercase tracking-widest block">Applied Feature Bundles</span>
+                                    <div class="flex gap-2 text-base pt-1">${activeIcons}</div>
+                                </div>
+                                
+                                <div class="space-y-1">
+                                    <span class="font-bold text-[10px] text-slate-400 uppercase tracking-widest block">Text Plan Highlights</span>
+                                    <ul class="list-disc pl-4 space-y-1 text-slate-500 font-medium">
+                                        <li>Macro conceptual overview</li>
+                                        <li>Real-world narrative analogies</li>
+                                        <li>Variable breakdowns & math models</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div class="mt-auto space-y-2 pt-3 border-t">
+                                <button onclick="app.openBlueprintDetail(${p.num})" class="w-full py-2 bg-indigo-50 text-indigo-700 font-bold text-xs rounded-xl hover:bg-indigo-100 transition flex items-center justify-center gap-1.5">
+                                    🔍 See full blueprint <span>→</span>
+                                </button>
+                                
+                                <label class="flex items-center justify-center gap-2 py-2 bg-white border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50 transition shadow-xs">
+                                    <input type="checkbox" ${isApproved ? 'checked' : ''} onchange="app.toggleBlueprintApprove(${p.num}, this.checked)" class="w-4 h-4 text-emerald-600 rounded border-slate-300 focus:ring-emerald-500">
+                                    <span class="text-xs font-bold text-slate-700">Approve this Part</span>
+                                </label>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                this.verifyBlueprintCompleteness();
+            },
+
+            toggleBlueprintApprove(partNum, checked) {
+                this.state.blueprintsApproved[`p${partNum}`] = checked;
+                this.save();
+                this.renderBlueprints();
+            },
+
+            masterApproveBlueprints() {
+                this.state.parts.forEach(p => {
+                    this.state.blueprintsApproved[`p${p.num}`] = true;
+                });
+                this.save();
+                this.renderBlueprints();
+                this.showNotification("All blueprints approved!");
+            },
+
+            verifyBlueprintCompleteness() {
+                const btn = document.getElementById('btn-start-generation');
+                const warning = document.getElementById('bp-warning-desc');
+                if (!btn) return;
+
+                const allApp = this.state.parts.every(p => !!this.state.blueprintsApproved[`p${p.num}`]);
+                if (allApp) {
+                    btn.removeAttribute('disabled');
+                    btn.className = "px-10 py-4 bg-indigo-600 text-white font-extrabold text-sm rounded-xl hover:bg-indigo-700 shadow-md cursor-pointer transition transform hover:-translate-y-0.5";
+                    warning.innerText = "All Blueprints Approved! Generation space unlocked.";
+                    warning.className = "text-xs text-emerald-600 font-extrabold uppercase mt-2";
+                } else {
+                    btn.setAttribute('disabled', 'true');
+                    btn.className = "px-10 py-4 bg-slate-200 text-slate-400 font-extrabold text-sm rounded-xl cursor-not-allowed transition";
+                    warning.innerText = "All 6 Blueprints must be approved to unlock generation.";
+                    warning.className = "text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-2";
+                }
+            },
+
+            openBlueprintDetail(partNum) {
+                const part = this.state.parts.find(p => p.num === partNum);
+                if (!part) return;
+
+                document.getElementById('overlay-bp-part-title').innerHTML = `<span class="text-indigo-600">Part ${part.num}:</span> ${part.title}`;
+                const pane = document.getElementById('overlay-bp-scroll-pane');
+
+                pane.innerHTML = `
+                    <!-- SECTION 0: APPLIED FEATURE BUNDLES -->
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs">
+                        <h4 class="font-extrabold text-slate-400 text-[10px] uppercase tracking-widest mb-3 border-b pb-2">Section 0: Applied Feature Bundles</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-bold text-slate-700">
+                            <div>
+                                <h5 class="text-teal-800 font-bold mb-1">🗺️ Geography:</h5>
+                                <ul class="list-disc pl-4 text-slate-500 font-medium">
+                                    <li>Location maps: India, MP</li>
+                                    <li>Regional variables: MP statistics</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h5 class="text-indigo-800 font-bold mb-1">🧮 Formula Operations:</h5>
+                                <ul class="list-disc pl-4 text-slate-500 font-medium">
+                                    <li>Variable breakdown & substitution Examples</li>
+                                    <li>Mistakes avoidance profiles</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <button onclick="app.showNotification('Modifying bundle selections...')" class="mt-4 px-3 py-1.5 bg-slate-50 border text-slate-700 text-xs font-bold rounded-lg hover:bg-slate-100 transition">Modify Bundle Selection ▼</button>
+                    </div>
+
+                    <!-- SECTION 1: HEADINGS -->
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs">
+                        <h4 class="font-extrabold text-slate-400 text-[10px] uppercase tracking-widest mb-3 border-b pb-2">Section 1: Course Headings Outline</h4>
+                        <div class="space-y-1.5 text-xs font-bold text-slate-700">
+                            <p>1. Nominal GDP vs Real GDP</p>
+                            <p>2. Real and Nominal Value comparisons</p>
+                            <p>3. Production/Value Added equations</p>
+                            <p>4. Income/Factor Earnings dynamics</p>
+                            <p>5. Expenditure Method equations</p>
+                        </div>
+                    </div>
+
+                    <!-- SECTION 2: TEXT PLAN -->
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4">
+                        <h4 class="font-extrabold text-slate-400 text-[10px] uppercase tracking-widest border-b pb-2">Section 2: Synthesis Text Plan</h4>
+                        <div class="space-y-2 text-xs font-bold">
+                            <p class="flex items-center gap-2"><span class="tag-source">From PDF</span> <span class="text-slate-600">Formulas, calculations, and definition baselines.</span></p>
+                            <p class="flex items-center gap-2"><span class="tag-research">Will Be Researched</span> <span class="text-slate-600">Latest Indian Macro variables.</span></p>
+                            <p class="flex items-center gap-2"><span class="tag-enrich">Optional Enrichment</span> <span class="text-slate-600">Story narratives & common student pitfalls.</span></p>
+                        </div>
+
+                        <div>
+                            <span class="block text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-2">Pedagogical Enclosures Planned</span>
+                            <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                                <label class="flex items-center gap-2 text-xs font-bold text-slate-700"><input type="checkbox" checked class="w-4 h-4 rounded text-indigo-600"> <span>Formula Box</span></label>
+                                <label class="flex items-center gap-2 text-xs font-bold text-slate-700"><input type="checkbox" checked class="w-4 h-4 rounded text-indigo-600"> <span>Story Box</span></label>
+                                <label class="flex items-center gap-2 text-xs font-bold text-slate-700"><input type="checkbox" checked class="w-4 h-4 rounded text-indigo-600"> <span>Comparison Table</span></label>
+                                <label class="flex items-center gap-2 text-xs font-bold text-slate-700"><input type="checkbox" checked class="w-4 h-4 rounded text-indigo-600"> <span>Confusion Alert</span></label>
+                                <label class="flex items-center gap-2 text-xs font-bold text-slate-700"><input type="checkbox" class="w-4 h-4 rounded text-indigo-600"> <span>Legal Box</span></label>
+                                <label class="flex items-center gap-2 text-xs font-bold text-slate-700"><input type="checkbox" class="w-4 h-4 rounded text-indigo-600"> <span>Timeline Strip</span></label>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-2">Syllabus Prompt Architecture</label>
+                            <textarea id="overlay-edit-prompt" class="w-full p-3 border rounded-xl text-xs font-mono bg-slate-50" rows="3">Write comprehensive notes on ${part.title}. Highlight nominal vs real principles, outline Shyam Bread value addition stage models, and map factor cost variables...</textarea>
+                            <div class="flex gap-2 mt-2 font-bold text-[10px] uppercase">
+                                <button onclick="navigator.clipboard.writeText(document.getElementById('overlay-edit-prompt').value); app.showNotification('Copied!')" class="px-3 py-1.5 border bg-white rounded-lg">Copy</button>
+                                <button onclick="app.showNotification('Regenerating prompt...')" class="px-3 py-1.5 border bg-white rounded-lg">Regenerate</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SECTION 3: IMAGE PLAN -->
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4">
+                        <h4 class="font-extrabold text-slate-400 text-[10px] uppercase tracking-widest border-b pb-2">Section 3: Diagram & Graphics Planning</h4>
+                        
+                        <div class="bg-indigo-50/50 p-4 rounded-xl border border-indigo-100 space-y-2 text-xs">
+                            <div class="flex justify-between items-center flex-wrap gap-2">
+                                <h5 class="font-extrabold text-slate-900">Image 1: Nominal vs Real comparative overview</h5>
+                                <select class="text-xs font-bold border rounded-lg px-2 py-1 bg-white text-indigo-700">
+                                    <option>Infographic (Auto-pick)</option>
+                                    ${STYLES_LIST_35.map(s => `<option>${s}</option>`).join('')}
+                                </select>
+                            </div>
+                            <p class="text-slate-600 font-semibold leading-relaxed"><strong>Focus:</strong> Split layout mapping. Left side outlines current prices (nominal). Right side outlines absolute purchasing thresholds (real).</p>
+                            <p class="text-slate-400 font-extrabold uppercase text-[9px] tracking-wider">Labels: Nominal Value, Real Value, Prices, Inflation, Purchasing Power</p>
+                        </div>
+
+                        <div class="bg-slate-50 p-4 rounded-xl border space-y-2 text-xs">
+                            <div class="flex justify-between items-center">
+                                <h5 class="font-extrabold text-slate-800">Image 2: Shyam bread intermediate chains</h5>
+                                <select class="text-xs font-bold border rounded-lg px-2 py-1 bg-white text-slate-600">
+                                    <option>Comic Story (Auto-pick)</option>
+                                    ${STYLES_LIST_35.map(s => `<option>${s}</option>`).join('')}
+                                </select>
+                            </div>
+                            <p class="text-slate-600 font-semibold leading-relaxed"><strong>Focus:</strong> Four-panel step progress flow outlining value accumulation from wheat farming to final customer bread purchase.</p>
+                        </div>
+                    </div>
+
+                    <!-- SECTION 4: CA PLAN -->
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs">
+                        <h4 class="font-extrabold text-slate-400 text-[10px] uppercase tracking-widest mb-3 border-b pb-2">Section 4: Current Affairs Search Specifications</h4>
+                        <div class="space-y-3">
+                            <div class="p-3 bg-slate-50 rounded-lg flex justify-between items-center gap-2">
+                                <div class="text-xs"><strong class="block text-slate-800">"India quarterly GDP metrics 2026/2025"</strong><span class="text-[10px] text-slate-500">Purpose: Fetch latest baseline growth indicators</span></div>
+                                <button onclick="app.showNotification('Editing search query...')" class="text-[9px] uppercase font-bold text-slate-600 bg-white border rounded px-2 py-1">Edit</button>
+                            </div>
+                            <div class="p-3 bg-slate-50 rounded-lg flex justify-between items-center gap-2">
+                                <div class="text-xs"><strong class="block text-slate-800">"Madhya Pradesh GSDP comparative trends"</strong><span class="text-[10px] text-slate-500">Purpose: Collate GSDP parameters with national baselines</span></div>
+                                <button onclick="app.showNotification('Editing search query...')" class="text-[9px] uppercase font-bold text-slate-600 bg-white border rounded px-2 py-1">Edit</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SECTION 5: VALIDATION PLAN -->
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs">
+                        <h4 class="font-extrabold text-slate-400 text-[10px] uppercase tracking-widest mb-3 border-b pb-2">Section 5: Validation Plan Checks</h4>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs font-bold text-slate-700 bg-slate-50 p-4 rounded-xl">
+                            <label class="flex items-center gap-2"><input type="checkbox" checked class="w-4 h-4 rounded text-indigo-600"> <span>Verify all formulas</span></label>
+                            <label class="flex items-center gap-2"><input type="checkbox" checked class="w-4 h-4 rounded text-indigo-600"> <span>Verify facts against source</span></label>
+                            <label class="flex items-center gap-2"><input type="checkbox" checked class="w-4 h-4 rounded text-indigo-600"> <span>Review images match content</span></label>
+                            <label class="flex items-center gap-2"><input type="checkbox" checked class="w-4 h-4 rounded text-indigo-600"> <span>Suggest missing visuals</span></label>
+                            <label class="flex items-center gap-2"><input type="checkbox" checked class="w-4 h-4 rounded text-indigo-600"> <span>Check CA placement</span></label>
+                        </div>
+                    </div>
+                `;
+
+                const btnApprove = document.getElementById('overlay-btn-approve');
+                btnApprove.onclick = () => {
+                    this.state.blueprintsApproved[`p${partNum}`] = true;
+                    this.save();
+                    this.renderBlueprints();
+                    this.closeOverlay('overlay-blueprint');
+                };
+
+                this.openOverlay('overlay-blueprint');
+            },
+
+            closeOverlay(id) {
+                document.getElementById(id).classList.add('hidden');
+                document.getElementById(id).classList.remove('flex');
+            },
+
+            openOverlay(id) {
+                document.getElementById(id).classList.remove('hidden');
+                document.getElementById(id).classList.add('flex');
+            },
+
+            handleAssistantSend(e) {
+                e.preventDefault();
+                const text = document.getElementById('bp-assistant-text').value.trim();
+                if (!text) return;
+                
+                const timeline = document.getElementById('bp-chat-history');
+                
+                const userEl = document.createElement('div');
+                userEl.className = "self-end bg-indigo-600 text-white p-3 rounded-2xl rounded-tr-xs max-w-[85%]";
+                userEl.innerText = text;
+                timeline.appendChild(userEl);
+
+                document.getElementById('bp-assistant-text').value = "";
+                timeline.scrollTop = timeline.scrollHeight;
+
+                setTimeout(() => {
+                    const aiEl = document.createElement('div');
+                    aiEl.className = "self-start bg-white text-slate-800 p-3 rounded-2xl rounded-tl-xs max-w-[85%] border shadow-xs";
+                    aiEl.innerText = `Blueprint updated according to: "${text}" parameters.`;
+                    timeline.appendChild(aiEl);
+                    timeline.scrollTop = timeline.scrollHeight;
+                }, 800);
+            },
+
+            renderScreen7Stack() {
+                const sidebar = document.getElementById('gen-quick-links');
+                const main = document.getElementById('generation-main-stack');
+                if (!sidebar || !main) return;
+
+                sidebar.innerHTML = "";
+                main.innerHTML = "";
+
+                this.state.parts.forEach((p) => {
+                    const status = this.state.generationStatuses[`p${p.num}`] || 'pending';
+                    const approved = !!this.state.approvedParts[`p${p.num}`];
+
+                    let icon = '⬜';
+                    if (status === 'generating') icon = '🔄';
+                    if (status === 'done' && !approved) icon = '📝';
+                    if (approved) icon = '✅';
+
+                    sidebar.innerHTML += `
+                        <a href="#gen-block-${p.num}" class="flex items-center gap-2 p-2 rounded-lg hover:bg-slate-100 transition text-xs font-bold text-slate-600">
+                            <span>${icon}</span> <span class="truncate">Part ${p.num}</span>
+                        </a>
+                    `;
+
+                    let innerContent = "";
+                    if (status === 'pending') {
+                        innerContent = `
+                            <div class="py-12 text-center bg-slate-50 border-2 border-dashed border-slate-300 rounded-2xl">
+                                <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Awaiting Generation</span>
+                            </div>
+                        `;
+                    } else if (status === 'generating') {
+                        innerContent = `
+                            <div class="py-12 flex flex-col items-center justify-center text-center bg-indigo-50/50 border-2 border-dashed border-indigo-200 rounded-2xl">
+                                <span class="text-3xl animate-spin mb-3 block">⚙️</span>
+                                <p class="text-[10px] font-extrabold text-indigo-500 uppercase tracking-widest animate-pulse">Running StudyForge AI compiler for Part ${p.num}...</p>
+                            </div>
+                        `;
+                    } else {
+                        innerContent = p.num === 2 ? this.getPart2RichNotes() : this.getPartGenericNotes(p.num);
+                    }
+
+                    const bgCls = approved ? 'bg-slate-50 border-emerald-400 ring-4 ring-emerald-50' : 'bg-white border-slate-200';
+                    const textChk = this.state.textApproved[`p${p.num}`] ? 'checked' : '';
+                    const imgChk = this.state.imagesApproved[`p${p.num}`] ? 'checked' : '';
+
+                    main.innerHTML += `
+                        <div class="p-6 md:p-10 rounded-3xl border-2 shadow-xs transition duration-300 ${bgCls}" id="gen-block-${p.num}">
+                            <div class="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 border-b pb-4 mb-6">
+                                <div>
+                                    <div class="flex gap-2 mb-1">
+                                        <span class="px-2 py-0.5 bg-slate-800 text-white text-[9px] font-black rounded uppercase tracking-wider">Part ${p.num}</span>
+                                        ${p.pages === 'Custom AI' ? `<span class="px-2 py-0.5 bg-indigo-100 text-indigo-800 text-[9px] font-black rounded uppercase tracking-wider">🤖 AI INJECTED</span>` : ''}
+                                    </div>
+                                    <h3 class="font-extrabold text-slate-900 text-lg mt-1">${p.title}</h3>
+                                </div>
+                                <div class="flex flex-wrap items-center gap-2 shrink-0">
+                                    <button onclick="app.openExecutionPrompts(${p.num})" class="px-3 py-1.5 bg-slate-100 text-slate-600 font-bold text-xs rounded-lg hover:bg-slate-200 transition">👁️ View Execution Prompts</button>
+                                    <button onclick="app.removePartScreen7(${p.num})" class="px-3 py-1.5 bg-red-50 text-red-600 font-bold text-xs rounded-lg hover:bg-red-100 transition">🗑️ Remove</button>
+
+                                    ${approved ? `
+                                        <button onclick="app.unlockPart(${p.num})" class="px-4 py-2 bg-slate-900 text-white font-bold text-xs rounded-xl hover:bg-black transition">🔓 Unlock to Edit</button>
+                                    ` : `
+                                        <button onclick="app.generatePart(${p.num})" class="px-4 py-2 bg-white text-indigo-700 font-extrabold text-xs rounded-xl hover:bg-indigo-50 border border-indigo-200 transition">Generate</button>
+                                        <div class="flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-lg border">
+                                            <label class="flex items-center gap-1 text-[9px] font-extrabold text-slate-500 uppercase cursor-pointer"><input type="checkbox" onchange="app.saveCheckState('text', ${p.num}, this.checked)" ${textChk} class="w-3.5 h-3.5 text-emerald-600 rounded"> Text</label>
+                                            <label class="flex items-center gap-1 text-[9px] font-extrabold text-slate-500 uppercase cursor-pointer"><input type="checkbox" onchange="app.saveCheckState('img', ${p.num}, this.checked)" ${imgChk} class="w-3.5 h-3.5 text-emerald-600 rounded"> Images</label>
+                                        </div>
+                                        <button onclick="app.approvePart(${p.num})" ${status !== 'done' ? 'disabled class="px-4 py-2 bg-slate-200 text-slate-400 font-bold text-xs rounded-xl cursor-not-allowed"' : 'class="px-4 py-2 bg-emerald-600 text-white font-bold text-xs rounded-xl hover:bg-emerald-700 shadow transition"'}>☑️ Approve Part</button>
+                                    `}
+                                </div>
+                            </div>
+
+                            <div class="${approved ? 'locked-draft' : ''}">
+                                ${innerContent}
+                            </div>
+                        </div>
+                    `;
+                });
+
+                this.updateScreen7Progress();
+            },
+
+            openAIAddPart() {
+                this.openOverlay('overlay-ai-add-part');
+            },
+
+            submitAIAddPart(e) {
+                e.preventDefault();
+                const topic = document.getElementById('ai-add-topic').value;
+                if(!topic) return;
+
+                this.showNotification("AI is generating new part...");
+                this.closeOverlay('overlay-ai-add-part');
+
+                setTimeout(() => {
+                    const newNum = this.state.parts.length > 0 ? Math.max(...this.state.parts.map(p => p.num)) + 1 : 1;
+                    this.state.parts.push({
+                        num: newNum,
+                        title: topic,
+                        pages: "Custom AI",
+                        topics: 3, defs: 2, desc: "Dynamically generated via AI."
+                    });
+                    this.state.generationStatuses[`p${newNum}`] = 'done';
+                    this.save();
+                    this.renderScreen7Stack();
+                    this.showNotification("Part successfully added and generated!");
+                }, 1500);
+            },
+
+            saveCheckState(type, num, checked) {
+                if(type === 'text') this.state.textApproved[`p${num}`] = checked;
+                if(type === 'img') this.state.imagesApproved[`p${num}`] = checked;
+                this.save();
+            },
+
+            getPart2RichNotes() {
+                const visInjected = this.state.insertedVisuals['p2_custom_image'];
+                let visMarkup = "";
+                if (visInjected) {
+                    visMarkup = `
+                        <div class="my-6 border border-indigo-200 rounded-2xl overflow-hidden bg-slate-50 relative">
+                            <span class="absolute top-2 left-2 bg-white text-indigo-700 text-[8px] font-black uppercase tracking-wider px-2 py-0.5 rounded shadow-xs z-10 border border-indigo-100">Injected Custom Graphic</span>
+                            <div class="w-full h-40 bg-indigo-50/50 flex flex-col items-center justify-center p-4">
+                                <p class="text-xs text-slate-800 font-bold bg-white p-3 rounded-lg shadow-xs max-w-lg">Style: ${visInjected.style} | Prompt: "${visInjected.prompt}"</p>
+                            </div>
+                            <div class="p-2 bg-white flex justify-between items-center text-[9px] font-extrabold uppercase border-t">
+                                <span class="text-slate-400">Ref: visual_custom_p2</span>
+                                <button class="text-red-500 hover:text-red-700" onclick="app.removeCustomVisual('p2_custom_image')">❌ Discard</button>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                return `
+                    <!-- Concept Clarification Container (C.4) -->
+                    <div class="p-container c-clarify">
+                        <span class="p-icon">💡</span>
+                        <h4 class="font-extrabold text-sm mb-1">Concept Clarification</h4>
+                        <p class="font-medium">Before understanding types of GDP, remember: GDP measures the total market value of all final goods and services produced within a country's borders during a year.</p>
+                        <span class="tag-source absolute top-3 right-3 shadow-xs">SOURCE_BACKED</span>
+                    </div>
+
+                    <h4 class="text-slate-900 font-extrabold text-base mb-2 mt-6 border-b pb-1">1. Nominal GDP (GDP at Current Prices)</h4>
+                    <p class="text-xs font-semibold text-slate-600 leading-relaxed mb-4">
+                        The total monetary value of all goods and services produced in the domestic territory, counted on the basis of market prices prevailing in that year.
+                        <span class="tag-source">SOURCE_BACKED</span>
+                    </p>
+                    
+                    <ul class="list-disc pl-5 mb-4 text-xs font-bold text-slate-700 space-y-1">
+                        <li>Calculated at current market price</li>
+                        <li>Does NOT adjust for inflation</li>
+                        <li>Can be misleading for growth comparison</li>
+                    </ul>
+
+                    <!-- Formula Box 1 (C.1) -->
+                    <div class="p-container c-formula">
+                        <span class="p-icon">📐</span>
+                        <code class="font-bold block font-mono text-[11px] mb-3 bg-white p-2.5 rounded-lg border border-indigo-100 shadow-inner">Nominal GDP = Σ (Current Year Price × Current Year Quantity)</code>
+                        <div class="text-xs font-semibold text-sky-900">
+                            <strong>Example Calculation:</strong> If a country produces 300 cars at ₹10 each in 2022-23, Nominal GDP = 300 × 10 = ₹3,000.
+                        </div>
+                        <span class="tag-source absolute top-3 right-3 shadow-xs">SOURCE_BACKED</span>
+                    </div>
+
+                    <h4 class="text-slate-900 font-extrabold text-base mb-2 mt-6 border-b pb-1">2. Real GDP (GDP at Constant Prices)</h4>
+                    <p class="text-xs font-semibold text-slate-600 leading-relaxed mb-4">
+                        The total monetary value of all final goods and services valued at a constant base year price.
+                        <span class="tag-source">SOURCE_BACKED</span>
+                    </p>
+
+                    <!-- Formula Box 2 (C.1) -->
+                    <div class="p-container c-formula">
+                        <span class="p-icon">📐</span>
+                        <code class="font-bold block font-mono text-[11px] mb-3 bg-white p-2.5 rounded-lg border border-indigo-100 shadow-inner">Real GDP = Σ (Base Year Price × Current Year Quantity)</code>
+                        <div class="text-xs font-semibold text-sky-900">
+                            <strong>Using same example:</strong> Base year 2011-12 price = ₹100 per car, Real GDP = 300 × 100 = ₹30,000.
+                        </div>
+                        <span class="tag-source absolute top-3 right-3 shadow-xs">SOURCE_BACKED</span>
+                    </div>
+
+                    <!-- Common Confusion Alert (C.3) -->
+                    <div class="p-container c-confusion">
+                        <span class="p-icon">⚠️</span>
+                        <h4 class="font-bold mb-2">Common Confusion Alert</h4>
+                        <ul class="list-disc pl-5 font-bold text-xs space-y-1">
+                            <li>Nominal GDP growing does NOT mean economy is growing</li>
+                            <li>Prices might just be rising (inflation)</li>
+                            <li>ALWAYS check Real GDP for actual growth</li>
+                        </ul>
+                        <span class="tag-enrich absolute top-3 right-3 shadow-xs">OPTIONAL_ENRICHMENT</span>
+                    </div>
+
+                    <!-- Image Placeholder 1 -->
+                    <div class="my-6 border rounded-2xl overflow-hidden bg-white shadow-xs relative">
+                        <div class="w-full h-36 bg-slate-100 flex flex-col items-center justify-center p-4 text-center">
+                            <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1.5 bg-white px-2 py-1 rounded shadow-sm">Generated Image Placeholder</span>
+                            <p class="text-xs text-slate-700 font-bold bg-white/70 p-2 rounded-lg">Nominal vs Real Value Infographic</p>
+                        </div>
+                        <div class="p-3 bg-slate-50 flex flex-wrap justify-between items-center text-[10px] font-extrabold uppercase gap-2 border-t">
+                            <div class="flex gap-1.5">
+                                <button onclick="app.showNotification('Regenerating layout...')" class="px-2.5 py-1.5 bg-white border text-slate-600 rounded hover:bg-slate-100 transition">🔄 Regen</button>
+                                <button onclick="app.showNotification('Styles menu...')" class="px-2.5 py-1.5 bg-white border text-indigo-600 rounded hover:bg-slate-100 transition">Diff Style ▼</button>
+                                <button onclick="app.showNotification('Editing prompt...')" class="px-2.5 py-1.5 bg-white border text-slate-600 rounded hover:bg-slate-100 transition">✏️ Edit Prompt</button>
+                            </div>
+                            <label class="flex items-center gap-1.5 cursor-pointer bg-emerald-50 text-emerald-700 px-2 py-1 rounded border border-emerald-200"><input type="checkbox" class="w-3.5 h-3.5 rounded text-emerald-600"> <span>Approve Image</span></label>
+                        </div>
+                    </div>
+
+                    <h4 class="text-slate-900 font-extrabold text-base mb-2 mt-6 border-b pb-1">3. Value Addition Method (Production Method)</h4>
+                    <p class="text-xs font-semibold text-slate-600 leading-relaxed mb-4">
+                        National income is estimated by calculating the value addition done by firms at each stage of production.
+                        <span class="font-extrabold text-slate-800 bg-slate-50 px-2 py-1 rounded border shadow-xs ml-1">Value Added = Value of Output – Intermediate Consumption</span>
+                    </p>
+
+                    <!-- Story Box (C.2) -->
+                    <div class="p-container c-story">
+                        <span class="p-icon">📖</span>
+                        <h4 class="font-bold text-base mb-2">Meet Shyam — The Bread Maker</h4>
+                        <div class="space-y-1 text-xs font-bold text-amber-900 leading-relaxed">
+                            <p>Step 1: Shyam buys flour from a miller for ₹50 <span class="text-amber-700 text-[10px]">(Intermediate)</span></p>
+                            <p>Step 2: Shyam bakes the flour into bread <span class="text-amber-700 text-[10px]">(Production)</span></p>
+                            <p>Step 3: Shyam sells the bread for ₹100 <span class="text-amber-700 text-[10px]">(Value of output)</span></p>
+                            <p class="mt-2 p-2 bg-white/70 rounded-lg border border-amber-200 inline-block shadow-sm">Value Added by Shyam = ₹100 - ₹50 = ₹50</p>
+                        </div>
+                        <span class="tag-source absolute top-3 right-3 shadow-xs">SOURCE_BACKED</span>
+                    </div>
+
+                    <!-- Image Placeholder 2 -->
+                    <div class="my-6 border rounded-2xl overflow-hidden bg-white shadow-xs relative">
+                        <div class="w-full h-36 bg-amber-50/50 flex flex-col items-center justify-center p-4 text-center">
+                            <span class="text-[9px] font-black text-amber-400 uppercase tracking-widest mb-1.5 bg-white px-2 py-1 rounded shadow-sm">Generated Image Placeholder</span>
+                            <p class="text-xs text-amber-900 font-bold bg-white/80 p-2 rounded-lg border border-amber-200">Shyam Bread Comic - 4 panels</p>
+                        </div>
+                        <div class="p-3 bg-slate-50 flex flex-wrap justify-between items-center text-[10px] font-extrabold uppercase gap-2 border-t">
+                            <div class="flex gap-1.5">
+                                <button onclick="app.showNotification('Regenerating layout...')" class="px-2.5 py-1.5 bg-white border text-slate-600 rounded hover:bg-slate-100 transition">🔄 Regen</button>
+                                <button onclick="app.showNotification('Styles menu...')" class="px-2.5 py-1.5 bg-white border text-indigo-600 rounded hover:bg-slate-100 transition">Diff Style ▼</button>
+                                <button onclick="app.showNotification('Editing prompt...')" class="px-2.5 py-1.5 bg-white border text-slate-600 rounded hover:bg-slate-100 transition">✏️ Edit Prompt</button>
+                            </div>
+                            <label class="flex items-center gap-1.5 cursor-pointer bg-emerald-50 text-emerald-700 px-2 py-1 rounded border border-emerald-200"><input type="checkbox" class="w-3.5 h-3.5 rounded text-emerald-600"> <span>Approve Image</span></label>
+                        </div>
+                    </div>
+
+                    ${visMarkup}
+
+                    <h4 class="text-slate-900 font-extrabold text-base mb-2 mt-6 border-b pb-1">4. Expenditure Method</h4>
+                    <p class="text-xs font-semibold text-slate-600 leading-relaxed mb-4">
+                        GDP is estimated by the expenditure made on the purchase of final goods and services.
+                        <span class="tag-source">SOURCE_BACKED</span>
+                    </p>
+
+                    <!-- Formula Box 3 (C.1) -->
+                    <div class="p-container c-formula">
+                        <span class="p-icon">📐</span>
+                        <code class="font-bold block font-mono text-[11px] mb-3 bg-white p-2.5 rounded-lg border border-indigo-100 shadow-inner text-center">GDP at MP = C + I + G + NX(X-M)</code>
+                        <div class="space-y-1.5 text-xs font-bold text-sky-900 bg-sky-50/50 p-3 rounded-lg border">
+                            <p><strong>C =</strong> Consumption Expenditure <span class="font-medium">(household purchases)</span></p>
+                            <p><strong>I =</strong> Investment Expenditure <span class="font-medium">(factories, highways)</span></p>
+                            <p><strong>G =</strong> Government Expenditure <span class="font-medium">(defence, law and order — NOT scholarships)</span></p>
+                            <p><strong>NX =</strong> Net Exports <span class="font-medium">= Exports(X) - Imports(M)</span></p>
+                        </div>
+                        <div class="mt-2.5 space-y-1 text-red-700 bg-red-50 p-3 rounded-lg text-[10px] font-bold shadow-inner">
+                            <p>⚠️ NOT counted in I: savings in bank, shares, bonds</p>
+                            <p>⚠️ NOT counted in G: scholarships, subsidies, transfer payments</p>
+                        </div>
+                    </div>
+
+                    <!-- BUNDLE-BASED CONTAINERS (C.13 - C.22) -->
+                    <h4 class="text-center font-black text-xs text-indigo-500 uppercase tracking-widest mt-8 mb-4">⭐ Extended Pedagogical Deep Dives ⭐</h4>
+
+                    <!-- Geography Container (C.13) -->
+                    <div class="p-container c-geo">
+                        <span class="p-icon">🗺️</span>
+                        <h4 class="font-bold text-sm mb-1">Location Context: Madhya Pradesh</h4>
+                        <p class="font-medium">Madhya Pradesh occupies a key central location within India. GSDP indices indicate structural dependence on agrarian factors compared to neighboring industrial economies.</p>
+                        <div class="bg-white/80 p-2.5 rounded-lg border border-teal-200 mt-2 text-[10px] font-bold text-teal-800 shadow-inner">
+                            <strong>Neighbors:</strong> Uttar Pradesh, Rajasthan, Gujarat, Maharashtra, Chhattisgarh
+                        </div>
+                        <span class="tag-source absolute top-3 right-3 shadow-xs">SOURCE_BACKED</span>
+                    </div>
+
+                    <!-- Personality Container (C.14) -->
+                    <div class="p-container c-person">
+                        <span class="p-icon">👥</span>
+                        <h4 class="font-bold text-sm mb-1">Personality Profile: Amartya Sen</h4>
+                        <p class="font-medium text-xs leading-relaxed">Nobel Laureate in Economics (1998). Key Contribution: Welfare economics, capability parameters, and HDI formulation frameworks.</p>
+                        <div class="bg-white/80 p-2 rounded border mt-2 text-[10px] font-bold text-indigo-800">
+                            <strong>Contemporaries:</strong> Kaushik Basu, Jagdish Bhagwati
+                        </div>
+                    </div>
+
+                    <!-- Data Insights Container (C.15) -->
+                    <div class="p-container c-data">
+                        <span class="p-icon">📊</span>
+                        <h4 class="font-bold text-sm mb-1">Data Insights: India GDP Growth</h4>
+                        <ul class="list-disc pl-4 text-xs font-bold text-cyan-900 space-y-0.5">
+                            <li>India's GDP grew 8x from 2000 to 2024</li>
+                            <li>COVID caused -6.6% contraction (peak drop)</li>
+                            <li>Average annual growth: 6.8% (last 20 years)</li>
+                        </ul>
+                    </div>
+
+                    <!-- Formula Operations Container (C.16) -->
+                    <div class="p-container c-formops">
+                        <span class="p-icon">🧮</span>
+                        <h4 class="font-bold text-sm mb-1">Formula Deep Dive: GDP = C+I+G+NX</h4>
+                        <div class="text-xs space-y-1.5 font-bold text-indigo-950">
+                            <p><strong>Derivation Steps:</strong> spending totals → classify spender type → aggregate parameters.</p>
+                            <p><strong>Sensitivity:</strong> 1% increase in C yields ~0.6% absolute GDP shift due to spending weight variables.</p>
+                        </div>
+                    </div>
+
+                    <!-- Institution Container (C.17) -->
+                    <div class="p-container c-admin">
+                        <span class="p-icon">🏛️</span>
+                        <h4 class="font-bold text-sm mb-1">Institution Focus: MoSPI</h4>
+                        <p class="font-medium text-xs">Ministry of Statistics & Programme Implementation. Mandate: Compiling national index accounts and publishing CSO baseline indicators.</p>
+                    </div>
+
+                    <!-- Legal Container (C.5) -->
+                    <div class="p-container c-legal">
+                        <span class="p-icon">⚖️</span>
+                        <h4 class="font-bold text-sm mb-1">Legal Reference: FRBM Act (2003)</h4>
+                        <p class="font-medium text-xs">Fiscal Responsibility and Budget Management Act. Key provisions mandate absolute fiscal deficit boundaries as percentage thresholds of GDP.</p>
+                    </div>
+
+                    <!-- Timeline Container (C.7) -->
+                    <div class="c-timeline text-xs font-extrabold text-slate-700">
+                        <div class="c-timeline-item">1950 — First estimation by CSO</div>
+                        <div class="c-timeline-item">1993 — Shift to base year 1980-81</div>
+                        <div class="c-timeline-item">2015 — Base year 2011-12, new methodology</div>
+                    </div>
+
+                    <!-- Current Affairs Zone -->
+                    <div class="mt-8 border rounded-2xl p-6 bg-rose-50/20 shadow-xs relative">
+                        <div class="flex justify-between items-center mb-4 border-b border-rose-100 pb-2">
+                            <h5 class="text-xs font-black text-rose-900 flex items-center gap-1.5"><span>📰</span> Current Affairs Zone</h5>
+                            <button onclick="app.toggleElement('ca-zone-results')" class="px-3 py-1.5 bg-white hover:bg-rose-50 border text-rose-700 text-[10px] font-extrabold uppercase tracking-widest rounded-lg shadow-xs transition">
+                                Generate Current Affairs
+                            </button>
+                        </div>
+
+                        <div id="ca-zone-results" class="hidden space-y-3 text-xs">
+                            <div class="p-3 bg-white border rounded-xl flex justify-between items-center gap-2">
+                                <div>
+                                    <span class="font-black text-slate-800 block text-[9px] bg-slate-100 px-1.5 py-0.5 rounded w-max mb-1">National Recent</span>
+                                    <p class="font-bold text-slate-600">India GDP grew 6.7% in Q2 FY25 (MoSPI, Nov 2024)</p>
+                                </div>
+                                <button onclick="app.showNotification('Merged news successfully')" class="px-2.5 py-1.5 bg-indigo-50 border text-indigo-700 font-bold rounded-lg text-[9px]">Merge</button>
+                            </div>
+                            <div class="p-3 bg-white border rounded-xl flex justify-between items-center gap-2">
+                                <div>
+                                    <span class="font-black text-slate-800 block text-[9px] bg-slate-100 px-1.5 py-0.5 rounded w-max mb-1">MP State</span>
+                                    <p class="font-bold text-slate-600">MP GSDP growth at 7.1% (2024 estimate)</p>
+                                </div>
+                                <button onclick="app.showNotification('Merged state news')" class="px-2.5 py-1.5 bg-indigo-50 border text-indigo-700 font-bold rounded-lg text-[9px]">Merge</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- AI Validate button -->
+                    <div class="flex justify-end gap-2 mt-8 pt-4 border-t flex-wrap">
+                        <button onclick="app.showNotification('Refining text...')" class="px-3 py-1.5 bg-white border text-slate-700 rounded-lg text-[10px] font-extrabold uppercase tracking-wider">🔄 Regenerate Entire Text</button>
+                        <button onclick="app.showNotification('Inline edit active!')" class="px-3 py-1.5 bg-white border text-slate-700 rounded-lg text-[10px] font-extrabold uppercase tracking-wider">✏️ Inline Edit</button>
+                        <button onclick="app.showNotification('Opening chat refine...')" class="px-3 py-1.5 bg-indigo-50 border text-indigo-700 rounded-lg text-[10px] font-extrabold uppercase tracking-wider">🤖 AI Refine</button>
+                    </div>
+                `;
+            },
+
+            getPartGenericNotes(partNum) {
+                return `
+                    <div class="p-container c-concept">
+                        <span class="p-icon">🎯</span>
+                        <h4 class="font-extrabold text-sm mb-1">Concept Summary</h4>
+                        <p class="font-medium text-xs">Standardized conceptual study notes outline mapped securely for Part ${partNum} based on syllabus frameworks.</p>
+                    </div>
+                    <p class="text-xs text-slate-600 leading-relaxed font-semibold">Additional reference materials and data structures will be populated upon final compile pipelines.</p>
+                `;
+            },
+
+            generatePart(partNum, callback) {
+                if (Math.random() < 0.2 && !callback) {
+                    document.getElementById('error-action-name').innerText = `compile Part ${partNum} material`;
+                    this.openOverlay('overlay-error-popup');
+                    return;
+                }
+
+                this.state.generationStatuses[`p${partNum}`] = 'generating';
+                this.renderScreen7Stack();
+
+                setTimeout(() => {
+                    this.state.generationStatuses[`p${partNum}`] = 'done';
+                    this.save();
+                    this.renderScreen7Stack();
+                    if (callback) callback();
+                }, 1200);
+            },
+
+            simulateParallelGeneration() {
+                let idx = 0;
+                const processNext = () => {
+                    if (idx >= this.state.parts.length) return;
+                    const p = this.state.parts[idx];
+                    if (this.state.generationStatuses[`p${p.num}`] !== 'done') {
+                        this.generatePart(p.num, () => {
+                            idx++;
+                            setTimeout(processNext, 200);
+                        });
+                    } else {
+                        idx++;
+                        processNext();
+                    }
+                };
+                processNext();
+            },
+
+            approvePart(partNum) {
+                this.state.approvedParts[`p${partNum}`] = true;
+                this.state.textApproved[`p${partNum}`] = true;
+                this.state.imagesApproved[`p${partNum}`] = true;
+                this.state.generationStatuses[`p${partNum}`] = 'done';
+                this.save();
+                this.renderScreen7Stack();
+            },
+
+            unlockPart(partNum) {
+                this.state.approvedParts[`p${partNum}`] = false;
+                this.save();
+                this.renderScreen7Stack();
+            },
+
+            approveAllGeneratedParts() {
+                this.state.parts.forEach(p => {
+                    this.state.generationStatuses[`p${p.num}`] = 'done';
+                    this.state.textApproved[`p${p.num}`] = true;
+                    this.state.imagesApproved[`p${p.num}`] = true;
+                    this.state.approvedParts[`p${p.num}`] = true;
+                });
+                this.save();
+                this.renderScreen7Stack();
+                this.showNotification("All parts approved successfully!");
+            },
+
+            updateScreen7Progress() {
+                let approved = 0;
+                this.state.parts.forEach(p => {
+                    if (this.state.approvedParts[`p${p.num}`]) approved++;
+                });
+                const pct = Math.round((approved / this.state.parts.length) * 100);
+                const bar = document.getElementById('gen-overall-progress-bar');
+                const text = document.getElementById('gen-parts-done-text');
+                
+                if (bar) bar.style.width = `${pct}%`;
+                if (text) text.innerText = `${approved}/${this.state.parts.length} parts`;
+            },
+
+            setupVisualizerListeners() {
+                document.addEventListener('mouseup', () => {
+                    const sel = window.getSelection();
+                    const text = sel.toString().trim();
+                    const btn = document.getElementById('floating-highlighter');
+                    if (!btn) return;
+
+                    const curScreen = document.querySelector('.screen.active');
+                    if (curScreen && curScreen.id === 'screen-7' && text.length > 8) {
+                        const range = sel.getRangeAt(0);
+                        const rect = range.getBoundingClientRect();
+                        btn.style.display = 'block';
+                        btn.style.top = `${rect.top + window.scrollY - 38}px`;
+                        btn.style.left = `${Math.max(rect.left + window.scrollX + (rect.width/2) - 50, 10)}px`;
+                    } else {
+                        btn.style.display = 'none';
+                    }
+                });
+            },
+
+            openHighlightVisualizer() {
+                const sel = window.getSelection().toString().trim();
+                document.getElementById('vis-selected-passage').innerText = sel;
+                document.getElementById('vis-render-sandbox').classList.add('hidden');
+                
+                this.openOverlay('overlay-visualizer');
+                document.getElementById('floating-highlighter').style.display = 'none';
+                window.getSelection().removeAllRanges();
+            },
+
+            renderVisualizeSandbox() {
+                const prompt = document.getElementById('vis-edit-prompt').value;
+                document.getElementById('vis-render-prompt-preview').innerText = prompt;
+                document.getElementById('vis-render-sandbox').classList.remove('hidden');
+                this.showNotification("Visual model compiled!");
+            },
+
+            insertVisualizedImage() {
+                let promptVal = document.getElementById('vis-edit-prompt').value;
+                // ESCAPING HTML INJECTION BUG FIX
+                promptVal = promptVal.replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                
+                this.state.insertedVisuals['p2_custom_image'] = {
+                    style: document.getElementById('vis-style-choice').value || "Infographic",
+                    prompt: promptVal
+                };
+                this.save();
+                this.renderScreen7Stack();
+                this.closeOverlay('overlay-visualizer');
+                this.showNotification("Graphic successfully inserted into note stack!");
+            },
+
+            discardVisualizeSandbox() {
+                document.getElementById('vis-render-sandbox').classList.add('hidden');
+                this.closeOverlay('overlay-visualizer');
+            },
+
+            prepareExport() {
+                const main = this.state.mainTopic || "NATIONAL INCOME";
+                document.getElementById('export-doc-title').innerText = main.toUpperCase();
+                
+                const exam = this.state.examType || "State PSC";
+                const stateF = this.state.stateFocus || "MP";
+                document.getElementById('export-doc-meta').innerText = `Target: ${exam} | State Focus: ${stateF}`;
+            },
+
+            openPreview() {
+                const canvas = document.getElementById('export-preview-canvas');
+                const title = this.state.mainTopic || "NATIONAL INCOME";
+                const exam = this.state.examType || "State PSC";
+                const stateF = this.state.stateFocus || "MP";
+
+                canvas.innerHTML = `
+                    <div class="border-b-4 border-slate-800 pb-8 mb-8 text-center mt-6">
+                        <h1 class="font-black text-3xl text-slate-900 tracking-tight">${title.toUpperCase()}</h1>
+                        <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">Syllabus Study Material</p>
+                        <p class="text-xs text-slate-600 font-semibold mt-4">Target Exam Profile: ${exam} | Focus: ${stateF}</p>
+                        <p class="text-[10px] text-slate-400 mt-1">Generated: January 2025</p>
+                    </div>
+                    <div class="space-y-6">
+                        <h4 class="font-extrabold text-sm text-slate-800">Part 2 Outline Content Preview</h4>
+                        ${this.getPart2RichNotes()}
+                    </div>
+                `;
+
+                this.openOverlay('overlay-preview');
+            },
+
+            downloadExported() {
+                const topic = this.state.mainTopic || "NATIONAL_INCOME";
+                const dummyContent = `# ${topic.toUpperCase()}\n\nStudy notes successfully downloaded and exported via StudyForge.`;
+                const blob = new Blob([dummyContent], { type: 'text/markdown' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `StudyForge_${topic.replace(/\s+/g,'_')}.md`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                this.showNotification("Document download successful!");
+            },
+
+            toggleElement(id) {
+                const el = document.getElementById(id);
+                if (el) el.classList.toggle('hidden');
+            }
+        };
+
+        window.app = app;
+        window.onload = () => app.init();
+    </script>
+<script>
+/*
+ STUDYFORGE REAL AI INTEGRATION EXTENSION
+ Uses the UI shell in sindhuskeleton.html. All Gemini calls are intentionally centralized below.
+*/
+(() => {
+  const SKEY='studyforge_v30_real_state';
+  const safe=(x)=>String(x??'').replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[m]);
+  const strip=(x)=>String(x??'').replace(/<[^>]*>/g,' ');
+  const now=()=>new Date().toISOString();
+  const json=(s)=>{ try { const m=String(s).match(/\{[\s\S]*\}/); return JSON.parse(m?m[0]:s); } catch(e){ throw new Error('Model did not return valid JSON: '+e.message); } };
+  const uid=(p)=>p+'-'+Date.now()+'-'+Math.random().toString(36).slice(2,7);
+
+  /* Canonical prompt policy: task wording is assembled from Document 3 operation rules.
+     Keep the final executed prompt in promptHistory. */
+  const PROMPTS={
+    subject:`Read the supplied study source and return ONLY JSON with primary_subject, sub_discipline, purpose, secondary_domains, and evidence-based signals for formula,date_timeline,location,personality,legal_constitutional,code_algorithm,diagram_process,chart_data_table,institution_administration,medical_science,current_affairs_cue,story_analogy_need. Every signal has strength strong|weak|not_detected, evidence[], page_refs[]. Do not use web knowledge.`,
+    extract:`Extract ONLY JSON from the supplied source: topics[], definitions[], formulas[], pyqs[], comparisons[], examples[], timelines[], tables[], diagrams[], locations[], personalities[], legal_references[], processes[], key_facts[]. Use stable IDs T-, D-, F-, PYQ-, CMP-, EX-, TL-, TB-, DG-, LOC-, PER-, LAW-, PR-, KF-. Preserve source/page references. Do not add outside facts.`,
+    bundles:`Using the source signals and extraction, return ONLY JSON {bundles:[{bundle_id,state,evidence,features:[{feature_id,state,reason,evidence}]}]}. State is auto_on|suggested|not_detected. Evaluate only routed bundle IDs. Do not invent evidence.`,
+    split:`Return ONLY JSON {recommended_range:{min_parts,max_parts},proposed_count,out_of_range_warning:{required,message},parts:[{part_id,title,page_range,topic_ids,analysis_refs,applied_bundles,rationale,density_note}]}. Use page range only as guardrail. Keep concepts, formulas and PYQs coherent.`,
+    blueprint:`Return ONLY JSON {part_id,headings:[{heading_id,title,level,purpose}],text_plan:[{container_id,heading_id,container_type,teaching_goal,source_refs,analysis_refs,bundle_features}],image_plan:[{image_id,title,placement_after,learning_goal,content_to_show,style_recommended,style_reasoning,mixed_style_allowed}],ca_plan:{queries:[{query_id,query,purpose,related_heading_id}]},validation_plan:[{check_id,what_to_check,reason,related_refs}],applied_bundles:[]}. Plan only; no web search or final notes.`,
+    writer:`Return ONLY JSON {part_id,html_blocks:[{anchor,heading_id,container_type,title,safe_content,traceability,source_refs,web_source_refs}],image_needed:[{request_id,description,after_anchor,learning_goal,style_hint}],citations:[],generation_summary}. Create exam-ready notes using only provided source/analysis. traceability must be SOURCE_BACKED, RESEARCH_REQUIRED, OPTIONAL_ENRICHMENT or WEB_SOURCED. safe_content must be text or simple allowed markup, never scripts/events.`,
+    image:`Return ONLY JSON {images_needed:[{image_id,title,expanded_prompt,style_recommended,style_reasoning,layout_plan,placement_anchor,learning_goal}],split_reason}. Make educational visuals clear, labelled, and understanding-first; combine styles only when readable.`,
+    validation:`Return ONLY JSON {overall_status,summary:{text_covered,images_created,sources_used,enrichments_added,web_sources_used},issues:[{issue_id,type,detail,target,priority}],suggestions:[{suggestion_id,action,target,details,rationale,priority,required_context}],suggested_images:[{request_id,description,insert_at,learning_goal,style_hint,priority}]}. Validate supplied part against source and blueprint without web search.`,
+    finalValidation:`Return ONLY JSON {readiness_status,covered_well,potential_gaps:[{gap_id,detail,why_it_matters,priority}],suggestions:[{suggestion_id,type,target,title,details,rationale,bundles,requires_ca,priority}]}. Check actual cross-domain content needs, not only subject label.`,
+    refine:`Return ONLY JSON {scope:{type,target_anchors,reason},proposed_edits:[{edit_id,anchor,before,after,reason,manual_edit_risk}],image_actions:[{action,target,reason}],ca_action_required,requires_full_regeneration,warning}. Preserve unrelated/manual work.`,
+    subtopics:`Return ONLY JSON {guaranteed_topics:[{title,reason}],suggested_essential:[{title,reason}],suggested_optional:[{title,reason}],current_topics:[{title,reason,web_source_url,source_date}],scope_notes:[]}. Preserve user topics exactly.`,
+    draft:`Return ONLY JSON {content,heading_map:[{heading_id,title,level}],web_sources:[{claim,url,publisher,date}],current_fact_markers:[{claim,related_heading_id,source_url}]}. Draft source-like editable study material, not final notes.`,
+    ca:`Return ONLY JSON {query,grounding_status,fetched_at,results:[{fact,context,url,publisher,date,related_heading_id}],disclaimer}. Return current relevant verified facts with URLs.`
+  };
+  const allowed={concept_box:'c-concept',formula_box:'c-formula',story_box:'c-story',confusion_alert:'c-confusion',legal_box:'c-legal',location_box:'c-geo',personality_card:'c-person',data_insight:'c-data',formula_operations:'c-formops',institution_box:'c-admin',ca_box:'c-ca',analogy_box:'c-analogy',process_box:'c-process',experiment_box:'c-exp',medical_box:'c-med',application_box:'c-app',definition_box:'c-clarify'};
+
+  const app=window.app;
+  const baseState=app.state;
+  const oldInit=app.init.bind(app);
+  app.state={...baseState, schemaVersion:3, source:{origin:'',text:'',pageMap:[],diagnostics:[],chunks:[]}, analysis:{subjectSignals:null,deepAnalysis:null,bundleAnalysis:null,userBundleOverrides:{}}, blueprints:{}, generatedParts:{}, images:{}, currentAffairs:{}, promptHistory:[], jobs:{}, stale:{}, draftScope:null, imagePreview:false, internetSearch:false, depth:'medium'};
+
+  app.persist=function(){ localStorage.setItem(SKEY,JSON.stringify(this.state)); };
+  app.record=function(op,system,task,meta={}){ const r={id:uid('EX'),op,system,task,createdAt:now(),status:'running',...meta}; this.state.promptHistory.push(r); this.persist(); return r; };
+  app.promptView=function(op){ const r=[...this.state.promptHistory].reverse().find(x=>x.op===op); if(!r)return this.showNotification('No executed prompt available yet.'); const w=window.open('','_blank','width=850,height=650'); w.document.write('<pre style="white-space:pre-wrap;padding:20px;font-family:monospace">'+safe('OPERATION: '+op+'\n\nTASK PROMPT:\n'+r.task+'\n\nSYSTEM:\n'+r.system)+'</pre>'); };
+  app.setJob=function(k,status,error=''){ this.state.jobs[k]={status,error,at:now()}; this.persist(); };
+
+  app.callText=async function(op,task,meta={}){
+    // GEMINI INTEGRATION: Verify exact request/model/environment/return format in:
+    // F:\Code by Akshat\testgemini\studyforge\resource\way to use gemini text and gemini image
+    // Uses the existing geminiGenerateText(promptText) function; do not replace with a new provider wrapper.
+    const system='You are StudyForge educational intelligence. Follow the task exactly. Return only requested JSON.';
+    const r=this.record(op,system,task,meta); this.setJob(op,'running');
+    try{ const raw=await geminiGenerateText(system+'\n\n'+task); r.status='success'; r.raw=raw; this.setJob(op,'succeeded'); this.persist(); return raw; }
+    catch(e){ r.status='failed';r.error=String(e.message||e);this.setJob(op,'failed',r.error);this.persist();throw e; }
+  };
+  app.callSearch=async function(op,q,meta={}){
+    // GEMINI INTEGRATION: Verify exact request/model/environment/grounding/return format in:
+    // F:\Code by Akshat\testgemini\studyforge\resource\way to use gemini text and gemini image
+    // Uses existing geminiSearchText(searchQuery) only for allowed grounded search operations.
+    const r=this.record(op,'Gemini grounded web search',q,{...meta,grounding:true}); this.setJob(op,'running');
+    try{const raw=await geminiSearchText(q);r.status='success';r.raw=raw;this.setJob(op,'succeeded');this.persist();return raw;}catch(e){r.status='failed';r.error=String(e.message||e);this.setJob(op,'failed',r.error);this.persist();throw e;}
+  };
+  app.callImage=async function(op,prompt,meta={}){
+    // GEMINI INTEGRATION: Verify exact request/model/environment/image return format in:
+    // F:\Code by Akshat\testgemini\studyforge\resource\way to use gemini text and gemini image
+    // Uses existing geminiImageCreation(imagePrompt); do not replace with a mock image generator.
+    const r=this.record(op,'StudyForge educational image generation',prompt,meta);this.setJob(op,'running');
+    try{const url=await geminiImageCreation(prompt);r.status='success';r.asset=url;this.setJob(op,'succeeded');this.persist();return url;}catch(e){r.status='failed';r.error=String(e.message||e);this.setJob(op,'failed',r.error);this.persist();throw e;}
+  };
+  app.withError=async function(name,fn){try{return await fn();}catch(e){console.error(e);this.showNotification(name+' failed: '+e.message);throw e;}};
+
+  app.saveInputs=function(){
+    baseState.mainTopic=document.getElementById('topic-main').value.trim();baseState.focusArea=document.getElementById('topic-focus').value.trim();baseState.pastedText=document.getElementById('paste-area').value;
+    baseState.examType=document.getElementById('setting-exam').value;baseState.objective=document.getElementById('setting-objective').value;baseState.stateFocus=document.getElementById('setting-state').value;baseState.currentAffairs=document.getElementById('setting-ca').checked;
+    baseState.subTopics=[...document.querySelectorAll('.subtopic-input')].map(x=>x.value.trim()).filter(Boolean);this.state.depth=document.getElementById('sf-depth')?.value||'medium';this.state.internetSearch=!!document.getElementById('sf-internet')?.checked;this.state.imagePreview=!!document.getElementById('sf-image-preview')?.checked;this.persist();
+  };
+  app.installInputExtras=function(){ if(document.getElementById('sf-depth'))return; const host=document.querySelector('#screen-1 .bg-white.p-6.rounded-2xl.border.border-slate-200.shadow-sm.mb-8 .grid'); if(!host)return;
+    host.insertAdjacentHTML('beforeend',`<div><label class="block text-[10px] font-extrabold text-slate-500 uppercase tracking-wide mb-1">Draft depth</label><select id="sf-depth" onchange="app.saveInputs()" class="w-full px-3 py-2 border rounded-lg text-sm"><option value="medium">Medium</option><option value="comprehensive">Comprehensive</option></select></div><div class="flex flex-col justify-center gap-2"><label class="text-xs font-bold"><input id="sf-internet" type="checkbox" onchange="app.saveInputs()"> Search internet for topic</label><label class="text-xs font-bold"><input id="sf-image-preview" type="checkbox" onchange="app.saveInputs()"> Preview image prompts</label></div>`);
+  };
+  app.triggerAIDraftBridge=async function(){ this.saveInputs();if(!baseState.mainTopic)return this.showNotification('Enter a main topic first.');const task=PROMPTS.subtopics+'\nTOPIC:'+baseState.mainTopic+'\nUSER SUBTOPICS:'+JSON.stringify(baseState.subTopics)+'\nDEPTH:'+this.state.depth+(this.state.internetSearch?'\nInternet mode enabled.':'');const out=json(await this.callText('AI-01A',task));this.state.draftScope=out;this.persist();this.showScope(out); };
+  app.showScope=function(o){let html=`<div id="sf-scope" class="fixed inset-0 z-[300] bg-slate-900/60 flex items-center justify-center p-4"><div class="bg-white max-w-xl w-full rounded-2xl p-6 max-h-[80vh] overflow-auto"><h3 class="font-black text-lg">AI Suggested Study Scope</h3><p class="text-xs text-slate-500 mb-3">Choose what to include before generating the editable source draft.</p><div id="sf-scope-list" class="space-y-2">`;
+    const rows=[...(o.guaranteed_topics||[]).map(x=>({...x,checked:true,kind:'Mandatory'})),...(o.suggested_essential||[]).map(x=>({...x,checked:true,kind:'Essential'})),...(o.suggested_optional||[]).map(x=>({...x,checked:false,kind:'Optional'}))];rows.forEach((x,i)=>html+=`<label class="block text-xs p-2 border rounded"><input type="checkbox" data-i="${i}" ${x.checked?'checked':''}> <b>${safe(x.kind)}:</b> ${safe(x.title)} <span class="text-slate-400">— ${safe(x.reason||'')}</span></label>`);html+=`</div><div class="mt-4 flex gap-2"><button class="px-3 py-2 bg-indigo-600 text-white rounded" onclick="app.generateDraftFromScope()">Approve & Generate</button><button class="px-3 py-2 border rounded" onclick="document.getElementById('sf-scope').remove()">Cancel</button><button class="px-3 py-2 border rounded" onclick="app.promptView('AI-01A')">View Prompt</button></div></div></div>`;document.body.insertAdjacentHTML('beforeend',html);this.state.draftScopeRows=rows;};
+  app.generateDraftFromScope=async function(){const checks=[...document.querySelectorAll('#sf-scope-list input')];const approved=checks.filter(x=>x.checked).map(x=>this.state.draftScopeRows[+x.dataset.i].title);const task=PROMPTS.draft+'\nTOPIC:'+baseState.mainTopic+'\nAPPROVED SUBTOPICS:'+JSON.stringify(approved)+'\nDEPTH:'+this.state.depth+'\nEXAM:'+baseState.examType+(this.state.internetSearch?'\nUse current grounded information and return URL metadata.':'');const out=json(await this.callText('AI-01B',task));baseState.pastedText=out.content||'';this.state.source={origin:'ai_draft',text:baseState.pastedText,pageMap:[]};document.getElementById('paste-area').value=baseState.pastedText;app.updateCharCount();document.getElementById('sf-scope').remove();this.persist();this.showNotification('Draft inserted into Direct Paste Text. Review and continue.');};
+
+  app.validateAndProceed1=function(){this.saveInputs();let src=baseState.pastedText||'';if(baseState.fileName&&!src)return this.showNotification('This Gemini integration example accepts text source. Paste extracted file text before continuing.');if(!src&&!baseState.mainTopic)return this.showNotification('Provide source, pasted text, or use AI Draft.');this.state.source={origin:this.state.source.origin||'pasted',text:src||baseState.mainTopic,pageMap:[]};this.persist();if(this.state.source.origin==='ai_draft')this.runAnalysis();else this.navigate(2);};
+  app.playReadingProgress=function(){setTimeout(()=>this.runAnalysis(),300);};
+  app.runAnalysis=async function(){await this.withError('Analysis',async()=>{const src=this.state.source.text;const sig=json(await this.callText('AI-03A',PROMPTS.subject+'\nSOURCE:\n'+src));this.state.analysis.subjectSignals=sig;const deep=json(await this.callText('AI-03B',PROMPTS.extract+'\nSUBJECT SIGNALS:'+JSON.stringify(sig)+'\nSOURCE:\n'+src));this.state.analysis.deepAnalysis=deep;const routed=[];if(sig.signals?.formula?.strength!=='not_detected')routed.push('formula_ops');if(sig.signals?.location?.strength!=='not_detected')routed.push('geography');if(sig.signals?.personality?.strength!=='not_detected')routed.push('personality');if(sig.signals?.chart_data_table?.strength!=='not_detected')routed.push('chart_data');if(sig.signals?.legal_constitutional?.strength!=='not_detected')routed.push('legal');if(sig.signals?.date_timeline?.strength!=='not_detected')routed.push('timeline');if(sig.signals?.code_algorithm?.strength!=='not_detected')routed.push('computer_science');if(sig.signals?.medical_science?.strength!=='not_detected')routed.push('medical_science');if(sig.signals?.story_analogy_need?.strength!=='not_detected')routed.push('storytelling');const bun=json(await this.callText('AI-03C',PROMPTS.bundles+'\nSIGNALS:'+JSON.stringify(sig)+'\nANALYSIS:'+JSON.stringify(deep)+'\nROUTED:'+JSON.stringify(routed)));this.state.analysis.bundleAnalysis=bun;this.applyAnalysisUI();this.persist();this.navigate(3);});};
+  app.applyAnalysisUI=function(){const s=this.state.analysis.subjectSignals||{},d=this.state.analysis.deepAnalysis||{};document.getElementById('subject-heading').textContent='🎯 Subject: '+(s.primary_subject||'General')+' ('+(s.sub_discipline||'')+')';document.getElementById('purpose-heading').textContent='📋 Purpose: '+(s.purpose||'Study material analysis');const log=document.querySelector('#screen-3 .grid.grid-cols-2.md\\:grid-cols-5');if(log)log.innerHTML=`<div class="p-3 bg-slate-50 rounded-xl">📚 Topics:<b class="block text-sm">${(d.topics||[]).length}</b></div><div class="p-3 bg-slate-50 rounded-xl">📖 Definitions:<b class="block text-sm">${(d.definitions||[]).length}</b></div><div class="p-3 bg-slate-50 rounded-xl">🧮 Formulas:<b class="block text-sm">${(d.formulas||[]).length}</b></div><div class="p-3 bg-slate-50 rounded-xl">❓ PYQs:<b class="block text-sm">${(d.pyqs||[]).length}</b></div><div class="p-3 bg-slate-50 rounded-xl">📊 Tables:<b class="block text-sm">${(d.tables||[]).length}</b></div>`;};
+  app.forceEnableCategory=async function(id){const cat=this.state.featureCategories.find(x=>x.id===id);if(!cat)return;const r=json(await this.callText('AI-03D',PROMPTS.bundles+'\nREQUESTED BUNDLE:'+cat.name+'\nSOURCE:'+this.state.source.text));cat.detected=true;cat.count='User enabled / analyzed';cat.items.forEach((x,i)=>x.active=i<5);this.state.analysis.userBundleOverrides[id]=r;this.renderBundlesList();this.persist();};
+
+  app.saveTogglesAndProceed=async function(){this.save();await this.withError('Part splitting',async()=>{const a=this.state.analysis.deepAnalysis||{};const selected=this.state.featureCategories.filter(c=>c.detected).map(c=>({id:c.id,features:c.items.filter(i=>i.active).map(i=>i.name)}));const out=json(await this.callText('AI-04',PROMPTS.split+'\nANALYSIS:'+JSON.stringify(a)+'\nBUNDLES:'+JSON.stringify(selected)+'\nSOURCE:'+this.state.source.text));this.state.parts=(out.parts||[]).map((p,i)=>({num:i+1,title:p.title||'Part '+(i+1),pages:Array.isArray(p.page_range)?p.page_range.join('-'):'',topics:(p.topic_ids||[]).length,defs:(p.analysis_refs?.definitions||[]).length,desc:p.rationale||'',part_id:p.part_id||'P-'+(i+1),applied_bundles:p.applied_bundles||[],analysis_refs:p.analysis_refs||{}}));this.state.blueprintsApproved={};this.state.generationStatuses={};this.state.parts.forEach(p=>this.state.generationStatuses['p'+p.num]='pending');this.persist();this.renderPartsLayout();this.navigate(4);});};
+  app.navigate=function(n,init=false){let id=n===6?'screen-7':n===7?'screen-8':'screen-'+n;this.screens.forEach(x=>document.getElementById(x)?.classList.remove('active'));document.getElementById(id)?.classList.add('active');this.state.currentScreen=n;this.state.maxScreen=Math.max(this.state.maxScreen||1,n);document.getElementById('global-sidebar')?.classList.toggle('hidden',n<4);if(n>=4)document.getElementById('global-sidebar')?.classList.add('flex');this.persist();this.renderTopNav();this.renderSidebarSteps();if(n===5)this.generateBlueprints();if(n===6)this.renderScreen7Stack();if(n===7)this.prepareExport();};
+  app.navTo=function(n){if(n<=this.state.maxScreen)this.navigate(n);};
+  app.generateBlueprints=async function(){if(this.state.blueprintBuilding)return;this.state.blueprintBuilding=true;for(const p of this.state.parts){if(this.state.blueprints[p.part_id])continue;await new Promise(r=>setTimeout(r,700));try{const d=this.state.analysis.deepAnalysis||{};const partAnalysis={topics:(d.topics||[]).filter(x=>(p.analysis_refs?.topics||[]).includes(x.id)),formulas:(d.formulas||[]).filter(x=>(p.analysis_refs?.formulas||[]).includes(x.id))};const out=json(await this.callText('AI-05',PROMPTS.blueprint+'\nPART:'+JSON.stringify(p)+'\nSOURCE:'+this.state.source.text+'\nANALYSIS:'+JSON.stringify(partAnalysis)+'\nALL DEFINITIONS:'+JSON.stringify(d.definitions||[])+'\nALL FORMULAS:'+JSON.stringify(d.formulas||[])));this.state.blueprints[p.part_id]=out;}catch(e){console.error(e);}}this.state.blueprintBuilding=false;this.persist();this.renderBlueprints();};
+  app.generatePart=async function(num,cb){const p=this.state.parts.find(x=>x.num===num);if(!p)return;this.state.generationStatuses['p'+num]='generating';this.renderScreen7Stack();try{const d=this.state.analysis.deepAnalysis||{};const bp=this.state.blueprints[p.part_id]||{};const task=PROMPTS.writer+'\nPART:'+JSON.stringify(p)+'\nSOURCE:'+this.state.source.text+'\nBLUEPRINT:'+JSON.stringify(bp)+'\nDEFINITIONS:'+JSON.stringify(d.definitions||[])+'\nFORMULAS:'+JSON.stringify(d.formulas||[]);const out=json(await this.callText('AI-07A',task,{part:p.part_id}));this.state.generatedParts[p.part_id]=out;this.state.generationStatuses['p'+num]='done';this.persist();this.renderScreen7Stack();this.generatePlannedImages(p,out);if(cb)cb();}catch(e){this.state.generationStatuses['p'+num]='failed';this.persist();this.renderScreen7Stack();this.showNotification('Part generation failed: '+e.message);}};
+  app.generatePlannedImages=async function(p,out){for(const req of (out.image_needed||[])){try{const exp=json(await this.callText('AI-07B',PROMPTS.image+'\nREQUEST:'+JSON.stringify(req)+'\nPART:'+JSON.stringify(p)));for(const im of (exp.images_needed||[])){if(this.state.imagePreview){this.showNotification('Image prompt ready. Use View Execution Prompts to review.');continue;}const url=await this.callImage('AI-07C',im.expanded_prompt,{part:p.part_id,anchor:im.placement_anchor});this.state.images[im.image_id]={...im,url};}}catch(e){console.error(e);}}this.persist();this.renderScreen7Stack();};
+  app.getPartGenericNotes=function(num){const p=this.state.parts.find(x=>x.num===num),g=this.state.generatedParts[p?.part_id];if(!g)return '<div class="p-6 border-2 border-dashed rounded-xl text-center text-slate-400 text-xs">Awaiting generation</div>';return (g.html_blocks||[]).map(b=>`<div id="${safe(b.anchor)}" class="p-container ${allowed[b.container_type]||'c-concept'}"><span class="p-icon">📚</span><b>${safe(b.title||'Study Note')}</b><div class="mt-2 text-xs">${safe(strip(b.safe_content))}</div><span class="tag-source absolute top-3 right-3">${safe(b.traceability||'SOURCE_BACKED')}</span></div>`).join('')+(Object.values(this.state.images).filter(i=>i.placement_anchor).map(i=>`<div class="my-4 border rounded-xl overflow-hidden"><img class="w-full" src="${safe(i.url)}"><div class="p-2 text-[10px] font-bold">${safe(i.title)} <button onclick="app.promptView('AI-07B')">Show Prompt</button></div></div>`).join(''));};
+  app.fetchCA=async function(num){const p=this.state.parts.find(x=>x.num===num),bp=this.state.blueprints[p.part_id]||{},q=(bp.ca_plan?.queries||[]).map(x=>x.query).join('; ');if(!q)return this.showNotification('No CA query planned for this part.');const raw=await this.callSearch('AI-07D',q,{part:p.part_id});let out;try{out=json(raw);}catch{out={query:q,grounding_status:'available',fetched_at:now(),results:[{fact:raw,context:'Grounded result',url:'',publisher:'',date:''}],disclaimer:''};}this.state.currentAffairs[p.part_id]=out;this.persist();this.renderScreen7Stack();};
+  app.approvePart=async function(num){const p=this.state.parts.find(x=>x.num===num),g=this.state.generatedParts[p.part_id];if(!g)return this.showNotification('Generate this part first.');try{const out=json(await this.callText('AI-07H',PROMPTS.validation+'\nPART:'+JSON.stringify(p)+'\nCONTENT:'+JSON.stringify(g)+'\nBLUEPRINT:'+JSON.stringify(this.state.blueprints[p.part_id]||{})+'\nSOURCE:'+this.state.source.text));this.state.partsValidation=this.state.partsValidation||{};this.state.partsValidation[p.part_id]=out;const ok=confirm('Validation: '+(out.overall_status||'needs_review')+'\n'+(out.issues||[]).map(x=>x.detail).join('\n')+'\n\nOK = Ignore and approve as-is. Cancel = keep draft.');if(ok){this.state.approvedParts['p'+num]=true;this.state.textApproved['p'+num]=true;this.state.imagesApproved['p'+num]=true;this.persist();this.renderScreen7Stack();if(this.state.parts.every(x=>this.state.approvedParts['p'+x.num]))this.finalValidate();}}catch(e){this.showNotification('Validation failed: '+e.message);}};
+  

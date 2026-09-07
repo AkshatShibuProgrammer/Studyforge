@@ -1,0 +1,1995 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StudyForge - Chunked Syllabus Engine</title>
+  
+  <!-- CSS & Fonts -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  
+  <!-- Core Parsers (PDF, MD, LaTeX) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+
+  <script>
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    tailwind.config = {
+      theme: { 
+        extend: { 
+          fontFamily: { 
+            sans: ['Inter', 'system-ui', 'sans-serif'], 
+            mono: ['JetBrains Mono', 'monospace'] 
+          } 
+        } 
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'Inter', sans-serif; background-color: #f8fafc; color: #0f172a; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
+    .app-shell { display: flex; flex-direction: row; flex: 1; overflow: hidden; }
+    nav { height: 56px; flex-shrink: 0; }
+    main { flex: 1; overflow-y: auto; padding-bottom: 100px; padding-top: 1rem; position: relative; scroll-behavior: smooth; }
+    .hidden { display: none !important; }
+    .card-step-1 { background-color: #f8fafc; border-left: 4px solid #6366f1; box-shadow: 0 4px 6px -1px rgba(99,102,241,0.1); } 
+    .card-step-2 { background-color: #faf5ff; border-left: 4px solid #a855f7; box-shadow: 0 4px 6px -1px rgba(168, 85, 247, 0.1); } 
+    .card-step-3 { background-color: #ecfdf5; border-left: 4px solid #10b981; box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.1); } 
+    .card-step-4 { background-color: #fffbeb; border-left: 4px solid #f59e0b; box-shadow: 0 4px 6px -1px rgba(245, 158, 11, 0.1); } 
+    .markdown-body h1, .markdown-body h2, .markdown-body h3 { font-weight: 700; color: #0f172a; margin-top: 1.5em; margin-bottom: 0.5em; }
+    .markdown-body h1 { font-size: 1.75rem; border-bottom: 2px solid #e2e8f0; padding-bottom: 0.3rem; }
+    .markdown-body h2 { font-size: 1.5rem; }
+    .markdown-body h3 { font-size: 1.25rem; }
+    .markdown-body p { margin-bottom: 1rem; line-height: 1.7; color: #334155; }
+    .markdown-body ul { list-style-type: disc; padding-left: 1.5rem; margin-bottom: 1rem; color: #334155; }
+    .markdown-body table { width: 100%; border-collapse: collapse; margin-bottom: 1.5rem; }
+    .markdown-body th, .markdown-body td { border: 1px solid #cbd5e1; padding: 0.75rem; text-align: left; }
+    .markdown-body th { background-color: #f1f5f9; font-weight: 600; }
+    .markdown-body strong { color: #0f172a; font-weight: 700; }
+    @keyframes pulse-ring { 0% { transform: scale(0.8); box-shadow: 0 0 0 0 rgba(99,102,241,0.7); } 70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(99,102,241,0); } 100% { transform: scale(0.8); box-shadow: 0 0 0 0 rgba(99,102,241,0); } }
+    .pulse-active { animation: pulse-ring 2s infinite; }
+    @keyframes slideUp { from { transform: translateY(10%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    .slide-up { animation: slideUp 0.25s ease-out forwards; }
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    .animate-spin-slow { animation: spin 2s linear infinite; }
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #c7d2fe; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #818cf8; }
+    .sidebar-btn.active { background-color: #e0e7ff; color: #4f46e5; border-right: 3px solid #4f46e5; }
+    .nav-pill.active { background-color: #e0e7ff; color: #4f46e5; border-color: #818cf8; }
+    .timeline-container { display: flex; align-items: flex-start; overflow-x: auto; padding: 1rem 0; gap: 1rem; }
+    .timeline-node { display: flex; flex-direction: column; min-width: 200px; position: relative; }
+    .timeline-node::before { content: ''; position: absolute; top: 1.25rem; left: 2.5rem; right: -1rem; height: 2px; background: #cbd5e1; z-index: 0; }
+    .timeline-node:last-child::before { display: none; }
+    .timeline-dot { width: 2.5rem; height: 2.5rem; border-radius: 50%; background: #0ea5e9; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.7rem; z-index: 1; position: relative; border: 3px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .hide-scrollbar::-webkit-scrollbar { display: none; }
+    .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="bg-white border-b border-slate-200 shadow-sm relative shrink-0">
+    <div class="max-w-[1400px] mx-auto px-4 h-full flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold font-mono shadow-sm">SF</div>
+        <span class="font-bold text-xl tracking-tight text-slate-800">StudyForge</span>
+      </div>
+      <div class="flex items-center gap-4">
+        <!-- API KEY Injection & Fallback config -->
+        <div class="flex items-center gap-2">
+          <input type="password" id="user-api-key" placeholder="Enter Gemini API Key..." class="text-xs px-3 py-1.5 border border-slate-300 rounded-lg outline-none focus:ring-1 focus:ring-indigo-500 w-44 bg-slate-50 transition-all focus:bg-white" onchange="App.setApiKey(this.value)">
+        </div>
+        <span id="save-indicator" class="text-xs font-bold text-emerald-600 opacity-0 transition-opacity">✔ Saved</span>
+        <button onclick="PromptRegistry.open()" class="text-slate-500 hover:text-purple-600 transition p-2 rounded-lg hover:bg-purple-50" title="Prompt Registry">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path></svg>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Session Resume Banner -->
+  <div id="session-banner" class="hidden bg-sky-50 border-b border-sky-100 px-4 py-2 shrink-0 z-30">
+    <div class="max-w-[1400px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-sm">
+      <div class="flex items-center gap-2 text-sky-800">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        <span id="session-banner-text" class="font-medium">Previous session found.</span>
+      </div>
+      <div class="flex gap-2">
+        <button onclick="Session.resume()" class="px-4 py-1 bg-sky-600 hover:bg-sky-700 text-white rounded-lg font-semibold transition shadow-sm">Resume Session</button>
+        <button onclick="Session.clear()" class="px-4 py-1 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-lg font-semibold transition">Start Fresh</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- App Shell -->
+  <div class="app-shell max-w-[1400px] mx-auto w-full">
+    <aside class="w-16 sm:w-20 bg-white border-r border-slate-200 shrink-0 flex flex-col items-center py-6 gap-6 z-20">
+      <button id="nav-btn-1" onclick="App.goToStep(1)" class="sidebar-btn active w-12 h-12 rounded-xl flex flex-col items-center justify-center text-slate-400 hover:bg-slate-50 transition" title="Step 1: Extract">
+        <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+        <span class="text-[10px] font-bold">EXT</span>
+      </button>
+      <button id="nav-btn-2" onclick="App.goToStep(2)" class="sidebar-btn w-12 h-12 rounded-xl flex flex-col items-center justify-center text-slate-400 hover:bg-slate-50 transition" title="Step 2: Plan">
+        <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
+        <span class="text-[10px] font-bold">PLAN</span>
+      </button>
+      <button id="nav-btn-3" onclick="App.goToStep(3)" class="sidebar-btn w-12 h-12 rounded-xl flex flex-col items-center justify-center text-slate-400 hover:bg-slate-50 transition" title="Step 3: Write">
+        <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+        <span class="text-[10px] font-bold">WRITE</span>
+      </button>
+      <button id="nav-btn-4" onclick="App.goToStep(4)" class="sidebar-btn w-12 h-12 rounded-xl flex flex-col items-center justify-center text-slate-400 hover:bg-slate-50 transition" title="Step 4: Export">
+        <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+        <span class="text-[10px] font-bold">EXP</span>
+      </button>
+    </aside>
+
+    <!-- Main Scrolling Content Area -->
+    <main id="main-scroll" class="w-full px-4 sm:px-8 max-w-5xl mx-auto">
+      <!-- STEP 1: EXTRACT & ANALYZE -->
+      <section id="step-1" class="step-view card-step-1 p-6 md:p-8 rounded-2xl mb-8 mt-4">
+        <div class="flex items-center justify-between mb-6">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold">1</div>
+            <h2 class="text-2xl font-bold text-slate-800">Extract & Partition</h2>
+          </div>
+        </div>
+        <div id="upload-container" class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+          <label class="block text-sm font-bold text-slate-700 mb-2">Upload Syllabus / Source PDF</label>
+          <input type="file" id="pdf-upload" accept="application/pdf" class="block w-full text-sm text-slate-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer border border-slate-200 rounded-xl" onchange="Step1.handleUpload(event)">
+        </div>
+        <div id="s1-progress-panel" class="hidden mt-6 bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+          <h3 class="font-bold text-slate-800 mb-4 flex items-center justify-between">
+            <span>Analyzing Document...</span>
+            <span class="text-xs bg-slate-100 text-slate-600 px-2 py-1 rounded-md font-mono" id="s1-token-count">0 tokens</span>
+          </h3>
+          <div class="space-y-3" id="s1-phases"></div>
+          <div class="mt-6">
+            <button onclick="document.getElementById('stage1-live-output').classList.toggle('hidden')" class="text-xs font-bold text-indigo-600 hover:text-indigo-800">Toggle Live AI Stream ▼</button>
+            <div id="stage1-live-output" class="hidden mt-2 p-3 bg-slate-900 text-emerald-400 font-mono text-xs rounded-lg h-48 overflow-y-auto whitespace-pre-wrap shadow-inner"></div>
+          </div>
+        </div>
+        <div id="s1-output-tabs" class="hidden mt-6">
+          <div class="flex border-b border-slate-200 gap-4 mb-4 overflow-x-auto hide-scrollbar">
+            <button class="s1-tab-btn active pb-2 border-b-2 border-indigo-600 font-bold text-indigo-600 text-sm whitespace-nowrap" onclick="Step1.switchTab('parts')">Tab 3: Detected Parts</button>
+            <button class="s1-tab-btn pb-2 border-b-2 border-transparent font-medium text-slate-500 hover:text-slate-700 text-sm whitespace-nowrap" onclick="Step1.switchTab('analysis')">Tab 2: Analysis</button>
+            <button class="s1-tab-btn pb-2 border-b-2 border-transparent font-medium text-slate-500 hover:text-slate-700 text-sm whitespace-nowrap" onclick="Step1.switchTab('raw')">Tab 1: Raw PDF Data</button>
+          </div>
+          <div id="s1-tab-parts" class="s1-tab-content flex flex-col gap-4"></div>
+          <div id="s1-tab-analysis" class="s1-tab-content hidden space-y-4">
+            <div class="bg-white p-4 rounded-xl border border-slate-200"><h4 class="font-bold text-xs uppercase text-slate-500 mb-2">Identity</h4><div id="s1-out-identity" class="text-sm markdown-body"></div></div>
+            <div class="bg-white p-4 rounded-xl border border-slate-200"><h4 class="font-bold text-xs uppercase text-slate-500 mb-2">Topic Map</h4><div id="s1-out-topics" class="text-sm whitespace-pre-wrap font-mono"></div></div>
+            <div class="bg-white p-4 rounded-xl border border-slate-200"><h4 class="font-bold text-xs uppercase text-slate-500 mb-2">Exam Analysis</h4><div id="s1-out-exam" class="text-sm markdown-body"></div></div>
+            <div class="bg-white p-4 rounded-xl border border-slate-200"><h4 class="font-bold text-xs uppercase text-slate-500 mb-2">Visual Content</h4><div id="s1-out-visuals" class="text-sm markdown-body"></div></div>
+          </div>
+          <div id="s1-tab-raw" class="s1-tab-content hidden">
+            <div class="flex justify-between items-center mb-2">
+              <span class="text-xs font-bold text-slate-500" id="s1-raw-stats"></span>
+              <button onclick="UI.copyText('s1-raw-textarea')" class="text-xs bg-slate-200 hover:bg-slate-300 px-3 py-1 rounded-md font-bold transition">Copy</button>
+            </div>
+            <textarea id="s1-raw-textarea" class="w-full h-96 p-3 font-mono text-xs bg-slate-50 border border-slate-200 rounded-lg outline-none resize-y" readonly></textarea>
+          </div>
+          <div class="mt-8 flex justify-between items-center">
+            <button id="btn-debug-raw" onclick="Step1.showRawResponse()" class="hidden text-xs font-mono text-slate-400 hover:text-indigo-600 underline">Debug: View Raw AI Response</button>
+            <button id="s1-next-btn" onclick="App.goToStep(2)" class="ml-auto px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-md transition flex items-center gap-2">Proceed to Step 2 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg></button>
+          </div>
+        </div>
+      </section>
+
+      <!-- STEP 2: BLUEPRINT PLANNING -->
+      <section id="step-2" class="step-view card-step-2 p-6 md:p-8 rounded-2xl hidden opacity-0 transition-opacity duration-300 mb-8 mt-4">
+        <div class="flex items-center justify-between mb-6 flex-wrap gap-4">
+          <div class="flex items-center gap-3">
+            <button onclick="App.goToStep(1)" class="text-slate-500 hover:text-purple-600 transition flex items-center gap-1 text-sm font-bold bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg> Back</button>
+            <div class="w-8 h-8 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center font-bold ml-2">2</div>
+            <h2 class="text-2xl font-bold text-slate-800">Blueprint Planning</h2>
+          </div>
+        </div>
+        <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col md:flex-row items-center justify-between gap-6 mb-6">
+          <div class="flex-1 w-full">
+            <p class="text-sm text-slate-500 mb-1">Detected Subject via AI:</p>
+            <div class="flex items-center gap-3 mb-4">
+              <span id="s2-detected-subject" class="text-xl font-bold text-purple-700 bg-purple-50 px-3 py-1 rounded-lg border border-purple-100">Unknown</span>
+            </div>
+            <label class="text-xs font-bold text-slate-500 uppercase">Override Subject:</label>
+            <select id="s2-subject-select" onchange="Step2.onSubjectChange()" class="mt-1 block w-full md:w-64 text-sm border-slate-300 rounded-lg focus:ring-purple-500 focus:border-purple-500 bg-slate-50 p-2 border outline-none">
+              <option value="Economics">Economics</option>
+              <option value="Polity">Polity & Governance</option>
+              <option value="History">History</option>
+              <option value="Geography">Geography</option>
+              <option value="Science & Technology">Science & Technology</option>
+              <option value="Environment">Environment</option>
+              <option value="Social Issues">Social Issues</option>
+              <option value="MP Specific">MP Specific</option>
+              <option value="Current Affairs">Current Affairs</option>
+            </select>
+          </div>
+          <div class="flex-1 w-full bg-slate-50 p-4 rounded-xl border border-slate-200 text-sm flex flex-col justify-center">
+            <h4 class="font-bold text-slate-800 mb-2 border-b border-slate-200 pb-2">Active Blueprint Prompt</h4>
+            <div class="grid grid-cols-2 gap-2 mb-4 text-xs">
+              <div class="text-slate-500">Subject:</div><div id="s2-card-subject" class="font-bold text-slate-800">Economics</div>
+              <div class="text-slate-500">Prompt:</div><div id="s2-card-prompt-name" class="font-bold text-slate-800">economicsBlueprintPrompt</div>
+              <div class="text-slate-500">Version:</div><div id="s2-card-version" class="font-bold text-slate-800">v1 (Default)</div>
+              <div class="text-slate-500">Status:</div><div id="s2-card-status" class="font-bold text-emerald-600">● Loaded and Ready</div>
+              <div class="text-slate-500">Size:</div><div id="s2-card-size" class="font-bold text-slate-800">0 chars</div>
+            </div>
+            <div class="flex flex-wrap gap-2 mb-4">
+              <button onclick="PromptRegistry.open(); PromptRegistry.select(appState.activeBlueprintPromptKey)" class="text-xs bg-white border border-slate-300 hover:bg-slate-100 px-3 py-1.5 rounded shadow-sm transition">👁 View / Edit Prompt</button>
+            </div>
+            <button id="s2-gen-blueprint-btn" onclick="Step2.generateBlueprint()" class="w-full px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl shadow-md transition disabled:opacity-50 flex items-center justify-center gap-2">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+              ⚡ Generate Blueprint
+            </button>
+          </div>
+        </div>
+        <div id="s2-progress-panel" class="hidden bg-white p-6 rounded-xl border border-slate-200 shadow-sm mb-6">
+          <h3 class="font-bold text-slate-800 mb-4 flex items-center justify-between">
+            <span>Designing Execution Blueprint...</span>
+            <span class="text-xs bg-slate-100 text-slate-600 px-2 py-1 rounded-md font-mono" id="s2-token-count">0 tokens</span>
+          </h3>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3" id="s2-phases"></div>
+          <div class="mt-4">
+            <button onclick="document.getElementById('s2-raw-stream').classList.toggle('hidden')" class="text-xs font-bold text-purple-600 hover:text-purple-800">Toggle Stream ▼</button>
+            <div id="s2-raw-stream" class="hidden mt-2 p-3 bg-slate-900 text-emerald-400 font-mono text-xs rounded-lg h-48 overflow-y-auto whitespace-pre-wrap shadow-inner"></div>
+          </div>
+        </div>
+        <div id="s2-blueprint-output" class="hidden">
+          <div class="mb-6 flex justify-between items-center bg-purple-600 text-white p-4 rounded-xl shadow-sm">
+            <h3 class="font-bold text-lg">Finalized Blueprint</h3>
+            <span class="bg-purple-800 text-purple-100 text-xs px-2 py-1 rounded font-mono" id="s2-bp-stats"></span>
+          </div>
+          <div id="s2-bp-cards" class="mb-6 markdown-body bg-white p-6 rounded-xl border border-slate-200 shadow-sm"></div>
+          <div class="flex flex-col bg-slate-50 p-6 rounded-2xl border-2 border-slate-200 shadow-md">
+            <div class="flex justify-between items-start mb-4">
+              <div>
+                <h3 class="text-lg font-bold text-slate-800">Blueprint Status: <span id="s2-app-gate-status" class="text-amber-600">Awaiting Approval</span></h3>
+                <div class="text-xs text-slate-500 mt-1 font-mono" id="s2-bp-summary-metrics">Accepting the blueprint will unlock detailed study note generation.</div>
+              </div>
+            </div>
+            <div class="flex gap-3 mt-2">
+              <button id="s2-approve-btn" onclick="Step2.approveBlueprint()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-md transition flex items-center justify-center gap-2">✓ Approve Blueprint and Proceed to Writing</button>
+            </div>
+          </div>
+          <div id="s2-next-action" class="hidden mt-8 flex justify-end">
+            <button onclick="App.goToStep(3)" class="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-md transition flex items-center gap-2">Proceed to Step 3 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg></button>
+          </div>
+        </div>
+      </section>
+
+      <!-- STEP 3: WRITE & GENERATE -->
+      <section id="step-3" class="step-view card-step-3 pb-8 rounded-2xl hidden opacity-0 transition-opacity duration-300 relative mt-4">
+        <div class="sticky top-0 z-30 bg-white/95 backdrop-blur-sm border-b border-slate-200 px-6 py-4 shadow-sm -mx-6 md:-mx-8 rounded-t-2xl">
+          <div class="flex flex-col md:flex-row items-center justify-between gap-4 mb-4">
+            <div class="flex items-center gap-3">
+              <button onclick="App.goToStep(2)" class="text-slate-500 hover:text-emerald-600 transition flex items-center gap-1 text-sm font-bold bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg> Back</button>
+              <h2 class="text-xl font-bold text-slate-800">Write & Generate</h2>
+            </div>
+            <div class="flex gap-2 animate-fade-in">
+              <button id="s3-btn-gen-all" onclick="Step3.generateEverything()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold rounded-lg shadow-sm transition flex items-center gap-2">▶ Generate Everything</button>
+              <button id="s3-btn-pause" onclick="Step3.pauseEverything()" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-sm font-bold rounded-lg shadow-sm transition flex items-center gap-2 disabled:opacity-50" disabled>⏸ Pause</button>
+              <button id="s3-btn-approve-all" onclick="Step3.approveAllParts()" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-bold rounded-lg shadow-sm transition flex items-center gap-2">✓ Approve All</button>
+              <button onclick="Step3.regenerateAllPrompt()" class="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white text-sm font-bold rounded-lg shadow-sm transition flex items-center gap-2">↻ Regenerate All</button>
+              <button onclick="App.goToStep(4)" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-lg shadow-sm transition ml-2">Export →</button>
+            </div>
+          </div>
+          <div class="flex flex-col gap-2 w-full">
+            <div class="flex justify-between items-center text-xs font-bold text-slate-500">
+              <div class="flex gap-4 flex-wrap">
+                <span id="s3-stat-tot">Total Parts: 0</span>
+                <span id="s3-stat-txt" class="text-blue-600">Text Generated: 0</span>
+                <span id="s3-stat-ca" class="text-purple-600">CA Merged: 0</span>
+                <span id="s3-stat-img" class="text-orange-500">Images Embedded: 0</span>
+                <span id="s3-stat-app" class="text-emerald-600">Parts Approved: 0</span>
+              </div>
+              <span id="s3-progress-text">0% Complete</span>
+            </div>
+            <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden border border-slate-200">
+              <div id="s3-progress-bar" class="bg-emerald-500 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+            </div>
+          </div>
+        </div>
+        <div id="s3-sticky-nav" class="sticky top-[110px] z-20 bg-slate-50/90 backdrop-blur border-b border-slate-200 py-2 px-6 -mx-6 md:-mx-8 mb-6 shadow-sm flex gap-2 overflow-x-auto hide-scrollbar"></div>
+        <div id="s3-feed" class="relative px-6">
+          <div class="text-center py-12 text-slate-400 font-medium border-2 border-dashed border-slate-200 rounded-xl mx-6" id="s3-empty-state">
+            Generating workspace layout...
+          </div>
+        </div>
+      </section>
+
+      <!-- STEP 4: EXPORT -->
+      <section id="step-4" class="step-view card-step-4 p-6 md:p-8 rounded-2xl hidden opacity-0 transition-opacity duration-300 mb-8 mt-4">
+        <div class="flex items-center gap-3 mb-6">
+          <button onclick="App.goToStep(3)" class="text-slate-500 hover:text-amber-600 transition flex items-center gap-1 text-sm font-bold bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg> Back</button>
+          <div class="w-8 h-8 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center font-bold ml-2">4</div>
+          <h2 class="text-2xl font-bold text-slate-800">Final Master Document</h2>
+        </div>
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex justify-between items-center mb-6 flex-wrap gap-4">
+          <p class="text-sm font-medium text-slate-600">Document compiled successfully. Embedded images verified.</p>
+          <button onclick="UI.copyCompiledText()" class="px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-lg shadow-sm transition">Copy for MS Word / Docs</button>
+        </div>
+        <div class="bg-white p-8 md:p-12 rounded-xl border border-slate-200 shadow-sm">
+          <div id="export-content-area" class="markdown-body max-w-none"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Dev Logs & Modals -->
+  <div id="dev-logs-container" class="fixed z-50">
+    <button id="log-bubble" onclick="Logger.togglePopup()" class="fixed bottom-6 right-6 w-14 h-14 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 shadow-lg flex items-center justify-center text-white hover:scale-105 transition-transform z-50">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M4 17l6-6-6-6M12 19h8"></path></svg>
+      <span id="log-badge" class="hidden absolute top-0 right-0 -mt-1 -mr-1 bg-rose-500 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full border-2 border-white">0</span>
+    </button>
+    <div id="log-popup" class="hidden fixed bottom-24 right-6 w-[400px] max-w-[calc(100vw-3rem)] bg-white rounded-2xl shadow-2xl border border-slate-200 flex flex-col overflow-hidden slide-up z-50" style="height: 500px;" onclick="event.stopPropagation()">
+      <div class="bg-slate-900 px-4 py-3 flex justify-between items-center">
+        <h3 class="text-white font-bold text-sm flex items-center gap-2"><svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg> Dev Logs</h3>
+        <div class="flex gap-2 text-slate-400">
+          <button onclick="Logger.expandToTab()" title="Expand to New Tab" class="hover:text-white transition"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg></button>
+          <button onclick="Logger.togglePopup()" class="hover:text-white transition"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+        </div>
+      </div>
+      <div class="flex bg-slate-100 border-b border-slate-200 text-xs font-bold overflow-x-auto hide-scrollbar">
+        <button class="log-tab active px-3 py-2 text-indigo-600 border-b-2 border-indigo-600" onclick="Logger.setFilter('ALL', this)">All</button>
+        <button class="log-tab px-3 py-2 text-slate-500 border-b-2 border-transparent hover:text-slate-700" onclick="Logger.setFilter('API', this)">API</button>
+        <button class="log-tab px-3 py-2 text-slate-500 border-b-2 border-transparent hover:text-slate-700" onclick="Logger.setFilter('STAGE', this)">Stages</button>
+        <button class="log-tab px-3 py-2 text-slate-500 border-b-2 border-transparent hover:text-slate-700" onclick="Logger.setFilter('ERROR', this)">Errors</button>
+      </div>
+      <div id="log-content" class="flex-1 bg-[#0f172a] text-slate-300 font-mono text-[11px] p-3 overflow-y-auto space-y-1"></div>
+      <div class="bg-slate-50 border-t border-slate-200 p-2 flex justify-between items-center text-xs">
+        <span id="log-count" class="text-slate-500 font-medium">0 entries</span>
+        <button onclick="Logger.clear()" class="text-slate-500 hover:text-rose-600 font-bold transition">Clear</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Raw AI debug modal -->
+  <div id="debug-modal" class="hidden fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[150] flex items-center justify-center p-4" onclick="document.getElementById('debug-modal').classList.add('hidden')">
+    <div class="bg-white w-full max-w-4xl h-[80vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden relative slide-up cursor-default" onclick="event.stopPropagation()">
+      <button onclick="document.getElementById('debug-modal').classList.add('hidden')" class="absolute top-4 right-4 text-slate-400 hover:text-white transition p-2 z-50">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>
+      </button>
+      <div class="p-4 bg-slate-900 text-white flex justify-between items-center">
+        <h3 class="font-bold font-mono text-sm flex items-center gap-2"><svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg> Raw AI Response Debugger</h3>
+      </div>
+      <div class="p-4 bg-slate-100 border-b border-slate-200 font-mono text-xs text-slate-700" id="debug-stats"></div>
+      <div class="flex-1 p-4 overflow-y-auto bg-slate-50">
+        <textarea id="debug-textarea" class="w-full h-full p-4 font-mono text-xs text-slate-800 bg-white border border-slate-300 rounded-lg outline-none shadow-inner" readonly></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- Prompt modal -->
+  <div id="prompt-modal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4" onclick="PromptRegistry.close()">
+    <div class="bg-white w-full max-w-6xl h-[90vh] rounded-2xl shadow-2xl flex flex-col md:flex-row overflow-hidden relative slide-up cursor-default" onclick="event.stopPropagation()">
+      <button onclick="PromptRegistry.close()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition p-2 z-50" title="Close Modal">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>
+      </button>
+      <div class="w-full md:w-1/3 bg-slate-50 border-r border-slate-200 flex flex-col h-full shrink-0">
+        <div class="p-4 border-b border-slate-200 flex justify-between items-center">
+          <h2 class="font-bold text-slate-800 flex items-center gap-2"><svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg> Prompt Registry</h2>
+        </div>
+        <div class="flex-1 overflow-y-auto p-2 space-y-1 animate-fade-in" id="prompt-list"></div>
+      </div>
+      <div class="flex-1 flex flex-col h-full bg-white relative">
+        <div class="p-4 border-b border-slate-200 flex justify-between items-center bg-white pr-16">
+          <div>
+            <h3 id="pr-active-title" class="font-bold text-lg text-slate-800">Select a prompt</h3>
+            <p id="pr-active-meta" class="text-xs text-slate-500 font-medium">--</p>
+          </div>
+        </div>
+        <div class="flex-1 p-4 overflow-y-auto bg-slate-50/50">
+          <textarea id="pr-editor" class="w-full h-full min-h-[300px] p-4 font-mono text-sm text-slate-700 bg-white border border-slate-200 rounded-xl shadow-inner outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 resize-none disabled:bg-slate-100" disabled></textarea>
+        </div>
+        <div class="p-4 border-t border-slate-200 bg-slate-50 flex flex-wrap gap-3 items-center justify-between">
+          <button id="pr-btn-default" onclick="PromptRegistry.restoreDefault()" class="text-sm font-bold text-slate-500 hover:text-rose-600 transition disabled:opacity-50" disabled>Restore Default</button>
+          <div class="flex gap-2">
+            <button onclick="PromptRegistry.close()" class="px-4 py-2 bg-white border border-slate-300 text-slate-600 hover:bg-slate-100 font-bold text-sm rounded-lg transition">Cancel</button>
+            <button id="pr-btn-ai" onclick="PromptRegistry.openAIEdit()" class="px-4 py-2 bg-purple-100 hover:bg-purple-200 text-purple-700 font-bold text-sm rounded-lg transition flex items-center gap-2 disabled:opacity-50" disabled><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg> AI Edit</button>
+            <button id="pr-btn-save" onclick="PromptRegistry.saveManual()" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm rounded-lg shadow-sm transition disabled:opacity-50" disabled>Save Changes</button>
+          </div>
+        </div>
+      </div>
+      <div id="pr-ai-overlay" class="hidden absolute inset-0 bg-white z-10 flex flex-col">
+        <div class="p-4 border-b border-slate-200 flex justify-between items-center bg-purple-50">
+          <h3 class="font-bold text-purple-800 flex items-center gap-2"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg> AI-Assisted Edit</h3>
+          <button onclick="document.getElementById('pr-ai-overlay').classList.add('hidden')" class="text-purple-400 hover:text-purple-600"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+        </div>
+        <div class="p-6 flex-1 overflow-y-auto space-y-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">Instruction</label>
+            <textarea id="pr-ai-instruction" class="w-full p-3 border border-slate-200 rounded-lg text-sm outline-none focus:border-purple-500" rows="3" placeholder="e.g. 'Make it focus more on MP specific schemes'"></textarea>
+          </div>
+          <button onclick="PromptRegistry.generateAIEdit()" id="pr-ai-generate-btn" class="w-full py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-lg shadow-sm transition flex items-center justify-center gap-2">Generate Modified Prompt</button>
+          <div id="pr-ai-result-area" class="hidden space-y-3 pt-4 border-t border-slate-200">
+            <label class="block text-xs font-bold text-emerald-600 uppercase tracking-wider">Proposed New Version</label>
+            <textarea id="pr-ai-result" class="w-full h-48 p-3 font-mono text-xs bg-emerald-50 border border-emerald-200 rounded-lg outline-none resize-none" readonly></textarea>
+            <div class="flex gap-3">
+              <button onclick="PromptRegistry.acceptAIEdit()" class="flex-1 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg transition">Accept</button>
+              <button onclick="document.getElementById('pr-ai-result-area').classList.add('hidden')" class="flex-1 py-2 bg-rose-100 hover:bg-rose-200 text-rose-700 font-bold rounded-lg transition">Reject</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toasts" class="fixed top-4 right-4 z-[200] flex flex-col gap-2"></div>
+
+  <!-- Script logic -->
+  <script>
+    // System runtime config & manual override fallback
+    let localApiKey = localStorage.getItem('studyforge_apikey') || "";
+    let apiKey = localApiKey || ""; 
+    const TEXT_MODEL = "gemini-2.5-flash-preview-09-2025";
+    const IMG_MODEL = "imagen-4.0-generate-001"; // Updated to the supported model
+    
+    // Auto-fill active configuration
+    document.getElementById('user-api-key').value = apiKey;
+
+    const UNIVERSAL_HEADER = `You are the ultimate Master Educational Content Engineer specializing in competitive civil service exams — UPSC, MPPSC, and all State PSCs.
+Your task is to analyze the input document and generate a comprehensive BLUEPRINT that will govern all note generation.
+Do NOT generate any study notes. Do NOT generate any lesson content. Write ONLY the strategic blueprint.
+Wrap your entire response in <blueprint> </blueprint> tags.
+You operate via a strict 3-phase execution structure within the blueprint:
+PHASE 1: Subject Routing and Cross-Topic Nexus Plan
+PHASE 2: Dynamic Visual Asset Registry
+PHASE 3: Current Affairs Matrix Mapping
+After the blueprint tag, output the STOP message and await the APPROVED signal.
+INPUT DATA:
+Stage 1 Analysis: {STAGE_1_OUTPUT}
+Raw PDF Text: {EXTRACTED_TEXT}
+Detected Subject: {SUBJECT}
+Document Sub-Area: {SUBAREA}
+Part titles from Stage 1: {PART_TITLES_LIST}`;
+
+    const DEFAULT_PROMPTS = {
+      extractionPrompt: `You are an elite MPPSC and UPSC document intelligence assistant.
+Your most important rule is this: EXTRACT EVERYTHING THAT IS IN THE PDF. Do not summarize, shorten, beautify, rewrite, or paraphrase.
+SECTION 1 - PDF IDENTITY
+- Main subject:
+- Secondary subjects if any:
+- MPPSC paper and area:
+- UPSC relevance:
+- Nature of document: [class notes/lecture PDF/compiled notes/summary sheet/mixed]
+- Total pages: {TOTAL_PAGES}
+SECTION 2 - COMPLETE TOPIC MAP
+List every topic and subtopic found. Number as: 1, 1.1, 1.2, 2, 2.1...
+SECTION 3 - EXAM VALUE ANALYSIS & MISSING DETAILS
+Explain how this is useful for MPPSC/UPSC preparation. Identify what appears to be missing or underdeveloped (theory, examples, diagrams, CA linkages, MP angles).
+SECTION 4 - VISUAL CONTENT & IMAGE/DIAGRAM DESCRIPTION
+List every image/diagram/chart/table found. Provide Visual ID, type, topic, description, labels, and if it should be recreated. List topics needing a visual.
+SECTION 5 - PAGE- AND TOPIC-AWARE PARTITION PLAN
+Divide PDF into logical parts (1-10 pgs: 1-3 parts, 11-20 pgs: 2-6 parts, 21-30 pgs: 4-8 parts).
+For each part, provide:
+[PART ID: PART_1]
+- Part Title:
+- Approximate Page Span:
+- Topics Covered:
+- Why these topics belong together:
+- Exact Raw PDF Data: (copy exact text, data, formulas, and tables verbatim. Do not summarize.)
+- Tables/Formulas/Data inside:
+- Likely useful for CA enrichment?: [Yes/No]
+- Likely useful for MP-specific enrichment?: [Yes/No]
+- Likely needs a visual asset?: [Yes/No]
+
+Here is the extracted PDF text:
+{EXTRACTED_TEXT}`,
+
+      universalBlueprintHeader: UNIVERSAL_HEADER,
+      
+      economicsBlueprintPrompt: `Apply the METABOLIC PIPELINE STRATEGY.
+SECTION 1: Subject Routing.
+SECTION 2: STORY STRATEGY. Village-setting story running through parts. Name 4 characters (Farmer, Trader, Official, Emigrant).
+SECTION 3: CORE TOPIC ARCHITECTURE. 5-7 phases. Phase 0 is Story Anchor.
+SECTION 4: CONCEPT COMPLETION GRID. Min 12 entries.
+SECTION 5: MISSING FACTS INJECTION. India/MP data.
+SECTION 6: POLICY TRADE-OFF MATRIX.
+SECTION 7: INTER-TOPIC NEXUS.
+SECTION 8: INSTITUTION MAP.
+SECTION 9: MISCONCEPTIONS.
+SECTION 10: INDICATOR & DATA PLAN.
+SECTION 11: CURRENT AFFAIRS MATRIX. Parts A/B/C/D.
+SECTION 12: IMAGE ASSET REGISTRY. Min 8 assets.
+Format each asset exactly as:
+[IMAGE_ASSET_ID: IMAGE_X.Y]
+Template Type: [STORY_BOARD / COMIC_STRIP / FORMULA_CARD / CONCEPT_MAP / INFOGRAPHIC / COMPARISON_MATRIX / TIMELINE]
+Topic: [Specific syllabus concept]
+Layout Description: [Highly explicit layout and structural composition guidelines. For STORY_BOARD/COMIC_STRIP: Outline sequential visual panels, emotional status profiles, character interactions. For FORMULA_CARD: Define centered equation, variable definition keys, and dedicated PSC fact callouts.]
+All Text Labels: [In-image text labels]
+Data to Display: [Relevant metrics, formulas, or statistics]
+Pedagogical Purpose: [Concept explained]
+Colour Scheme: [Style colors]
+Hand-drawable: [Yes/No]
+
+SECTION 13: FORMATTING.
+SECTION 14: PYQ ANALYSIS.
+SECTION 15: PART-WISE EXECUTION PLAN.
+SECTION 16: CHECKLIST.
+STOP INSTRUCTION: BLUEPRINT COMPLETE.`,
+
+      polityBlueprintPrompt: `Apply CASE CONFLICT AND INSTITUTIONAL FRICTION.
+SECTION 1: Subject Routing.
+SECTION 2: HISTORICAL FRICTION NARRATIVE. Ground in real crisis.
+SECTION 3: LANDMARK CASE STUDIES. 5-Part Case Studies.
+SECTION 4: INSTITUTIONAL FLOWS. Power flows, separation.
+SECTION 5: AMENDMENT TRACKER.
+SECTION 6: CONCEPT COMPLETION.
+SECTION 7: MISSING FACTS (Articles, Case Laws).
+SECTION 8: CROSS-TOPIC NEXUS.
+SECTION 9: EXAM TRAPS.
+SECTION 10: VISUAL ASSETS. Format each as [IMAGE_ASSET_ID: IMAGE_X.Y].
+SECTION 11: CURRENT AFFAIRS.
+SECTION 12: PYQs.
+SECTION 13: PART-WISE EXECUTION.
+STOP INSTRUCTION: BLUEPRINT COMPLETE.`,
+
+      historyBlueprintPrompt: `Apply STRATIFIED CHRONOLOGY.
+SECTION 1: Routing.
+SECTION 2: NARRATIVE ANCHOR. Socio-economic catalysts.
+SECTION 3: 4-PILLAR MATRIX (Living, Figures, Admin, Revenue).
+SECTION 4: CARTOGRAPHY borders.
+SECTION 5: TIMELINE [Date] -> [Catalyst] -> [Event] -> [Impact].
+SECTION 6: CULTURAL/ART LAYER.
+SECTION 7: CONCEPT GRID.
+SECTION 8: NEXUS.
+SECTION 9: VISUAL ASSET REGISTRY. Format each as [IMAGE_ASSET_ID: IMAGE_X.Y].
+SECTION 10: CURRENT AFFAIRS.
+SECTION 11: PYQ.
+SECTION 12: PART-WISE EXECUTION.
+STOP INSTRUCTION: BLUEPRINT COMPLETE.`,
+
+      geographyBlueprintPrompt: `Apply KINETIC TOPOGRAPHY.
+SECTION 1: Subject Routing.
+SECTION 2: THREE-LAYER FRAMEWORK (Physical, Environmental, Human).
+SECTION 3: ANIMATED PROCESS. Process flowcharts.
+SECTION 4: CARTOGRAPHIC boundary maps.
+SECTION 5: CONCEPT GRID.
+SECTION 6: CROSS-TOPIC NEXUS.
+SECTION 7: VISUAL REGISTRY. Format each as [IMAGE_ASSET_ID: IMAGE_X.Y].
+SECTION 8: CURRENT AFFAIRS.
+SECTION 9: PART-WISE EXECUTION.
+STOP INSTRUCTION: BLUEPRINT COMPLETE.`,
+
+      scienceTechBlueprintPrompt: `Apply THEORY-TO-TOOL binary.
+SECTION 1: Subject Routing.
+SECTION 2: THEORY-TO-TOOL (Mechanism to physical utility).
+SECTION 3: ETHICAL BOUNDARY limitations.
+SECTION 4: CLASSIFICATION MIND MAPS.
+SECTION 5: EQUIPMENT MECHANISMS.
+SECTION 6: INDIA ACHIEVEMENT ISRO/DRDO.
+SECTION 7: CONCEPT GRID.
+SECTION 8: VISUAL REGISTRY. Format each as [IMAGE_ASSET_ID: IMAGE_X.Y].
+SECTION 9: CURRENT AFFAIRS.
+SECTION 10: PYQ & EXECUTION.
+STOP INSTRUCTION: BLUEPRINT COMPLETE.`,
+
+      environmentBlueprintPrompt: `Apply TROPHIC CYCLE strategy.
+SECTION 1: Subject Routing.
+SECTION 2: ECOSYSTEM LOOP biome placement, disrupts.
+SECTION 3: INTERNATIONAL conventions, targets.
+SECTION 4: MP PROFILE forests, reserves.
+SECTION 5: VISUAL REGISTRY. Format each as [IMAGE_ASSET_ID: IMAGE_X.Y].
+SECTION 6: CURRENT AFFAIRS.
+SECTION 7: PART-WISE EXECUTION.
+STOP INSTRUCTION: BLUEPRINT COMPLETE.`,
+
+      socialIssuesBlueprintPrompt: `Apply SOCIAL ISSUES BLUEPRINT. Societal dimensions, welfare, schemes, demographics. Format each visual asset as [IMAGE_ASSET_ID: IMAGE_X.Y]. STOP INSTRUCTION: BLUEPRINT COMPLETE.`,
+      mpSpecificBlueprintPrompt: `Apply MP SPECIFIC BLUEPRINT. MP geography, history, economy, polity, art, culture. Format each visual asset as [IMAGE_ASSET_ID: IMAGE_X.Y]. STOP INSTRUCTION: BLUEPRINT COMPLETE.`,
+      currentAffairsBlueprintPrompt: `Apply CURRENT AFFAIRS BLUEPRINT. National, International, MP events. Format each visual asset as [IMAGE_ASSET_ID: IMAGE_X.Y]. STOP INSTRUCTION: BLUEPRINT COMPLETE.`,
+
+      blueprintPartRefinementPrompt: `You are an elite Educational Content Architect updating a specific Part Execution Plan within an existing Economics Blueprint based on user instructions.
+CURRENT PART PLAN: {CURRENT_PART_PLAN}
+USER INSTRUCTION: {USER_INSTRUCTION}
+Rewrite the Part Plan to incorporate the user's request. Keep exact same structural keys. Return ONLY updated plan text. No markdown code blocks.`,
+
+      partWriterPrompt: `You are an elite Study Notes Writer for UPSC/MPPSC. You are generating notes for ONLY ONE part. Raw Text: {RAW_PART_TEXT}. Inject missing context, stakeholder analyses, policy trade-offs, MP relevance, and current affairs. symbiosis image tags: IMAGE_NEEDED: IMAGE_X.Y. Output only final notes in Markdown.`,
+
+      economicsPartWriterPrompt: `You are an elite Economics Study Notes Writer for UPSC/MPPSC. Write notes for ONE specific part. Raw Text: {RAW_PART_TEXT}. Start with # {PART_TITLE}. Add Story Anchor (assigned characters). Sequence: Definition -> Why it matters -> Mechanism -> Formula -> Example -> Stakeholder Impact -> Policy Trade-off -> Nexus -> MP Relevance. Output exact tag IMAGE_NEEDED: IMAGE_X.Y on its own line when images are required. Finish with MCQ Lens (3-5 items) and Mains Lens (3, 5, 11-markers). Output ONLY final Markdown.`,
+
+      imagePromptBuilder: `Create a {TEMPLATE_TYPE} image for UPSC and MPPSC notes. Topic: {TOPIC}. Style: Flat minimalist vector infographic, pure white background, legibility. Composition: {LAYOUT_DESCRIPTION}. Output image generation prompt immediately.`,
+
+      economicsImagePromptBuilderPrompt: `You are an Economics Visual Asset Prompt Builder. Convert the blueprint asset specification into a precise image generation prompt. ASSET SPEC: {ASSET_ID}, {TEMPLATE_TYPE}, {TOPIC}, {VISUAL_DATA_LAYOUT}, {TEXT_LABELS}, {DATA_TO_DISPLAY}, {CHARACTER_APPEARANCES}, {COLOUR_ASSIGNMENT}, {HAND_DRAWABLE}. 
+OUTPUT FORMAT: Output ONLY the image generation prompt starting with "Create a...". Do NOT include any intro text, [ASSET SUMMARY] tags, or metadata blocks.
+
+Create a {TEMPLATE_TYPE} educational infographic for UPSC/MPPSC. Topic: {TOPIC}. Layout: {VISUAL_DATA_LAYOUT}. Include text: {TEXT_LABELS}. Display data: {DATA_TO_DISPLAY}. Style: Clean flat infographic, {COLOUR_ASSIGNMENT}. Bottom banner: UPSC/MPPSC PREP.`,
+
+      currentAffairsPrompt: `You are a current affairs research specialist for UPSC and MPPSC exam preparation. Use Google Search to find accurate and recent information. Do not rely on your training data for specific dates or statistics. TOPIC BEING STUDIED: {PART_TITLE} SPECIFIC CONCEPTS: {TOPICS_LIST} | SUBJECT: {SUBJECT}
+OUTPUT FORMAT (Return exactly this structure):
+CURRENT AFFAIRS: {PART_TITLE}
+PART A — Global and National Major Developments (2020-2023)
+PART B — Global and National Recent (2024 to present)
+PART C — Madhya Pradesh Specific (2020-2023)
+PART D — Madhya Pradesh Recent (2024 to present)
+TIMELINE OF KEY EVENTS ([YEAR/MONTH] → [Event Name] → [Key Figure] → [Exam Significance])
+CRITICAL RULE FOR IMAGES: If proposing any image registries, diagrams, or visual charts for current affairs, use ONLY trend charts, data matrices, or comparison flowcharts. Strictly forbid illustrative characters, cartoons, or narrative scenes for Current Affairs content.`,
+
+      refinementPrompt: `You are updating notes based on user instructions. CURRENT NOTES: {CURRENT_PART_NOTES}. Rewrite to fulfill instruction. Preserve all existing IMAGE_NEEDED tags exactly. Output only updated Markdown.`,
+
+      economicsRefinementPrompt: `CURRENT PART NOTES: {CURRENT_PART_NOTES} LOCKED IMAGE PLACEHOLDERS: {LOCKED_IMAGE_PLACEHOLDERS} APPROVED IMAGE IDS: {APPROVED_IMAGE_IDS} USER INSTRUCTION: {USER_INSTRUCTION} Rules: Preserve all locked image placeholders exactly. Preserve all approved image IDs and positions. Improve only what the user asked for. Output updated Markdown.`,
+
+      imageRedesignPrompt: `You are an elite Educational Visual Prompt Engineer. Rewrite the image generation prompt to fulfill the user's redesign request. Current: {CURRENT_IMAGE_PROMPT}. Instruction: {USER_INSTRUCTION}. Style: clean vector infographic, legible text, flat lines. Output ONLY the rewritten image prompt starting with "Create a...".`
+    };
+
+    const SUBJECT_PROMPT_MAP = {
+      'Economics': 'economicsBlueprintPrompt', 'Polity': 'polityBlueprintPrompt', 'History': 'historyBlueprintPrompt',
+      'Geography': 'geographyBlueprintPrompt', 'Science & Technology': 'scienceTechBlueprintPrompt',
+      'Environment': 'environmentBlueprintPrompt', 'Social Issues': 'socialIssuesBlueprintPrompt',
+      'MP Specific': 'mpSpecificBlueprintPrompt', 'Current Affairs': 'currentAffairsBlueprintPrompt'
+    };
+
+    // Premium custom modals helper
+    const Modal = {
+      showConfirm(title, message, onConfirm) {
+        const modalHtml = `
+          <div id="confirm-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[250] flex items-center justify-center p-4">
+            <div class="bg-white max-w-md w-full rounded-2xl shadow-2xl p-6 border border-slate-200 slide-up">
+              <h3 class="text-lg font-bold text-slate-800 mb-2">${title}</h3>
+              <p class="text-sm text-slate-600 mb-6">${message}</p>
+              <div class="flex justify-end gap-3">
+                <button id="confirm-cancel" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-sm rounded-lg transition">Cancel</button>
+                <button id="confirm-ok" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm rounded-lg shadow-sm transition">Proceed</button>
+              </div>
+            </div>
+          </div>
+        `;
+        const div = document.createElement('div');
+        div.innerHTML = modalHtml;
+        document.body.appendChild(div);
+        
+        document.getElementById('confirm-cancel').onclick = () => div.remove();
+        document.getElementById('confirm-ok').onclick = () => {
+          onConfirm();
+          div.remove();
+        };
+      }
+    };
+
+    const ImageDB = {
+      dbName: "StudyForgeAssets",
+      dbVersion: 1,
+      db: null,
+      init() {
+        return new Promise((resolve, reject) => {
+          let request = indexedDB.open(this.dbName, this.dbVersion);
+          request.onupgradeneeded = (e) => {
+            let db = e.target.result;
+            if (!db.objectStoreNames.contains("images")) {
+              db.createObjectStore("images", { keyPath: "id" });
+            }
+          };
+          request.onsuccess = (e) => {
+            this.db = e.target.result;
+            resolve();
+          };
+          request.onerror = (e) => {
+            reject(e.target.error);
+          };
+        });
+      },
+      get(id) {
+        return new Promise((resolve) => {
+          if(!this.db) return resolve(null);
+          let tx = this.db.transaction("images", "readonly");
+          let store = tx.objectStore("images");
+          let req = store.get(id);
+          req.onsuccess = () => resolve(req.result ? req.result.base64 : null);
+          req.onerror = () => resolve(null);
+        });
+      },
+      set(id, base64) {
+        return new Promise((resolve) => {
+          if(!this.db) return resolve();
+          let tx = this.db.transaction("images", "readwrite");
+          let store = tx.objectStore("images");
+          let req = store.put({ id, base64 });
+          req.onsuccess = () => resolve();
+          req.onerror = () => resolve();
+        });
+      },
+      clear() {
+        return new Promise((resolve) => {
+          if(!this.db) return resolve();
+          let tx = this.db.transaction("images", "readwrite");
+          let store = tx.objectStore("images");
+          let req = store.clear();
+          req.onsuccess = () => resolve();
+          req.onerror = () => resolve();
+        });
+      }
+    };
+
+    // --- STATE MANAGEMENT ---
+    const appState = {
+      currentStep: 1, fileName: null, pdfText: null, pageCount: 0,
+      subject: 'Unknown', category: 'Unknown', confidence: '',
+      documentIdentity: '', topicMap: '', examAnalysis: '', visualsList: '',
+      prompts: { ...DEFAULT_PROMPTS }, promptVersions: {},
+      activeBlueprintPromptKey: 'economicsBlueprintPrompt',
+      blueprint: { rawContent: '', imageRegistry: [], sections: [], isApproved: false, parts: [] },
+      logs: []
+    };
+
+    const Session = {
+      save() {
+        try {
+          let clone = JSON.parse(JSON.stringify(appState));
+          // Strip out heavy base64 strings and sync them to IndexedDB asynchronously
+          for (let p of clone.blueprint.parts) {
+            if (p.images) {
+              for (let img of p.images) {
+                if (img.base64 && img.base64.startsWith("data:image")) {
+                  ImageDB.set(`${clone.fileName || 'default'}_${p.id}_${img.assetId}`, img.base64);
+                  img.base64 = "IN_INDEXEDDB"; 
+                }
+              }
+            }
+          }
+          localStorage.setItem('studyforge_state', JSON.stringify(clone));
+          const indicator = document.getElementById('save-indicator');
+          if (indicator) { indicator.style.opacity = '1'; setTimeout(() => indicator.style.opacity = '0', 2000); }
+        } catch (e) {
+          console.error("Hybrid Session Save Error", e);
+          Toaster.show('Session save error. Retrying text-only save.', 'amber');
+          let textOnlyClone = JSON.parse(JSON.stringify(appState));
+          textOnlyClone.blueprint.parts.forEach(p => { if (p.images) p.images.forEach(img => img.base64 = null); });
+          try { localStorage.setItem('studyforge_state', JSON.stringify(textOnlyClone)); } catch(err) {}
+        }
+      },
+      check() {
+        const saved = localStorage.getItem('studyforge_state');
+        if(saved) {
+          document.getElementById('session-banner').classList.remove('hidden');
+          const parsed = JSON.parse(saved);
+          document.getElementById('session-banner-text').textContent = `Previous session found. Subject: ${parsed.subject || 'Unknown'}. Parts: ${parsed.blueprint?.parts?.length || 0}.`;
+        }
+      },
+      async resume() {
+        const saved = localStorage.getItem('studyforge_state');
+        if(saved) {
+          try {
+            const parsedState = JSON.parse(saved);
+            
+            // Rehydrate binary elements back from IndexedDB
+            for (let p of parsedState.blueprint.parts) {
+              if (p.images) {
+                for (let img of p.images) {
+                  if (img.base64 === "IN_INDEXEDDB") {
+                    img.base64 = await ImageDB.get(`${parsedState.fileName || 'default'}_${p.id}_${img.assetId}`);
+                  }
+                }
+              }
+            }
+            
+            Object.assign(appState, parsedState);
+            document.getElementById('session-banner').classList.add('hidden');
+            Toaster.show('Session restored', 'sky');
+            App.goToStep(appState.currentStep || 1);
+            if(appState.currentStep === 1) Step1.showExtractionOutput();
+            if(appState.currentStep === 2) {
+              Step2.init();
+              if (appState.blueprint.rawContent) {
+                Step2.parseBlueprint(appState.blueprint.rawContent);
+                if (appState.blueprint.isApproved) Step2.approveBlueprint();
+              }
+            }
+            if(appState.currentStep === 3) Step3.renderFeed();
+            PromptRegistry.initList();
+          } catch(e) {
+            Logger.add('ERROR', 'SESSION', 'Failed to resume session: ' + e.message);
+          }
+        }
+      },
+      clear() {
+        Modal.showConfirm(
+          'Start Fresh?',
+          'Are you sure you want to clear all active study data? This will reset all extraction steps and wipe IndexedDB records.',
+          async () => {
+            await ImageDB.clear();
+            localStorage.removeItem('studyforge_state');
+            location.reload();
+          }
+        );
+      }
+    };
+
+    // --- CORE UTILS & HELPERS ---
+    const Toaster = {
+      show(msg, type = 'info') {
+        const container = document.getElementById('toasts');
+        if (!container) return;
+        const t = document.createElement('div');
+        const colors = {
+          emerald: 'bg-emerald-50 text-emerald-800 border-emerald-200',
+          rose: 'bg-rose-50 text-rose-800 border-rose-200',
+          amber: 'bg-amber-50 text-amber-800 border-amber-200',
+          sky: 'bg-sky-50 text-sky-800 border-sky-200',
+          purple: 'bg-purple-50 text-purple-800 border-purple-200'
+        };
+        t.className = `p-3 rounded-lg border shadow-md flex items-center gap-3 transition-all duration-300 transform translate-x-full ${colors[type] || colors.sky}`;
+        t.innerHTML = `<span class="font-bold text-sm">${msg}</span>`;
+        container.appendChild(t);
+        requestAnimationFrame(() => t.classList.remove('translate-x-full'));
+        setTimeout(() => {
+          t.classList.add('translate-x-full', 'opacity-0');
+          setTimeout(() => t.remove(), 300);
+        }, 3000);
+      }
+    };
+
+    const Helper = {
+      setBtnLoading(btnEl, html, disabled = true) {
+        if (!btnEl) return;
+        btnEl.innerHTML = html;
+        btnEl.disabled = disabled;
+      },
+      switchTabs(tabGroupClass, contentGroupClass, activeBtn, targetTabId) {
+        document.querySelectorAll(`.${tabGroupClass}`).forEach(b => {
+          b.classList.remove('active', 'border-indigo-600', 'text-indigo-600', 'border-emerald-600', 'text-emerald-600');
+          b.classList.add('border-transparent', 'text-slate-500');
+        });
+        if (activeBtn) {
+          const isGreen = activeBtn.id && activeBtn.id.includes('notes');
+          activeBtn.classList.add('active', isGreen ? 'border-emerald-600' : 'border-indigo-600', isGreen ? 'text-emerald-600' : 'text-indigo-600');
+          activeBtn.classList.remove('border-transparent', 'text-slate-500');
+        }
+        document.querySelectorAll(`.${contentGroupClass}`).forEach(c => c.classList.add('hidden'));
+        const target = document.getElementById(targetTabId);
+        if (target) target.classList.remove('hidden');
+      }
+    };
+
+    const Logger = {
+      unreadErrors: 0,
+      add(level, stage, msg) {
+        const entry = { time: new Date().toLocaleTimeString(), level, stage, msg };
+        appState.logs.push(entry);
+        if(appState.logs.length > 500) appState.logs.shift();
+        if(level === 'ERROR') { this.unreadErrors++; this.updateBadge(); }
+        localStorage.setItem('studyforge_logs', JSON.stringify(appState.logs));
+        this.renderLine(entry);
+        this.updateCount();
+      },
+      updateBadge() {
+        const b = document.getElementById('log-badge');
+        if (this.unreadErrors > 0 && document.getElementById('log-popup').classList.contains('hidden')) {
+          b.textContent = this.unreadErrors; b.classList.remove('hidden');
+          document.getElementById('log-bubble').classList.add('pulse-active');
+        } else { b.classList.add('hidden'); document.getElementById('log-bubble').classList.remove('pulse-active'); }
+      },
+      togglePopup() {
+        const p = document.getElementById('log-popup');
+        if(p.classList.contains('hidden')) { 
+          p.classList.remove('hidden'); this.unreadErrors = 0; this.updateBadge(); this.renderAll(); 
+          const debugBtn = document.getElementById('btn-debug-raw');
+          if (debugBtn && !document.getElementById('step-1').classList.contains('hidden') && !document.getElementById('s1-output-tabs').classList.contains('hidden')) {
+            debugBtn.classList.remove('hidden');
+          }
+        } else { 
+          p.classList.add('hidden'); 
+          const debugBtn = document.getElementById('btn-debug-raw');
+          if(debugBtn) debugBtn.classList.add('hidden');
+        }
+      },
+      renderAll(filter = 'ALL') {
+        const c = document.getElementById('log-content'); c.innerHTML = '';
+        appState.logs.forEach(e => {
+          if(filter === 'ALL' || (filter === 'ERROR' && e.level === 'ERROR') || (filter === 'STAGE' && e.stage) || (filter === 'API' && e.msg.includes('API')) || (filter === 'SYSTEM' && e.stage === 'SYSTEM')) {
+            this.renderLine(e, c);
+          }
+        });
+        c.scrollTop = c.scrollHeight;
+        this.updateCount();
+      },
+      renderLine(e, container = document.getElementById('log-content')) {
+        if (!container) return;
+        const colors = { INFO: 'text-sky-400', SUCCESS: 'text-emerald-400', WARN: 'text-amber-400', ERROR: 'text-rose-400', DEBUG: 'text-slate-500' };
+        const div = document.createElement('div');
+        div.className = 'flex gap-2 border-b border-slate-800/50 pb-1 mb-1';
+        div.innerHTML = `<span class="text-slate-600 shrink-0">[${e.time}]</span> <span class="${colors[e.level] || 'text-slate-400'} font-bold shrink-0">[${e.level}]</span> ${e.stage ? `<span class="text-purple-400 shrink-0">[${e.stage}]</span>` : ''} <span>${e.msg}</span>`;
+        container.appendChild(div); container.scrollTop = container.scrollHeight;
+      },
+      updateCount() { document.getElementById('log-count').textContent = `${appState.logs.length} entries`; },
+      clear() { appState.logs = []; localStorage.setItem('studyforge_logs', '[]'); this.renderAll(); Logger.add('INFO', 'SYSTEM', 'Logs cleared'); },
+      expandToTab() {
+        const w = window.open('', '_blank');
+        w.document.write(`<!DOCTYPE html><html><head><title>StudyForge Logs</title><script src="https://cdn.tailwindcss.com"><\/script></head><body class="bg-slate-900 text-slate-300 font-mono text-sm p-4"><div class="flex justify-between items-center mb-4 border-b border-slate-700 pb-2"><h1 class="text-white font-bold">StudyForge Live Logs</h1></div><div id="c" class="space-y-1"></div><script>let last=0;setInterval(()=>{const l=JSON.parse(localStorage.getItem('studyforge_logs')||'[]');if(l.length!==last){const c=document.getElementById('c');c.innerHTML='';l.forEach(e=>{c.innerHTML+=\`<div>[\${e.time}] [\${e.level}] \${e.msg}</div>\`});window.scrollTo(0,document.body.scrollHeight);last=l.length;}},1000);<\/script></body></html>`);
+        this.togglePopup();
+      }
+    };
+
+    const API = {
+      async streamContent(prompt, onChunk, options = {}) {
+        Logger.add('INFO', 'API', `Simulating Stream Call for better UI sync`);
+        try {
+          let toolsObj = options.useTools ? { tools: [{ googleSearch: {} }] } : {};
+          const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${TEXT_MODEL}:generateContent?key=${apiKey}`, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { temperature: options.temp || 0.3 }, ...toolsObj })
+          });
+          if (!res.ok) throw new Error(`HTTP ${res.status}: ${await res.text()}`);
+          const data = await res.json();
+          if(data.error) throw new Error(data.error.message);
+          const fullText = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+          
+          let accumulated = "";
+          const chunkSize = 150; 
+          for (let i = 0; i < fullText.length; i += chunkSize) {
+            const chunk = fullText.slice(i, i + chunkSize);
+            accumulated += chunk;
+            onChunk(chunk, accumulated);
+            await new Promise(r => setTimeout(r, 10));
+          }
+          if (accumulated !== fullText) onChunk("", fullText);
+          Logger.add('SUCCESS', 'API', `Completed. Approx ${fullText.split(' ').length} words.`);
+          return fullText;
+        } catch(e) { Logger.add('ERROR', 'API', `Failed: ${e.message}`); throw e; }
+      },
+      async generateContent(prompt) {
+        Logger.add('INFO', 'API', `Standard Call started`);
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${TEXT_MODEL}:generateContent?key=${apiKey}`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { temperature: 0.3 } })
+        });
+        const data = await res.json();
+        if(data.error) throw new Error(data.error.message);
+        return data.candidates[0].content.parts[0].text;
+      },
+      async generateImage(prompt, aspectRatio = "16:9") {
+        Logger.add('INFO', 'API', `Image gen started with Imagen Model`);
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${IMG_MODEL}:predict?key=${apiKey}`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ instances: { prompt }, parameters: { sampleCount: 1, aspectRatio: aspectRatio } })
+        });
+        const data = await res.json();
+        if(data.error) throw new Error(data.error.message);
+        if(data.predictions && data.predictions[0]) {
+          Logger.add('SUCCESS', 'API', `Image generated successfully`);
+          return `data:image/png;base64,${data.predictions[0].bytesBase64Encoded}`;
+        }
+        throw new Error("No image data");
+      }
+    };
+
+    const Step1 = {
+      async handleUpload(e) {
+        const file = e.target.files[0]; if(!file) return;
+        Logger.add('INFO', 'S1_EXTRACT', `PDF selected: ${file.name}`);
+        appState.fileName = file.name;
+        try {
+          const ab = await file.arrayBuffer();
+          const pdf = await pdfjsLib.getDocument(ab).promise;
+          let text = "";
+          for(let i=1; i<=pdf.numPages; i++) {
+            const p = await pdf.getPage(i);
+            const tc = await p.getTextContent();
+            text += tc.items.map(it => it.str).join(' ') + "\n";
+          }
+          appState.pdfText = text; appState.pageCount = pdf.numPages;
+          this.startAnalysis();
+        } catch(err) { Logger.add('ERROR', 'S1_EXTRACT', err.message); Toaster.show('Extraction failed', 'rose'); }
+      },
+      initPhases() {
+        const c = document.getElementById('s1-phases');
+        c.innerHTML = [1,2,3,4,5].map(i => `
+          <div id="ph-${i}" class="flex items-center gap-3 p-2 rounded-lg border-l-2 border-transparent text-slate-400">
+            <div id="ph-icon-${i}" class="w-5 h-5 rounded-full border-2 border-current flex items-center justify-center text-[10px] font-bold">${i}</div>
+            <span id="ph-txt-${i}" class="text-sm font-medium">Phase ${i} — ${['Reading', 'Identity', 'Topic Mapping', 'Exam Analysis', 'Partitioning'][i-1]}</span>
+          </div>`).join('');
+      },
+      setPhase(num, state) {
+        const el = document.getElementById(`ph-${num}`);
+        const ic = document.getElementById(`ph-icon-${num}`);
+        if(!el) return;
+        el.className = `flex items-center gap-3 p-2 rounded-lg border-l-2 transition-all ${state === 'active' ? 'border-indigo-500 bg-indigo-50 text-indigo-700' : state === 'done' ? 'border-emerald-500 bg-emerald-50 text-emerald-700' : 'border-transparent text-slate-400'}`;
+        if(state === 'active') { ic.classList.add('pulse-active'); ic.innerHTML = '<div class="w-2 h-2 bg-current rounded-full"></div>'; Logger.add('INFO', 'S1_PHASE', `Starting Phase ${num}`); }
+        if(state === 'done') { ic.classList.remove('pulse-active'); ic.innerHTML = '✔'; }
+      },
+      async startAnalysis() {
+        document.getElementById('s1-progress-panel').classList.remove('hidden');
+        document.getElementById('s1-output-tabs').classList.add('hidden');
+        this.initPhases();
+        this.setPhase(1, 'active');
+        const finalPrompt = appState.prompts.extractionPrompt.replace('{TOTAL_PAGES}', appState.pageCount).replace('{EXTRACTED_TEXT}', appState.pdfText);
+        const streamBox = document.getElementById('stage1-live-output');
+        const tokenBox = document.getElementById('s1-token-count');
+        
+        let currentPhase = 1;
+        streamBox.parentNode.classList.remove('hidden');
+        streamBox.textContent = "[SYSTEM: Contacting Gemini Core for initial extraction & partitioning... Please wait.]";
+
+        try {
+          const fullRes = await API.streamContent(finalPrompt, (chunk, accumulated) => {
+            streamBox.textContent = accumulated; streamBox.scrollTop = streamBox.scrollHeight;
+            tokenBox.textContent = `~${Math.round(accumulated.length / 4)} tokens`;
+            if(currentPhase === 1 && accumulated.includes('SECTION 1')) { this.setPhase(1, 'done'); this.setPhase(2, 'active'); currentPhase = 2; }
+            if(currentPhase === 2 && accumulated.includes('SECTION 2')) { this.setPhase(2, 'done'); this.setPhase(3, 'active'); currentPhase = 3; }
+            if(currentPhase === 3 && accumulated.includes('SECTION 3')) { this.setPhase(3, 'done'); this.setPhase(4, 'active'); currentPhase = 4; }
+            if(currentPhase === 4 && accumulated.includes('SECTION 4')) { this.setPhase(4, 'done'); this.setPhase(5, 'active'); currentPhase = 5; }
+          }, { temp: 0.1 });
+          this.setPhase(5, 'done');
+          this.parseResult(fullRes);
+        } catch(e) { Toaster.show('Analysis failed.', 'rose'); this.setPhase(currentPhase, 'pending'); }
+      },
+      parseResult(text) {
+        appState.blueprint.rawContent = text;
+        appState.documentIdentity = (text.match(/SECTION 1[\s\S]*?(?=SECTION 2)/) || [])[0] || 'Not found';
+        appState.topicMap = (text.match(/SECTION 2[\s\S]*?(?=SECTION 3)/) || [])[0] || 'Not found';
+        appState.examAnalysis = (text.match(/SECTION 3[\s\S]*?(?=SECTION 4)/) || [])[0] || 'Not found';
+        appState.visualsList = (text.match(/SECTION 4[\s\S]*?(?=SECTION 5)/) || [])[0] || 'Not found';
+        
+        let rawSubjMatch = appState.documentIdentity.match(/Main subject:\s*(.*)/i) || appState.documentIdentity.match(/Subject:\s*(.*)/i);
+        let rawSubjectText = rawSubjMatch ? rawSubjMatch[1].replace(/[*_]/g, '').trim() : '';
+        let detectedSubj = 'Economics'; // default fallback
+        if (/Polity/i.test(rawSubjectText)) detectedSubj = 'Polity';
+        else if (/History/i.test(rawSubjectText)) detectedSubj = 'History';
+        else if (/Geography/i.test(rawSubjectText)) detectedSubj = 'Geography';
+
+        appState.subject = detectedSubj; appState.confidence = 'High Confidence';
+        appState.category = 'MPPSC General';
+        const partsTextIndex = text.indexOf('SECTION 5');
+        const partsText = partsTextIndex !== -1 ? text.substring(partsTextIndex) : text;
+        let blocks = partsText.split(/(?=\[?PART ID:\s*PART_\d+\]?)/i).filter(b => b.trim() && /PART_\d+/i.test(b));
+
+        appState.blueprint.parts = [];
+        blocks.forEach((block, index) => {
+          let idMatch = block.match(/PART_(\d+)/i);
+          let partNum = idMatch ? idMatch[1] : (index + 1);
+          let partId = `PART_${partNum}`;
+          const extractField = (pats) => { for (let p of pats) { let m = block.match(p); if (m) return m[1].trim().replace(/^\*\*|\*\*$/g, '').trim(); } return ""; };
+          let title = extractField([/Part Title:\s*(.*)/i, /Title:\s*(.*)/i]) || `Part ${partNum}`;
+          let pageSpan = extractField([/Approximate Page Span:\s*(.*)/i, /Page Span:\s*(.*)/i]);
+          let topicsStr = block.match(/Topics Covered:\s*([\s\S]*?)(?=\n- |$)/i)?.[1] || "";
+          let topicsCovered = topicsStr.split(/,|\n/).map(t => t.trim()).filter(Boolean);
+          let rawData = block.split(/Exact Raw PDF Data:\s*/i)?.[1] || "";
+          
+          let caFlagMatch = block.match(/Likely useful for CA enrichment\??:\s*\[?(Yes|No)\]?/i);
+          let currentAffairsFlag = caFlagMatch ? caFlagMatch[1].toLowerCase() === 'yes' : false;
+          
+          let mpFlagMatch = block.match(/Likely useful for MP-specific enrichment\??:\s*\[?(Yes|No)\]?/i);
+          let mpSpecificFlag = mpFlagMatch ? mpFlagMatch[1].toLowerCase() === 'yes' : false;
+
+          let visualFlagMatch = block.match(/Likely needs a visual asset\??:\s*\[?(Yes|No)\]?/i);
+          let needsVisualFlag = visualFlagMatch ? visualFlagMatch[1].toLowerCase() === 'yes' : false;
+
+          appState.blueprint.parts.push({
+            id: partId, partNumber: parseInt(partNum), title, pageSpan, topicsCovered,
+            rawData: rawData.substring(0, 30000), status: 'not_started',
+            generatedText: '', generatedTextRaw: '', currentAffairsText: '', currentAffairsMerged: false,
+            timelineData: [], images: [], versions: [], approved: false,
+            currentAffairsFlag, mpSpecificFlag, needsVisualFlag
+          });
+        });
+        Session.save(); this.showExtractionOutput();
+      },
+      showExtractionOutput() {
+        document.getElementById('s1-progress-panel').classList.add('hidden');
+        document.getElementById('s1-output-tabs').classList.remove('hidden');
+        document.getElementById('s1-raw-textarea').value = appState.pdfText;
+        document.getElementById('s1-raw-stats').textContent = `${appState.pageCount} Pages | ${appState.pdfText.length} Chars`;
+        document.getElementById('s1-out-identity').innerHTML = marked.parse(appState.documentIdentity);
+        document.getElementById('s1-out-topics').innerHTML = marked.parse(appState.topicMap);
+        document.getElementById('s1-out-exam').innerHTML = marked.parse(appState.examAnalysis);
+        document.getElementById('s1-out-visuals').innerHTML = marked.parse(appState.visualsList);
+        
+        const pc = document.getElementById('s1-tab-parts');
+        pc.innerHTML = appState.blueprint.parts.map(p => `
+          <div class="bg-white rounded-xl border border-indigo-200 shadow-sm p-4 mb-3 animate-fade-in">
+            <span class="text-xs font-bold bg-indigo-600 text-white px-2 py-0.5 rounded">${p.id}</span>
+            <span class="font-bold text-slate-800 text-sm ml-2">${p.title}</span>
+            <p class="text-xs text-slate-500 mt-2">Topics: ${p.topicsCovered.join(', ')}</p>
+          </div>`).join('');
+        document.getElementById('s1-next-btn').disabled = false;
+        Toaster.show('Stage 1 Complete.', 'emerald');
+      },
+      switchTab(id) { Helper.switchTabs('s1-tab-btn', 's1-tab-content', event.target, `s1-tab-${id}`); },
+      showRawResponse() {
+        const modal = document.getElementById('debug-modal');
+        document.getElementById('debug-textarea').value = appState.blueprint.rawContent;
+        modal.classList.remove('hidden');
+      }
+    };
+
+    const Step2 = {
+      init() {
+        document.getElementById('s2-detected-subject').textContent = appState.subject;
+        document.getElementById('s2-subject-select').value = appState.subject;
+        this.onSubjectChange();
+      },
+      onSubjectChange() {
+        const sub = document.getElementById('s2-subject-select').value;
+        appState.subject = sub;
+        document.getElementById('s2-detected-subject').textContent = sub;
+        appState.activeBlueprintPromptKey = SUBJECT_PROMPT_MAP[sub] || 'economicsBlueprintPrompt';
+        document.getElementById('s2-card-subject').textContent = sub;
+        document.getElementById('s2-card-prompt-name').textContent = appState.activeBlueprintPromptKey;
+        Session.save();
+      },
+      async generateBlueprint() {
+        document.getElementById('s2-progress-panel').classList.remove('hidden');
+        document.getElementById('s2-blueprint-output').classList.add('hidden');
+        const btn = document.getElementById('s2-gen-blueprint-btn');
+        Helper.setBtnLoading(btn, `<svg class="w-5 h-5 animate-spin-slow inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg> Generating Plan...`);
+        
+        const c = document.getElementById('s2-phases');
+        c.innerHTML = [1,2,3,4,5].map(i => `<div id="bp-ph-${i}" class="text-xs text-slate-400">Phase ${i} Planning...</div>`).join('');
+        const streamBox = document.getElementById('s2-raw-stream');
+        streamBox.parentNode.classList.remove('hidden');
+        streamBox.textContent = "[SYSTEM: Engineering syllabus matrix blueprint... Please wait.]";
+
+        const finalPrompt = appState.prompts[appState.activeBlueprintPromptKey]
+          .replace(/\{STAGE_1_OUTPUT\}/g, appState.topicMap)
+          .replace(/\{EXTRACTED_TEXT\}/g, appState.pdfText.substring(0, 80000));
+
+        try {
+          const fullRes = await API.streamContent(finalPrompt, (chunk, accumulated) => {
+            streamBox.textContent = accumulated; streamBox.scrollTop = streamBox.scrollHeight;
+            document.getElementById('s2-token-count').textContent = `~${Math.round(accumulated.length / 4)} tokens`;
+          });
+          this.parseBlueprint(fullRes);
+        } catch(e) { Toaster.show('Blueprint generation failed', 'rose'); }
+        finally { Helper.setBtnLoading(btn, `⚡ Generate Blueprint`, false); }
+      },
+      parseBlueprint(text) {
+        appState.blueprint.rawContent = text;
+        const imgRegRegex = /\[IMAGE_ASSET_ID:\s*(IMAGE_\d+\.\d+)\]([\s\S]*?)(?=\[IMAGE_ASSET_ID:|SECTION 13|SECTION 14|SECTION 15|SECTION 11|SECTION 10|$)/gi;
+        appState.blueprint.imageRegistry = [];
+        let match;
+        while((match = imgRegRegex.exec(text)) !== null) {
+          const block = match[2];
+          appState.blueprint.imageRegistry.push({
+            id: match[1].trim(),
+            template: (block.match(/Template Type:\s*(.*)/i) || [])[1] || '',
+            topic: (block.match(/Topic:\s*(.*)/i) || [])[1] || '',
+            layout: (block.match(/Layout Description:\s*(.*)/i) || [])[1] || '',
+            labels: (block.match(/All Text Labels.*?:\s*(.*)/i) || [])[1] || '',
+            data: (block.match(/Data to Display:\s*(.*)/i) || [])[1] || '',
+            purpose: (block.match(/Pedagogical Purpose:\s*(.*)/i) || [])[1] || '',
+            colours: (block.match(/Colour Scheme:\s*(.*)/i) || 'Default'),
+            handDrawable: (block.match(/Hand-drawable.*?:\s*(.*)/i) || 'No')
+          });
+        }
+        document.getElementById('s2-progress-panel').classList.add('hidden');
+        document.getElementById('s2-blueprint-output').classList.remove('hidden');
+        this.renderBlueprintCards();
+        document.getElementById('s2-bp-stats').textContent = `${appState.blueprint.imageRegistry.length} Images Registered`;
+        Session.save();
+      },
+      renderBlueprintCards() {
+        const cardsDiv = document.getElementById('s2-bp-cards');
+        if(cardsDiv && appState.blueprint.rawContent) {
+          cardsDiv.innerHTML = marked.parse(appState.blueprint.rawContent);
+        }
+      },
+      approveBlueprint() {
+        appState.blueprint.isApproved = true;
+        document.getElementById('s2-app-gate-status').textContent = "Approved & Locked";
+        document.getElementById('s2-approve-btn').className = "w-full py-3 bg-slate-700 text-white font-bold rounded-xl cursor-not-allowed";
+        document.getElementById('s2-approve-btn').disabled = true;
+        document.getElementById('s2-next-action').classList.remove('hidden');
+        Session.save(); App.goToStep(3);
+      }
+    };
+
+    const Step3 = {
+      renderFeed() {
+        const container = document.getElementById('s3-feed');
+        const navContainer = document.getElementById('s3-sticky-nav');
+        if(appState.blueprint.parts.length === 0) return;
+        document.getElementById('s3-empty-state').classList.add('hidden');
+        
+        navContainer.innerHTML = appState.blueprint.parts.map(p => `
+          <button onclick="Step3.scrollToPart('${p.id}')" id="s3-nav-${p.id}" class="nav-pill px-4 py-1.5 rounded-full text-xs font-bold border border-slate-200 bg-white text-slate-600 flex items-center gap-2 whitespace-nowrap hover:bg-slate-50 transition">
+            <div id="s3-nav-dot-${p.id}" class="w-2 h-2 rounded-full bg-slate-300"></div> Part ${p.partNumber}
+          </button>`).join('');
+        
+        container.innerHTML = appState.blueprint.parts.map(p => {
+          this.preparePrompts(p);
+          return `
+          <section id="s3-sec-${p.id}" class="part-section scroll-mt-48 mb-12 animate-fade-in">
+            <div class="p-6 bg-white rounded-2xl border border-slate-200 shadow-sm" id="s3-wrapper-${p.id}">
+              ${this.buildPartHeader(p)}
+              ${this.buildSourcePlanPanel(p)}
+              ${this.buildPromptPanel(p)}
+              ${this.buildContentTabs(p)}
+              ${this.buildTimelinePanel(p)}
+              ${this.buildPartFooter(p)}
+            </div>
+          </section>`;
+        }).join('');
+        
+        this.initScrollSpy(); this.updateStats();
+        appState.blueprint.parts.forEach(p => { if(p.generatedTextRaw) this.hydrateInlineImages(p.id); });
+      },
+      preparePrompts(part) {
+        if(!part.promptUsed) part.promptUsed = {};
+        if(!part.promptUsed.textPrompt) {
+          let template = appState.prompts.economicsPartWriterPrompt;
+          part.promptUsed.textPrompt = template.replace(/\{RAW_PART_TEXT\}/g, part.rawData).replace(/\{PART_TITLE\}/g, part.title).replace(/\{PART_ID\}/g, part.id);
+        }
+        if(!part.promptUsed.currentAffairsPrompt) {
+          part.promptUsed.currentAffairsPrompt = appState.prompts.currentAffairsPrompt.replace(/\{PART_TITLE\}/g, part.title);
+        }
+      },
+      buildPartHeader(part) {
+        return `
+        <div class="mb-4 flex justify-between items-start">
+          <div>
+            <span class="text-xs bg-slate-800 text-white px-2 py-1 rounded font-mono">${part.id}</span>
+            <span class="font-bold text-slate-800 text-sm ml-2">${part.title}</span>
+          </div>
+          <span id="s3-stat-${part.id}" class="text-xs font-bold px-3 py-1 rounded bg-slate-100 text-slate-600">PENDING</span>
+        </div>`;
+      },
+      buildSourcePlanPanel(part) {
+        return `
+        <details class="mb-4 bg-slate-50 border border-slate-200 rounded-xl overflow-hidden">
+          <summary class="p-3 cursor-pointer text-sm font-bold text-slate-700">📄 Source Data & Targets</summary>
+          <div class="p-4 bg-white text-xs border-t border-slate-200 space-y-2 max-h-48 overflow-y-auto">
+            <div class="font-mono whitespace-pre-wrap">${part.rawData}</div>
+          </div>
+        </details>`;
+      },
+      buildPromptPanel(part) {
+        return `
+        <details class="mb-4 bg-slate-50 border border-slate-200 rounded-xl overflow-hidden">
+          <summary class="p-3 cursor-pointer text-sm font-bold text-slate-700">🔍 Prompt Settings</summary>
+          <div class="p-4 bg-white border-t border-slate-200 space-y-2">
+            <textarea id="prompt-txt-edit-${part.id}" class="w-full h-32 p-2 font-mono text-[10px] bg-slate-50 border rounded">${part.promptUsed.textPrompt}</textarea>
+            <textarea id="prompt-ca-edit-${part.id}" class="w-full h-24 p-2 font-mono text-[10px] bg-slate-50 border rounded hidden">${part.promptUsed.currentAffairsPrompt}</textarea>
+          </div>
+        </details>`;
+      },
+      buildContentTabs(part) {
+        let notesInitialState = !part.generatedTextRaw;
+        let caInitialState = !part.currentAffairsText && !part.currentAffairsMerged;
+        return `
+        <div class="border border-slate-200 rounded-xl bg-white overflow-hidden mb-4">
+          <div class="flex border-b border-slate-200 bg-slate-50">
+            <button id="s3-tabbtn-notes-${part.id}" class="s3-tabbtn-${part.id} flex-1 py-2 text-xs font-bold text-emerald-600 border-b-2 border-emerald-600" onclick="Step3.switchTab('${part.id}', 'notes')">📝 Notes</button>
+            <button id="s3-tabbtn-ca-${part.id}" class="s3-tabbtn-${part.id} flex-1 py-2 text-xs font-bold text-slate-500 border-b-2 border-transparent" onclick="Step3.switchTab('${part.id}', 'ca')">📰 Current Affairs</button>
+            <button id="s3-tabbtn-images-${part.id}" class="s3-tabbtn-${part.id} flex-1 py-2 text-xs font-bold text-slate-500 border-b-2 border-transparent" onclick="Step3.switchTab('${part.id}', 'images')">🖼 Images</button>
+          </div>
+          <div class="p-4 min-h-[150px]">
+            <div id="s3-tab-notes-${part.id}" class="s3-tabcontent-${part.id}">
+              <div id="s3-notes-controls-${part.id}" class="flex justify-between items-center mb-3 bg-slate-50 p-2 border rounded ${notesInitialState ? 'hidden' : ''}">
+                <span class="text-xs text-slate-500 font-bold"><span id="s3-word-count-${part.id}">0</span> words</span>
+                <div class="flex gap-2">
+                  <button onclick="Step3.toggleManualEdit('${part.id}')" class="text-xs px-2 py-1 bg-white border rounded font-semibold">✏️ Edit</button>
+                  <button id="btn-gen-notes-${part.id}" onclick="Step3.generatePartText('${part.id}')" class="text-xs px-2 py-1 bg-white border rounded font-semibold">↻ Regenerate</button>
+                </div>
+              </div>
+              <div id="s3-render-notes-${part.id}" class="markdown-body">
+                ${notesInitialState ? 
+                  `<div class="text-center py-6" id="s3-init-notes-${part.id}">
+                    <button id="btn-gen-notes-init-${part.id}" onclick="Step3.generatePartText('${part.id}')" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg text-xs transition">⚡ Generate Notes</button>
+                  </div>` : this.renderInlineContentHTML(part)
+                }
+              </div>
+              <div id="s3-editbox-notes-${part.id}" class="hidden mt-2">
+                <textarea id="s3-edit-in-${part.id}" class="w-full h-96 p-2 font-mono text-xs bg-slate-50 border rounded">${part.generatedTextRaw}</textarea>
+                <div class="mt-2 flex gap-2 justify-end">
+                  <button onclick="Step3.toggleManualEdit('${part.id}')" class="px-3 py-1 bg-slate-200 rounded text-xs">Cancel</button>
+                  <button onclick="Step3.saveEdit('${part.id}')" class="px-3 py-1 bg-indigo-600 text-white rounded text-xs">Save</button>
+                </div>
+              </div>
+            </div>
+            <div id="s3-tab-ca-${part.id}" class="s3-tabcontent-${part.id} hidden">
+              <div id="s3-ca-controls-${part.id}" class="flex justify-between items-center mb-3 ${caInitialState ? 'hidden' : ''}">
+                <button id="btn-gen-ca-${part.id}" onclick="Step3.generateCA('${part.id}')" class="text-xs px-2 py-1 border rounded">↻ Regenerate CA</button>
+                ${!part.currentAffairsMerged ? 
+                  `<button id="btn-merge-ca-${part.id}" onclick="Step3.mergeCA('${part.id}')" class="px-3 py-1 bg-emerald-600 text-white text-xs font-bold rounded">➕ Merge</button>` : 
+                  `<button id="btn-unmerge-ca-${part.id}" onclick="Step3.unmergeCA('${part.id}')" class="px-3 py-1 bg-rose-500 text-white text-xs font-bold rounded">➖ Unmerge</button>`}
+              </div>
+              <div id="s3-render-ca-${part.id}" class="markdown-body">
+                ${caInitialState ?
+                  `<div class="text-center py-6" id="s3-init-ca-${part.id}">
+                    <button id="btn-gen-ca-init-${part.id}" onclick="Step3.generateCA('${part.id}')" class="px-4 py-2 bg-sky-600 text-white font-bold rounded-lg text-xs">🔍 Search CA</button>
+                  </div>` : (part.currentAffairsText ? marked.parse(part.currentAffairsText) : '')
+                }
+              </div>
+            </div>
+            <div id="s3-tab-images-${part.id}" class="s3-tabcontent-${part.id} hidden">
+              <div id="s3-img-grid-${part.id}" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                ${this.buildImagesTabGrid(part)}
+              </div>
+            </div>
+          </div>
+        </div>`;
+      },
+      buildTimelinePanel(part) {
+        if (!part.timelineData || part.timelineData.length === 0) return '';
+        return `
+        <div class="mb-4 bg-sky-50 border rounded-xl p-4">
+          <div class="timeline-container hide-scrollbar">
+            ${part.timelineData.map(node => `
+              <div class="timeline-node">
+                <div class="timeline-dot mb-1">${node.date.substring(0,4)}</div>
+                <h5 class="font-bold text-slate-800 text-xs">${node.event}</h5>
+                <p class="text-[10px] text-sky-600">${node.data || node.catalyst}</p>
+              </div>`).join('')}
+          </div>
+        </div>`;
+      },
+      buildPartFooter(part) {
+        return `
+        <div class="p-3 bg-slate-800 rounded-xl flex justify-between items-center flex-wrap gap-2 mt-4">
+          <div class="text-xs font-bold text-slate-300">Status: <span class="text-white">${part.generatedTextRaw ? 'Notes Done' : 'Pending'}</span></div>
+          <div class="flex gap-2">
+            <button onclick="Step3.toggleRefineFoot('${part.id}')" class="px-3 py-1 bg-slate-700 text-white rounded text-xs">Refine</button>
+            ${!part.approved ? `<button onclick="Step3.cascadeApprovePart('${part.id}')" class="px-4 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded text-xs shadow-sm transition">✓ Cascade Approve</button>` : `<button disabled class="px-4 py-1.5 bg-slate-600 text-slate-400 font-bold rounded text-xs">✓ Approved</button>`}
+          </div>
+        </div>
+        <div id="s3-refinefoot-${part.id}" class="hidden mt-2 p-3 bg-purple-50 border rounded-xl shadow-inner">
+          <textarea id="s3-refinefoot-in-${part.id}" class="w-full p-2 text-xs border rounded-lg outline-none" rows="2" placeholder="e.g. 'Add a table comparing Demand-Pull and Cost-Push inflation'"></textarea>
+          <button onclick="Step3.submitRefine('${part.id}')" class="mt-2 px-3 py-1 bg-purple-600 text-white font-bold rounded-xs float-right">Apply Refinement</button>
+          <div class="clear-both"></div>
+        </div>`;
+      },
+      buildImagesTabGrid(part) {
+        let imgSpecs = appState.blueprint.imageRegistry.filter(r => r.id.includes(part.partNumber + '.'));
+        if(imgSpecs.length === 0) return '<div class="text-xs text-slate-400">No images registered.</div>';
+        return imgSpecs.map(spec => {
+          let img = part.images.find(i => i.assetId === spec.id) || { status: 'not_started', base64: null };
+          return `
+          <div class="bg-slate-50 border rounded-lg p-3 flex flex-col justify-between">
+            <div class="flex justify-between items-center mb-1">
+              <span class="font-mono text-xs font-bold bg-slate-800 text-white px-2 py-0.5 rounded">${spec.id}</span>
+              <span class="text-[10px] font-bold ${img.base64 ? 'text-emerald-600':'text-slate-400'}">${img.base64 ? 'Embedded':'Pending'}</span>
+            </div>
+            <div class="text-[10px] text-slate-600 line-clamp-1">${spec.topic}</div>
+            ${img.base64 ? `<img src="${img.base64}" class="w-full h-24 object-contain rounded mt-2 border bg-white">` : `<div class="h-24 bg-slate-100 flex items-center justify-center text-xs text-slate-400 border rounded mt-2">Placeholder</div>`}
+            <button onclick="Step3.genImageInline('${part.id}', '${spec.id}', false)" class="mt-2 w-full py-1 bg-indigo-600 text-white text-[10px] font-bold rounded">${img.base64 ? 'Regenerate' : 'Generate'}</button>
+          </div>`;
+        }).join('');
+      },
+      scrollToPart(id) {
+        const el = document.getElementById(`s3-sec-${id}`);
+        if(el) { window.scrollTo({top: el.getBoundingClientRect().top + window.scrollY - 180, behavior: 'smooth'}); }
+      },
+      initScrollSpy() {
+        const observer = new IntersectionObserver(entries => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              const id = entry.target.id.replace('s3-sec-', '');
+              document.querySelectorAll('.nav-pill').forEach(el => { el.classList.remove('active'); el.classList.add('bg-white'); });
+              const activePill = document.getElementById(`s3-nav-${id}`);
+              if(activePill) {
+                activePill.classList.add('active'); activePill.classList.remove('bg-white');
+                activePill.parentElement.scrollLeft = activePill.offsetLeft - 50;
+              }
+            }
+          });
+        }, { rootMargin: '-200px 0px -60% 0px', threshold: 0 });
+        document.querySelectorAll('.part-section').forEach(sec => observer.observe(sec));
+      },
+      switchTab(partId, tabId) { Helper.switchTabs(`s3-tabbtn-${partId}`, `s3-tabcontent-${partId}`, document.getElementById(`s3-tabbtn-${tabId}-${partId}`), `s3-tab-${tabId}-${partId}`); },
+
+      // --- RESTORED CORE SECTORS FOR INTERACTION ---
+      async generatePartText(partId) {
+        const part = appState.blueprint.parts.find(p => p.id === partId);
+        const btn = document.getElementById(`btn-gen-notes-${partId}`);
+        const initBtn = document.getElementById(`btn-gen-notes-init-${partId}`);
+        
+        Helper.setBtnLoading(btn, `Generating...`);
+        Helper.setBtnLoading(initBtn, `Generating...`);
+        if (!this.isGeneratingAll) this.switchTab(partId, 'notes');
+        
+        const initEl = document.getElementById(`s3-init-notes-${partId}`); if (initEl) initEl.classList.add('hidden');
+        const ctrlEl = document.getElementById(`s3-notes-controls-${partId}`); if (ctrlEl) ctrlEl.classList.remove('hidden');
+        const contentEl = document.getElementById(`s3-render-notes-${partId}`); if (!contentEl) return;
+        
+        part.status = 'text_generating'; this.updatePartHeaderUI(partId);
+        const finalPrompt = document.getElementById(`prompt-txt-edit-${partId}`)?.value || part.promptUsed.textPrompt;
+        
+        contentEl.innerHTML = `<div class="p-6 bg-slate-50 border rounded-lg text-slate-500 font-mono text-xs animate-pulse">Contacting Gemini Core. Generating structural notes... Please wait.</div>`;
+
+        part.generatedTextRaw = ""; part.generatedText = "";
+        try {
+          await API.streamContent(finalPrompt, (chunk, acc) => {
+            part.generatedTextRaw = acc; part.generatedText = this.renderInlineContentHTML(part);
+            if (contentEl) contentEl.innerHTML = part.generatedText;
+            const wc = document.getElementById(`s3-word-count-${partId}`); if(wc) wc.textContent = acc.split(/\s+/).length;
+            this.hydrateInlineImages(partId);
+          }, { temp: 0.5, useTools: false });
+          part.status = 'text_done'; Session.save();
+        } catch(e) { part.status = 'not_started'; Toaster.show(`Failed: ${part.id}`, 'rose'); }
+        finally { 
+          Helper.setBtnLoading(btn, `↻ Regenerate`, false); 
+          if(initBtn) Helper.setBtnLoading(initBtn, `⚡ Generate Notes`, false); 
+          
+          if (typeof renderMathInElement !== 'undefined') {
+            renderMathInElement(contentEl, {
+              delimiters: [
+                {left: '$$', right: '$$', display: true},
+                {left: '$', right: '$', display: false}
+              ]
+            });
+          }
+        }
+        this.updatePartUI(partId); 
+      },
+
+      async generateCA(partId) {
+        const part = appState.blueprint.parts.find(p => p.id === partId);
+        const btn = document.getElementById(`btn-gen-ca-${partId}`);
+        const initBtn = document.getElementById(`btn-gen-ca-init-${partId}`);
+        
+        Helper.setBtnLoading(btn, `Searching...`);
+        Helper.setBtnLoading(initBtn, `Searching...`);
+        if (!this.isGeneratingAll) this.switchTab(partId, 'ca');
+        
+        const initEl = document.getElementById(`s3-init-ca-${partId}`); if (initEl) initEl.classList.add('hidden');
+        const ctrlEl = document.getElementById(`s3-ca-controls-${partId}`); if (ctrlEl) ctrlEl.classList.remove('hidden');
+        const contentEl = document.getElementById(`s3-render-ca-${partId}`);
+        
+        part.status = 'ca_generating'; this.updatePartHeaderUI(partId);
+        const prompt = document.getElementById(`prompt-ca-edit-${partId}`)?.value || part.promptUsed.currentAffairsPrompt;
+        
+        if (contentEl) contentEl.innerHTML = `<div class="p-6 bg-slate-50 border rounded-lg text-slate-500 font-mono text-xs animate-pulse">Scanning live search indices for MP specific economic surveys & current affairs...</div>`;
+
+        let rawRes = "";
+        try {
+          await API.streamContent(prompt, (chunk, acc) => {
+            rawRes = acc; if(contentEl) contentEl.innerHTML = marked.parse(acc);
+          }, { temp: 0.4, useTools: true });
+          
+          part.currentAffairsText = rawRes; part.status = 'ca_done'; Session.save();
+          this.mergeCA(partId, true);
+        } catch(e) { part.status = 'text_done'; Toaster.show(`Failed CA`, 'rose'); }
+        finally { Helper.setBtnLoading(btn, `↻ Regenerate CA`, false); if(initBtn) Helper.setBtnLoading(initBtn, `🔍 Search CA`, false); }
+        this.updatePartUI(partId);
+      },
+
+      mergeCA(partId, isAuto = false) {
+        const p = appState.blueprint.parts.find(x=>x.id===partId);
+        if(!p.currentAffairsText || p.currentAffairsMerged) return;
+        p.generatedTextRaw += `\n\n## 📰 Current Affairs Supplement\n\n${p.currentAffairsText}`;
+        p.generatedText = this.renderInlineContentHTML(p);
+        p.currentAffairsMerged = true; p.status = 'ca_merged'; Session.save();
+        this.updatePartUI(partId);
+        if (!this.isGeneratingAll && !isAuto) this.switchTab(partId, 'notes');
+        Toaster.show(isAuto ? `Current affairs auto-merged` : `Merged`, 'emerald');
+      },
+
+      unmergeCA(partId) {
+        const p = appState.blueprint.parts.find(x=>x.id===partId); if(!p.currentAffairsMerged) return;
+        const div = `\n\n## 📰 Current Affairs Supplement\n\n`;
+        const idx = p.generatedTextRaw.indexOf(div);
+        if(idx !== -1) { p.generatedTextRaw = p.generatedTextRaw.slice(0, idx); p.generatedText = this.renderInlineContentHTML(p); }
+        p.currentAffairsMerged = false; p.status = 'ca_done'; Session.save();
+        this.updatePartUI(partId); Toaster.show(`CA unmerged`, 'sky');
+      },
+
+      renderInlineContentHTML(part) {
+        let html = marked.parse(part.generatedTextRaw);
+        html = html.replace(/<p>IMAGE_NEEDED:\s*(IMAGE_\d+\.\d+)<\/p>/g, (m, id) => this.mountHtml(part.id, id));
+        html = html.replace(/IMAGE_NEEDED:\s*(IMAGE_\d+\.\d+)/g, (m, id) => this.mountHtml(part.id, id));
+        html = html.replace(/<p>%%%EMBEDDED_IMAGE_(IMAGE_\d+\.\d+)%%%<\/p>/g, (m, id) => this.mountHtml(part.id, id));
+        html = html.replace(/%%%EMBEDDED_IMAGE_(IMAGE_\d+\.\d+)%%%/g, (m, id) => this.mountHtml(part.id, id));
+        return html;
+      },
+
+      mountHtml(partId, id) {
+        id = id.trim();
+        let p = appState.blueprint.parts.find(x=>x.id===partId);
+        let existing = p.images.find(i => i.assetId === id);
+        if(!existing) p.images.push({ assetId: id, prompt: '', status: 'not_started', base64: null, approved: false });
+        return `<div class="inline-img-mount my-6" data-part="${partId}" data-id="${id}"></div>`;
+      },
+
+      hydrateInlineImages(partId) {
+        const part = appState.blueprint.parts.find(p => p.id === partId);
+        const section = document.getElementById(`s3-sec-${partId}`); if(!section) return;
+        
+        section.querySelectorAll('.inline-img-mount').forEach(mount => {
+          const imgId = mount.getAttribute('data-id');
+          const img = part.images.find(i => i.assetId === imgId);
+          const spec = appState.blueprint.imageRegistry.find(r => r.id === imgId) || {};
+          if(!img) return;
+          
+          let isGenerating = img.status === 'generating_prompt' || img.status === 'generating_image';
+          let loadingUi = isGenerating ? `<div class="w-full h-32 bg-indigo-50 rounded-lg flex flex-col items-center justify-center text-indigo-500 text-xs font-bold mb-3 border border-indigo-200"><div class="w-5 h-5 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin-slow mb-2"></div>Generating image...</div>` : `<div class="w-full h-32 bg-slate-100 rounded-lg flex items-center justify-center text-slate-400 text-xs font-bold mb-3 border border-slate-200 shadow-inner">Placeholder: ${spec.topic || 'Awaiting Generation'}</div>`;
+          let preview = img.base64 ? `<img src="${img.base64}" class="w-full rounded-lg mb-3 border border-slate-200 shadow-sm">` : loadingUi;
+          let redesignUi = '';
+          if (img.base64 && !isGenerating && img.status !== 'redesigning_prompt') {
+            redesignUi = `
+              <div class="mt-4 pt-4 border-t border-slate-100">
+                <textarea id="img-redesign-in-${imgId}" class="w-full text-xs p-3 bg-slate-50 border rounded-lg font-mono text-slate-700 shadow-inner" rows="2" placeholder="Ask AI to change this image (e.g., 'Make it a timeline instead of a flowchart')..."></textarea>
+                <button id="btn-redesign-${imgId}" onclick="Step3.aiRedesignImage('${partId}', '${imgId}')" class="mt-2 w-full px-4 py-2 bg-indigo-100 hover:bg-indigo-200 text-indigo-800 text-xs font-bold rounded-lg transition shadow-sm">🪄 Redesign Image with AI</button>
+              </div>`;
+          }
+          let ctrls = '';
+          if (!img.base64 && !isGenerating && img.status !== 'redesigning_prompt') {
+            ctrls = `
+              <button onclick="Step3.genImageInline('${partId}', '${imgId}', false)" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg shadow-sm">⚡ Generate Image</button>
+              <button onclick="Step3.editImgPromptFirst('${partId}', '${imgId}')" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg border">✏️ Edit Prompt First</button>`;
+          } else if (img.base64) { ctrls = `<span class="bg-emerald-100 text-emerald-700 px-3 py-1.5 rounded-lg text-xs font-bold border">✓ Embedded</span>`; }
+          
+          mount.innerHTML = `
+          <div class="p-5 bg-white border-2 border-dashed ${isGenerating || img.status === 'redesigning_prompt' ? 'border-indigo-400' : (img.base64 ? 'border-emerald-300' : 'border-slate-300')} rounded-xl max-w-3xl mx-auto my-6 relative overflow-hidden transition-all">
+            <div class="flex justify-between items-center mb-3">
+              <div class="flex items-center gap-2">
+                <span class="text-xl">🖼️</span>
+                <div>
+                  <div class="font-bold text-slate-800 text-sm">${spec.topic || 'Visual Asset'} <span class="font-mono text-[10px] bg-slate-800 text-white px-2 py-0.5 rounded ml-1">${imgId}</span></div>
+                  <div class="text-[10px] font-bold text-slate-500 mt-0.5">Template: ${spec.template || 'Unknown'}</div>
+                </div>
+              </div>
+            </div>
+            ${preview}
+            <div class="flex flex-wrap gap-2 mt-4" id="img-ctrls-${imgId}">${ctrls}</div>
+            <div id="img-editbox-${imgId}" class="hidden mt-4 pt-4 border-t border-slate-100">
+              <textarea id="img-prompt-in-${imgId}" class="w-full p-3 font-mono text-[10px] text-slate-700 bg-slate-50 border rounded-lg h-32 outline-none focus:border-indigo-500 shadow-inner"></textarea>
+              <button onclick="Step3.genImageInline('${partId}', '${imgId}', true)" class="mt-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg shadow-sm transition w-full">Generate with This Prompt</button>
+            </div>
+            ${redesignUi}
+          </div>`;
+        });
+        
+        const imgGrid = document.getElementById(`s3-img-grid-${partId}`);
+        if(imgGrid && part.images.length > 0) {
+          imgGrid.innerHTML = part.images.map(img => `
+            <div class="p-4 bg-white border rounded-xl shadow-sm animate-fade-in">
+              <div class="flex justify-between items-center mb-2">
+                <span class="font-mono text-xs font-bold bg-slate-800 text-white px-2 py-1 rounded">${img.assetId}</span>
+                <span class="text-xs font-bold ${img.base64 ? 'text-emerald-600':'text-slate-400'}">${img.base64 ? 'Embedded':img.status}</span>
+              </div>
+              ${img.base64 ? `<img src="${img.base64}" class="w-full rounded-lg border">` : `<div class="h-24 bg-slate-100 flex items-center justify-center text-xs text-slate-400 border rounded-lg">No image generated</div>`}
+            </div>`).join('');
+        }
+      },
+      // --- END RESTORED HELPER PIPELINE SECTORS ---
+
+      async genImageInline(partId, imgId, useExistingPrompt = false) {
+        const part = appState.blueprint.parts.find(p=>p.id===partId);
+        const img = part.images.find(i=>i.assetId===imgId);
+        const spec = appState.blueprint.imageRegistry.find(r=>r.id===imgId) || {};
+        if(!useExistingPrompt) {
+          img.status = 'generating_prompt'; this.hydrateInlineImages(partId);
+          try {
+            let styleRouterGuideline = "";
+            const templateType = (spec.template || '').toUpperCase();
+            
+            if (templateType.includes("STORY") || templateType.includes("COMIC") || templateType.includes("STRIP")) {
+              styleRouterGuideline = "Warm, highly readable educational comic book style, clean friendly cartoon illustration, defined dark ink outlines, bright flat comic-strip colors, expressive faces showing high emotion and comprehension, clean sequential panel borders, optimized for educational visual storytelling. Self-explanatory action, zero corporate text charts.";
+            } else if (templateType.includes("FORMULA") || templateType.includes("EQUATION") || templateType.includes("MATH")) {
+              styleRouterGuideline = "Sleek, premium modern educational chalkboard index card. The mathematical equation is prominently centered in large, bold, clean lettering. Surrounding variables are clearly boxed with simple arrows pointing to their definitions. The bottom 15% contains a dedicated high-contrast colored banner labeled 'PSC FACT BOX' containing GSDP or relevant exam facts.";
+            } else if (templateType.includes("CONCEPT") || templateType.includes("FLOW") || templateType.includes("MAP") || templateType.includes("TIMELINE")) {
+              styleRouterGuideline = "Structured graphical flowchart layout. Divide the visual into clear segments or numbered paths (1, 2, 3) to show sequential flow. Use clean high-contrast labels placed in white callout panels. Ensure a bold, central visual metaphor that makes the concept instantly understandable without complex reading. White clean background.";
+            } else {
+              styleRouterGuideline = "Premium flat minimalist educational vector infographic, high legibility, professional visual structure, clean white background, clear color coding.";
+            }
+
+            let builderPrompt = appState.prompts.economicsImagePromptBuilderPrompt
+              .replace(/\{TEMPLATE_TYPE\}/g, spec.template||'')
+              .replace(/\{TOPIC\}/g, spec.topic||'')
+              .replace(/\{LAYOUT_DESCRIPTION\}/g, `${spec.layout || ''}. Style direction: ${styleRouterGuideline}`)
+              .replace(/\{CHARACTER_APPEARANCES\}/g, spec.characters||'Farmer, Trader, Official')
+              .replace(/\{DATA_TO_DISPLAY\}/g, spec.data||'')
+              .replace(/\{TEXT_LABELS\}/g, spec.labels||'')
+              .replace(/\{HAND_DRAWABLE\}/g, spec.handDrawable === 'Yes' ? 'Design must be simple enough for a student to sketch by hand in 45 seconds during an exam. Use only basic geometric shapes. No complex curves or detailed illustrations.' : '');
+            const detailedPrompt = await API.generateContent(builderPrompt);
+            img.prompt = detailedPrompt.replace(/^\[.*?\]\s*/gm, '').replace(/\[ASSET SUMMARY\]/gi, '').trim(); 
+          } catch(e) { img.status = 'error'; Toaster.show(`Prompt build failed for ${imgId}`, 'rose'); this.hydrateInlineImages(partId); return; }
+        } else { img.prompt = document.getElementById(`img-prompt-in-${imgId}`).value; }
+        
+        img.status = 'generating_image'; this.hydrateInlineImages(partId);
+        try {
+          let aspect = spec.template && spec.template.includes("FORMULA_CARD") ? "1:1" : "16:9";
+          img.base64 = await API.generateImage(img.prompt, aspect);
+          img.status = 'embedded'; img.approved = true; 
+          part.generatedTextRaw = part.generatedTextRaw.replace(new RegExp(`IMAGE_NEEDED:\\s*${imgId}`, 'g'), `%%%EMBEDDED_IMAGE_${imgId}%%%`);
+          part.generatedText = this.renderInlineContentHTML(part);
+        } catch(e) { img.status = 'error'; Toaster.show('Image gen failed', 'rose'); }
+        Session.save(); this.updatePartUI(partId);
+      },
+      async editImgPromptFirst(partId, imgId) {
+        const part = appState.blueprint.parts.find(p=>p.id===partId);
+        const img = part.images.find(i=>i.assetId===imgId);
+        const spec = appState.blueprint.imageRegistry.find(r=>r.id===imgId) || {};
+        img.status = 'generating_prompt'; this.hydrateInlineImages(partId);
+        try {
+          let styleRouterGuideline = "";
+          const templateType = (spec.template || '').toUpperCase();
+          if (templateType.includes("STORY") || templateType.includes("COMIC") || templateType.includes("STRIP")) {
+            styleRouterGuideline = "Warm, highly readable educational comic book style, clean friendly cartoon illustration, defined dark ink outlines, bright flat comic-strip colors, expressive faces showing high emotion and comprehension, clean sequential panel borders, optimized for educational visual storytelling. Self-explanatory action, zero corporate text charts.";
+          } else if (templateType.includes("FORMULA") || templateType.includes("EQUATION") || templateType.includes("MATH")) {
+            styleRouterGuideline = "Sleek, premium modern educational chalkboard index card. The mathematical equation is prominently centered in large, bold, clean lettering. Surrounding variables are clearly boxed with simple arrows pointing to their definitions. The bottom 15% contains a dedicated high-contrast colored banner labeled 'PSC FACT BOX' containing GSDP or relevant exam facts.";
+          } else if (templateType.includes("CONCEPT") || templateType.includes("FLOW") || templateType.includes("MAP") || templateType.includes("TIMELINE")) {
+            styleRouterGuideline = "Structured graphical flowchart layout. Divide the visual into clear segments or numbered paths (1, 2, 3) to show sequential flow. Use clean high-contrast labels placed in white callout panels. Ensure a bold, central visual metaphor that makes the concept instantly understandable without complex reading. White clean background.";
+          } else {
+            styleRouterGuideline = "Premium flat minimalist educational vector infographic, high legibility, professional visual structure, clean white background, clear color coding.";
+          }
+
+          let builderPrompt = appState.prompts.economicsImagePromptBuilderPrompt
+            .replace(/\{TEMPLATE_TYPE\}/g, spec.template||'')
+            .replace(/\{TOPIC\}/g, spec.topic||'')
+            .replace(/\{LAYOUT_DESCRIPTION\}/g, `${spec.layout || ''}. Style direction: ${styleRouterGuideline}`)
+            .replace(/\{CHARACTER_APPEARANCES\}/g, spec.characters||'Farmer, Trader, Official')
+            .replace(/\{DATA_TO_DISPLAY\}/g, spec.data||'')
+            .replace(/\{TEXT_LABELS\}/g, spec.labels||'')
+            .replace(/\{HAND_DRAWABLE\}/g, spec.handDrawable === 'Yes' ? 'Design must be simple enough for a student to sketch by hand in 45 seconds.' : '');
+          const detailedPrompt = await API.generateContent(builderPrompt);
+          img.prompt = detailedPrompt.replace(/^\[.*?\]\s*/gm, '').replace(/\[ASSET SUMMARY\]/gi, '').trim();
+          img.status = 'prompt_ready'; this.hydrateInlineImages(partId);
+          document.getElementById(`img-editbox-${imgId}`).classList.remove('hidden');
+          document.getElementById(`img-ctrls-${imgId}`).classList.add('hidden');
+          document.getElementById(`img-prompt-in-${imgId}`).value = img.prompt;
+        } catch(e) { img.status = 'error'; this.hydrateInlineImages(partId); }
+      },
+      async aiRedesignImage(partId, imgId) {
+        const part = appState.blueprint.parts.find(p=>p.id===partId);
+        const img = part.images.find(i=>i.assetId===imgId);
+        const inputEl = document.getElementById(`img-redesign-in-${imgId}`);
+        if(!inputEl || !inputEl.value.trim()) return;
+
+        const btn = document.getElementById(`btn-redesign-${imgId}`);
+        if(btn) { btn.innerHTML = `Redesigning...`; btn.disabled = true; }
+        img.status = 'redesigning_prompt'; this.hydrateInlineImages(partId);
+        try {
+          const redesignPrompt = appState.prompts.imageRedesignPrompt.replace('{CURRENT_IMAGE_PROMPT}', img.prompt).replace('{USER_INSTRUCTION}', inputEl.value.trim());
+          const newPrompt = await API.generateContent(redesignPrompt);
+          img.prompt = newPrompt.replace(/^\[IMAGE_PROMPT\]\s*/i, '').trim();
+          img.status = 'generating_image'; this.hydrateInlineImages(partId);
+          const spec = appState.blueprint.imageRegistry.find(r=>r.id===imgId) || {};
+          let aspect = spec.template && spec.template.includes("FORMULA_CARD") ? "1:1" : "16:9";
+          img.base64 = await API.generateImage(img.prompt, aspect);
+          img.status = 'embedded'; img.approved = true;
+          Session.save(); Toaster.show(`Image ${imgId} redesigned!`, 'emerald');
+        } catch (e) { img.status = 'embedded'; }
+        finally { this.updatePartUI(partId); }
+      },
+      approvePart(id) {
+        const p = appState.blueprint.parts.find(x=>x.id===id);
+        p.approved = true; p.status = 'approved'; Session.save();
+        this.updatePartHeaderUI(id); this.updateStats();
+        const btnApprove = document.querySelector(`#s3-wrapper-${id} button[onclick="Step3.approvePart('${id}')"]`);
+        if(btnApprove) btnApprove.outerHTML = `<button disabled class="px-5 py-2 bg-slate-600 text-slate-400 font-bold text-sm rounded-lg cursor-not-allowed">✓ Approved</button>`;
+        Toaster.show(`Part ${p.partNumber} Approved`, 'emerald');
+      },
+      toggleRefineFoot(id) { document.getElementById(`s3-refinefoot-${id}`).classList.toggle('hidden'); },
+      toggleManualEdit(id) { document.getElementById(`s3-editbox-notes-${id}`).classList.toggle('hidden'); },
+      
+      async cascadeApprovePart(partId) {
+        const p = appState.blueprint.parts.find(x => x.id === partId);
+        if (!p) return;
+        
+        // 1. Text Note Approval status update
+        p.status = 'text_done';
+        
+        // 2. CA auto-merge check
+        if (p.currentAffairsText && !p.currentAffairsMerged) {
+          this.mergeCA(p.id, true);
+        }
+        
+        // 3. Image Lock action
+        if (p.images) {
+          p.images.forEach(img => {
+            if (img.base64) {
+              img.approved = true;
+              img.status = 'embedded';
+            }
+          });
+        }
+        
+        // 4. Update core approved state
+        p.approved = true;
+        p.status = 'approved';
+        
+        Session.save();
+        this.updatePartUI(partId);
+        
+        const wrapper = document.getElementById(`s3-wrapper-${partId}`);
+        if (wrapper) {
+          const btnApprove = wrapper.querySelector(`button[onclick^="Step3.cascadeApprovePart"]`);
+          if (btnApprove) {
+            btnApprove.outerHTML = `<button disabled class="px-4 py-1.5 bg-slate-600 text-slate-400 font-bold rounded text-xs cursor-not-allowed">✓ Approved</button>`;
+          }
+        }
+        Toaster.show(`Part ${p.partNumber} cascading approval applied!`, 'emerald');
+      },
+
+      approveAllParts() {
+        Modal.showConfirm(
+          'Approve All Workspace Components?',
+          'This will execute cascading approvals for all parts. All completed texts notes will be approved, current affairs will be merged, and generated images will be locked.',
+          async () => {
+            for (let p of appState.blueprint.parts) {
+              await this.cascadeApprovePart(p.id);
+            }
+            Toaster.show('All blueprint parts approved successfully!', 'emerald');
+          }
+        );
+      },
+
+      saveEdit(id) {
+        const p = appState.blueprint.parts.find(x=>x.id===id);
+        const newRaw = document.getElementById(`s3-edit-in-${id}`).value;
+        p.generatedTextRaw = newRaw; p.generatedText = this.renderInlineContentHTML(p);
+        if(p.approved) p.approvedButEdited = true;
+        if(!p.versions) p.versions = [];
+        p.versions.push({ versionNumber: p.versions.length+1, timestamp: new Date().toISOString(), type: 'manual', content: p.generatedTextRaw });
+        Session.save(); this.updatePartUI(id); Toaster.show('Saved', 'indigo');
+      },
+      async submitRefine(id) {
+        const p = appState.blueprint.parts.find(x=>x.id===id);
+        const inst = document.getElementById(`s3-refinefoot-in-${id}`).value; if(!inst) return;
+        document.getElementById(`s3-stat-${id}`).textContent = 'REFINING';
+        try {
+          let lockedIds = p.images.filter(i=>i.base64).map(i=> `%%%EMBEDDED_IMAGE_${i.assetId}%%%`).join(', ');
+          let lockedPlaceholders = p.images.filter(i=>!i.base64).map(i=> `IMAGE_NEEDED: ${i.assetId}`).join(', ');
+          const prompt = appState.prompts.economicsRefinementPrompt.replace('{CURRENT_PART_NOTES}', p.generatedTextRaw).replace('{LOCKED_IMAGE_PLACEHOLDERS}', `Embedded: ${lockedIds} | Placeholders: ${lockedPlaceholders}`).replace('{APPROVED_IMAGE_IDS}', lockedIds).replace('{USER_INSTRUCTION}', inst);
+          
+          p.generatedTextRaw = await API.streamContent(prompt, (c, acc) => {
+            p.generatedTextRaw = acc;
+            const notesTab = document.getElementById(`s3-tab-notes-${id}`);
+            if(notesTab) {
+              const renderEl = document.getElementById(`s3-render-notes-${id}`);
+              if(renderEl) renderEl.innerHTML = this.renderInlineContentHTML(p);
+            }
+          }, {temp:0.4});
+          p.generatedText = this.renderInlineContentHTML(p);
+          if(p.approved) p.approvedButEdited = true;
+          if(!p.versions) p.versions = [];
+          p.versions.push({ versionNumber: p.versions.length+1, timestamp: new Date().toISOString(), type: 'ai_refine', content: p.generatedTextRaw, instruction: inst });
+          document.getElementById(`s3-refinefoot-${id}`).classList.add('hidden');
+          Session.save(); this.updatePartUI(id); Toaster.show('Refinement applied', 'purple');
+        } catch(e) { Toaster.show('Refine failed', 'rose'); this.updatePartUI(id); }
+      },
+      updatePartUI(id) {
+        const p = appState.blueprint.parts.find(x=>x.id===id); if(!p) return;
+        const notesTab = document.getElementById(`s3-tab-notes-${id}`);
+        const caTab = document.getElementById(`s3-tab-ca-${id}`);
+        const imgTabGrid = document.getElementById(`s3-img-grid-${id}`);
+        
+        if (notesTab && p.generatedTextRaw) {
+          const controls = document.getElementById(`s3-notes-controls-${id}`);
+          const initEl = document.getElementById(`s3-init-notes-${id}`);
+          const renderEl = document.getElementById(`s3-render-notes-${id}`);
+          const wc = document.getElementById(`s3-word-count-${id}`);
+          if (controls) controls.classList.remove('hidden');
+          if (initEl) initEl.classList.add('hidden');
+          if (wc) wc.textContent = p.generatedTextRaw.split(/\s+/).length;
+          if (renderEl) renderEl.innerHTML = this.renderInlineContentHTML(p);
+        }
+        if (caTab && p.currentAffairsText) {
+          const initCaEl = document.getElementById(`s3-init-ca-${id}`); if(initCaEl) initCaEl.classList.add('hidden');
+          const ctrlCaEl = document.getElementById(`s3-ca-controls-${id}`); if(ctrlCaEl) ctrlCaEl.classList.remove('hidden');
+          const caRender = document.getElementById(`s3-render-ca-${id}`); if (caRender) caRender.innerHTML = marked.parse(p.currentAffairsText);
+        }
+        if (imgTabGrid) imgTabGrid.innerHTML = this.buildImagesTabGrid(p);
+        this.hydrateInlineImages(id); this.updatePartHeaderUI(id); this.updateStats();
+      },
+      updatePartHeaderUI(id) {
+        const p = appState.blueprint.parts.find(x=>x.id===id);
+        const badge = document.getElementById(`s3-stat-${id}`);
+        const pillDot = document.getElementById(`s3-nav-dot-${id}`); if(!badge || !pillDot) return;
+        let bClass = 'bg-slate-100 text-slate-500'; let txt = p.status.toUpperCase();
+        let dClass = 'bg-slate-300';
+        if(p.approved) { bClass = 'bg-emerald-100 text-emerald-700'; txt = 'APPROVED'; dClass = 'bg-emerald-500'; }
+        else if(p.status.includes('generating')) { bClass = 'bg-amber-100 text-amber-700 animate-pulse'; txt = p.status.replace('_',' ').toUpperCase(); dClass = 'bg-amber-500 animate-pulse'; }
+        else if(p.status.includes('done') || p.status.includes('merged')) { bClass = 'bg-blue-100 text-blue-700'; txt = p.status.replace('_',' ').toUpperCase(); dClass = 'bg-blue-500'; }
+        badge.className = `text-[10px] font-bold px-3 py-1.5 rounded uppercase ${bClass}`;
+        badge.textContent = txt; pillDot.className = `w-2 h-2 rounded-full ${dClass}`;
+      },
+      updateStats() {
+        const parts = appState.blueprint.parts; const tot = parts.length;
+        const txt = parts.filter(p => p.generatedTextRaw).length;
+        const ca = parts.filter(p => p.currentAffairsMerged).length;
+        const appP = parts.filter(p => p.approved).length;
+        let appImg = 0; let totImg = 0;
+        parts.forEach(p => { 
+          appImg += p.images.filter(i=>i.base64).length; 
+          totImg += appState.blueprint.imageRegistry.filter(r=>r.id.includes(p.partNumber + '.')).length;
+        });
+        document.getElementById('s3-stat-tot').textContent = `Total Parts: ${tot}`;
+        document.getElementById('s3-stat-txt').textContent = `Text Generated: ${txt}`;
+        document.getElementById('s3-stat-ca').textContent = `CA Merged: ${ca}`;
+        document.getElementById('s3-stat-img').textContent = `Images Embedded: ${appImg}/${totImg}`;
+        document.getElementById('s3-stat-app').textContent = `Parts Approved: ${appP}`;
+        let score = (txt*0.4) + (ca*0.2) + ((appImg/Math.max(totImg,1))*0.2) + (appP*0.2);
+        let pct = tot === 0 ? 0 : Math.min(100, Math.round((score / tot) * 100));
+        document.getElementById('s3-progress-bar').style.width = `${pct}%`;
+        document.getElementById('s3-progress-text').textContent = `${pct}% Complete`;
+      },
+      async generateEverything() {
+        if(this.isGeneratingAll) return;
+        this.isGeneratingAll = true;
+        const btn = document.getElementById('s3-btn-gen-all');
+        if(btn) btn.innerHTML = `Generating Sequence...`;
+        const btnPause = document.getElementById('s3-btn-pause'); if(btnPause) btnPause.disabled = false;
+        
+        for(let i=0; i<appState.blueprint.parts.length; i++) {
+          if(!this.isGeneratingAll) break;
+          const part = appState.blueprint.parts[i]; if(part.approved) continue;
+          if(!part.generatedTextRaw) { this.scrollToPart(part.id); await this.generatePartText(part.id); }
+          if(!this.isGeneratingAll) break;
+          if(!part.currentAffairsText && !part.currentAffairsMerged && part.currentAffairsFlag) { await this.generateCA(part.id); }
+          if(!this.isGeneratingAll) break;
+          if(part.currentAffairsText && !part.currentAffairsMerged) { this.mergeCA(part.id); }
+          if(!this.isGeneratingAll) break;
+          
+          let imgSpecs = appState.blueprint.imageRegistry.filter(r => r.id.startsWith(`IMAGE_${part.partNumber}.`));
+          for (let spec of imgSpecs) {
+            if(!this.isGeneratingAll) break;
+            let img = part.images.find(im => im.assetId === spec.id);
+            if (!img) {
+              img = { assetId: spec.id, prompt: '', status: 'not_started', base64: null, approved: false };
+              part.images.push(img); part.generatedTextRaw += `\n\nIMAGE_NEEDED: ${spec.id}\n\n`;
+              part.generatedText = this.renderInlineContentHTML(part);
+            }
+            if (!img.base64 && img.status !== 'generating_image' && img.status !== 'generating_prompt' && img.status !== 'embedded') {
+              await this.genImageInline(part.id, spec.id, false); 
+            }
+          }
+        }
+        this.isGeneratingAll = false;
+        if(btn) btn.innerHTML = '▶ Generate Everything';
+        if(btnPause) btnPause.disabled = true;
+        this.updateStats();
+      },
+      pauseEverything() {
+        this.isGeneratingAll = false;
+        const btn = document.getElementById('s3-btn-gen-all'); if(btn) btn.innerHTML = '▶ Resume Generation';
+        const btnPause = document.getElementById('s3-btn-pause'); if(btnPause) btnPause.disabled = true;
+        Toaster.show('Generation paused after current step', 'amber');
+      },
+      regenerateAllPrompt() {
+        Modal.showConfirm(
+          'Regenerate All Workspace Components?',
+          'This will discard all UNAPPROVED notes and current affairs matrix overlays. Approved parts will remain unaffected.',
+          () => {
+            appState.blueprint.parts.forEach(p => {
+              if(!p.approved) {
+                p.generatedText = ""; p.generatedTextRaw = ""; p.currentAffairsText = ""; p.currentAffairsMerged = false; p.status = 'not_started';
+                p.images.forEach(img => { if(!img.base64) { img.status = 'not_started'; } });
+              }
+            });
+            Session.save(); this.renderFeed(); this.generateEverything();
+          }
+        );
+      }
+    };
+
+    const PromptRegistry = {
+      activeKey: null,
+      open() { document.getElementById('prompt-modal').classList.remove('hidden'); this.initList(); },
+      close() { document.getElementById('prompt-modal').classList.add('hidden'); },
+      initList() {
+        const list = document.getElementById('prompt-list');
+        list.innerHTML = Object.keys(appState.prompts).map(k => `
+          <button onclick="PromptRegistry.select('${k}')" class="w-full text-left p-3 rounded-lg hover:bg-white border-l-2 border-transparent hover:border-purple-500 transition ${this.activeKey === k ? 'bg-white border-purple-500 shadow-sm' : ''}">
+            <div class="font-bold text-sm text-slate-800">${k}</div>
+          </button>`).join('');
+        if(!this.activeKey) this.select(Object.keys(appState.prompts)[0]);
+      },
+      select(key) {
+        this.activeKey = key;
+        document.getElementById('pr-active-title').textContent = key;
+        const ed = document.getElementById('pr-editor'); ed.value = appState.prompts[key]; ed.disabled = false;
+        ['pr-btn-default', 'pr-btn-ai', 'pr-btn-save'].forEach(id => { const b = document.getElementById(id); if(b) b.disabled = false; });
+        this.initList(); 
+      },
+      saveManual() {
+        appState.prompts[this.activeKey] = document.getElementById('pr-editor').value;
+        Session.save(); this.initList(); this.select(this.activeKey); Toaster.show('Prompt Saved', 'emerald');
+      },
+      restoreDefault() {
+        Modal.showConfirm(
+          'Restore Default Config?',
+          'Are you sure you want to restore this workspace prompt back to default parameters? Any local edits will be cleared.',
+          () => {
+            appState.prompts[this.activeKey] = DEFAULT_PROMPTS[this.activeKey];
+            Session.save(); this.select(this.activeKey); Toaster.show('Restored to Default', 'sky');
+          }
+        );
+      },
+      openAIEdit() { document.getElementById('pr-ai-overlay').classList.remove('hidden'); },
+      async generateAIEdit() {
+        const inst = document.getElementById('pr-ai-instruction').value; if(!inst) return;
+        const btn = document.getElementById('pr-ai-generate-btn'); btn.textContent = 'Generating...'; btn.disabled = true;
+        try {
+          const res = await API.generateContent(`You are a prompt engineer. Modify this prompt: ${appState.prompts[this.activeKey]}\n\nInstruction: ${inst}`);
+          document.getElementById('pr-ai-result').value = res;
+          document.getElementById('pr-ai-result-area').classList.remove('hidden');
+        } catch(e) { Toaster.show('AI Edit failed', 'rose'); }
+        finally { btn.textContent = 'Generate Modified Prompt'; btn.disabled = false; }
+      },
+      acceptAIEdit() {
+        appState.prompts[this.activeKey] = document.getElementById('pr-ai-result').value;
+        Session.save(); this.select(this.activeKey);
+        document.getElementById('pr-ai-overlay').classList.add('hidden');
+        document.getElementById('pr-ai-result-area').classList.add('hidden');
+        document.getElementById('pr-ai-instruction').value = '';
+        Toaster.show('Applied AI Edits', 'purple');
+      }
+    };
+
+    const App = {
+      setApiKey(val) {
+        apiKey = val;
+        localStorage.setItem('studyforge_apikey', val);
+        Toaster.show('Syllabus Engine Key Saved!', 'emerald');
+      },
+      goToStep(n) {
+        if (n === 3 && appState.blueprint.parts.length === 0) { Toaster.show("Analyze Document first", "amber"); return; }
+        if (n === 3 && !appState.blueprint.isApproved) { Toaster.show("Approve Blueprint first", "amber"); return; }
+        appState.currentStep = n;
+        [1,2,3,4].forEach(i => {
+          const s = document.getElementById(`step-${i}`);
+          const b = document.getElementById(`nav-btn-${i}`);
+          if(i === n) { s.classList.remove('hidden'); setTimeout(()=>s.classList.remove('opacity-0'), 10); b.classList.add('active'); }
+          else { s.classList.add('hidden', 'opacity-0'); b.classList.remove('active'); }
+        });
+        if(n===2) { Step2.init(); if(appState.blueprint.imageRegistry.length > 0) Step2.renderBlueprintCards(); }
+        if(n===3) Step3.renderFeed();
+        if(n===4) this.compileExport();
+        document.getElementById('main-scroll').scrollTop = 0;
+      },
+      closeModals() { PromptRegistry.close(); document.getElementById('debug-modal').classList.add('hidden'); },
+      compileExport() {
+        const out = document.getElementById('export-content-area'); let html = '';
+        appState.blueprint.parts.forEach(p => {
+          if(!p.generatedTextRaw) return;
+          let inner = p.generatedTextRaw;
+          inner = inner.replace(/%%%(EMBEDDED|APPROVED)_IMAGE_(IMAGE_\d+\.\d+)%%%/g, (match, type, id) => {
+            let img = p.images.find(i => i.assetId === id);
+            return img && img.base64 ? `\n\n<img src="${img.base64}" alt="${id}" style="max-width:100%; margin:16px auto; border-radius:8px; display:block;">\n\n` : ``;
+          });
+          html += `<div>${marked.parse(inner)}</div><hr class="my-8">`;
+        });
+        out.innerHTML = html;
+        
+        // Render math elements compiled inside the final document exports
+        if (typeof renderMathInElement !== 'undefined') {
+          renderMathInElement(out, {
+            delimiters: [
+              {left: '$$', right: '$$', display: true},
+              {left: '$', right: '$', display: false}
+            ]
+          });
+        }
+      }
+    };
+
+    const UI = {
+      copyTextRaw(id) {
+        const p = appState.blueprint.parts.find(x=>x.id===id); if(!p || !p.generatedTextRaw) return;
+        const ta = document.createElement("textarea"); ta.value = p.generatedTextRaw; document.body.appendChild(ta);
+        ta.select(); document.execCommand('copy'); document.body.removeChild(ta); Toaster.show('Copied raw Markdown', 'emerald');
+      },
+      copyText(id) {
+        const el = document.getElementById(id); el.select(); document.execCommand('copy'); Toaster.show('Copied', 'emerald');
+      },
+      copyCompiledText() {
+        const el = document.getElementById('export-content-area');
+        const range = document.createRange(); range.selectNodeContents(el);
+        const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(range);
+        document.execCommand('copy'); sel.removeAllRanges(); Toaster.show('Rich text copied for MS Word', 'amber');
+      }
+    };
+
+    window.onload = async () => { 
+      try {
+        await ImageDB.init();
+        Logger.add('SUCCESS', 'SYSTEM', 'IndexedDB Initialized Successfully');
+      } catch(e) {
+        Logger.add('ERROR', 'SYSTEM', 'Failed to initialize IndexedDB: ' + e.message);
+      }
+      Session.check(); 
+      Logger.add('INFO', 'SYSTEM', 'StudyForge initialized'); 
+      if (typeof renderMathInElement !== 'undefined') {
+        renderMathInElement(document.body, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '$', right: '$', display: false}
+          ]
+        });
+      }
+    };
+  </script>
+</body>
+</html>

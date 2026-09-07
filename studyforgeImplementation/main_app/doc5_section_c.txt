@@ -1,0 +1,48 @@
+## C. Screen 3 — Dynamic Detection and Feature Bundles
+
+### C1. Three-prompt hybrid, smart routing
+
+| Item | Requirement |
+|---|---|
+| Product-document amendment | Define AI-03A signals, AI-03B deep extraction, AI-03C routed bundle analysis, AI-03D user force-enable. |
+| Reason | Accuracy/cost balance: do not run all bundle prompts against every source. |
+| UI | Green auto-on, yellow suggested, grey force-enable; evidence tooltips rather than numeric confidence. |
+| Acceptance criteria | Bundle UI is connected from detection → state → part assignment → blueprint → generation/export, not cosmetic. |
+
+### C2. New/expanded bundle categories
+
+Add the following dynamic categories to original product documentation:
+
+- Geography/locations/maps;
+- personalities/contributions;
+- formula operations/mathematics;
+- charts/data/comparisons;
+- legal/constitutional/case law;
+- timelines/historical evolution;
+- storytelling/analogy;
+- institutions/administration;
+- processes/creation;
+- computer science/code/algorithms;
+- medical/science;
+- current-affairs relevance.
+
+### C3. Context-driven locations
+
+| Context | Allowed factual focus |
+|---|---|
+| History/civilisation | archaeological, historical, trade/cultural relevance |
+| Economics | GSDP, industries, resources, relevant comparisons/policy |
+| Geography | physical/political/economic geography needed by topic |
+| Geopolitics | neighbours, borders, capitals, seas/passages, strategic relation when relevant |
+| Current affairs | grounded current facts only |
+| Passing mention | minimal directly relevant context; no generic fact dump |
+
+### C4. Formula and personality enrichment
+
+| Entity | Product-document amendment |
+|---|---|
+| Formula | Detect in Stage 3; deep operations only in Stage 7 for applied bundles. Include variables, relationships, derivation, examples, edge cases, mistakes only where relevant. |
+| Personality | Detect name/role/context in Stage 3; create PSC/exam-relevant facts in Stage 7. Current news goes via CA grounding, never assumed fresh. |
+
+---
+

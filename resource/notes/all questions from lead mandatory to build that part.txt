@@ -1,0 +1,1076 @@
+
+
+# **StudyForge — Complete Decision Log**
+## **All Questions, Options Explored, Lead Decisions & Reasoning**
+
+---
+
+## **STAGE 1: INPUT (Screen 1)**
+
+---
+
+### **Q1.1 — Method 2: AI Draft Text — What kind of text should AI generate?**
+
+**Question:** When user enters topic "National Income" and sub-topics "GDP, GNP, NDP" and clicks "AI Draft Text", what should the output look like?
+
+**Options Presented:**
+- **Option A:** Full article-style text (like a textbook chapter)
+- **Option B:** Structured notes (headings + bullet points)
+- **Option C:** Raw content similar to what a PDF would contain (so app treats it like an uploaded file)
+- **Option D:** Your preference
+
+**Lead's Decision:** Modified Option C
+
+**Lead's Exact Words:** "AI will generate full notes but firstly AI will fetch the sub topic or related topic required from that topic and then prompt get generated and then from that prompt further image or text or search will happen, so we need to plan all prompts as well once we are done with this document."
+
+**What This Means:**
+1. AI first identifies what sub-topics and related topics are needed for "National Income"
+2. Based on that, a proper prompt is generated
+3. That prompt produces full comprehensive notes (not bullet points, not article — proper study-material-style content)
+4. This generated text then feeds into the same pipeline as uploaded files
+5. The prompt chain is: Topic → Fetch related topics → Generate detailed prompt → Generate text → Further image/text/search prompts flow from this
+
+---
+
+### **Q1.2 — Method 2: How much text should AI Draft generate?**
+
+**Question:** What should be the default length of AI-generated content?
+
+**Options Presented:**
+- **Option A:** Short (2-3 pages, ~2000 words)
+- **Option B:** Medium (10-15 pages, ~8000 words)
+- **Option C:** Comprehensive (20-30 pages, ~15000 words)
+- **Option D:** User selects depth (basic / intermediate / advanced)
+- **Option E:** Your preference
+
+**Lead's Decision:** Medium by default, with comprehensive option
+
+**Lead's Exact Words:** "By default medium chosen but option to make it comprehensive as well, option to search internet for that topic, current for that topic."
+
+**What This Means:**
+1. Default generation is medium length (~10-15 pages, ~8000 words)
+2. User has toggle/option to switch to comprehensive (~20-30 pages)
+3. There must be an option to search internet for that topic
+4. There must be an option to include current affairs for that topic
+5. These options (internet search, CA) are available right at the Method 2 stage itself
+
+---
+
+### **Q1.3 — Should AI Draft use sub-topics to structure the output?**
+
+**Question:** If user provides sub-topics "GDP, GNP, NDP", should AI strictly follow these or add more?
+
+**Options Presented:**
+- **Option A:** Each sub-topic becomes a section/chapter (strict)
+- **Option B:** Sub-topics are foundation but AI can add more sections it thinks are needed
+- **Option C:** Sub-topics are just hints, AI decides full structure
+- **Option D:** Your preference
+
+**Lead's Decision:** Option B
+
+**What This Means:**
+1. User's sub-topics (GDP, GNP, NDP) become guaranteed sections
+2. AI can add additional sections it thinks are needed (e.g., "Per Capita Income", "GDP Deflator", "India's GDP Calculation")
+3. User's input is respected but not limiting
+4. AI brings subject expertise to fill gaps user might not know about
+
+---
+
+### **Q1.4 — After AI Draft generates text, where does it go?**
+
+**Question:** Once AI generates the text, what happens next?
+
+**Options Presented:**
+- **Option A:** Into Method 3 paste area (user can edit before continuing)
+- **Option B:** Into a new preview panel (user reviews then approves)
+- **Option C:** Straight to Screen 2 (skip paste, treat as uploaded content)
+- **Option D:** Your preference
+
+**Lead's Decision:** Option A
+
+**What This Means:**
+1. Generated text lands in the Method 3 paste textarea
+2. User can read, edit, add, or remove content before proceeding
+3. Character count updates to reflect generated text
+4. User clicks Continue when satisfied
+5. This gives user full control over AI-generated content before it enters the pipeline
+
+---
+
+## **STAGE 2: READING (Screen 2)**
+
+---
+
+### **Q2.1 — For file upload: Is AI used during reading phase?**
+
+**Question:** When extracting text from uploaded PDF/DOCX, should AI be involved?
+
+**Options Presented:**
+- **Option A:** No AI — pure technical extraction (PDF parser, OCR, text cleanup)
+- **Option B:** AI helps clean up extracted text (fix garbled chars, merge broken sentences)
+- **Option C:** AI reads the text and restructures it into clean sections
+- **Option D:** Your preference
+
+**Lead's Decision:** Option A by default, with automatic failover to B then C
+
+**Lead's Exact Words:** "A by default but if it failed then automatically B and C, option to choose A B C."
+
+**What This Means:**
+1. **First attempt:** Pure technical extraction (no AI, no token cost)
+2. **If technical extraction fails** (garbled text, encoding issues): Automatically try AI cleanup (Option B)
+3. **If AI cleanup also struggles:** Automatically try full AI restructuring (Option C)
+4. **User also has manual choice:** Can select A, B, or C from a dropdown if they want to force a specific method
+5. This cascade handles poor-quality PDFs gracefully without always burning AI tokens
+
+---
+
+### **Q2.2 — For AI-generated text (Method 2): What happens in Screen 2?**
+
+**Question:** If text came from AI Draft (Method 2), does it need a reading phase?
+
+**Options Presented:**
+- **Option A:** Skip reading phase entirely (text already clean from AI)
+- **Option B:** Show reading phase but fast (1-2 seconds, cosmetic)
+- **Option C:** AI re-reads its own generated text to extract structure
+- **Option D:** Your preference
+
+**Lead's Decision:** Option A
+
+**Lead's Exact Words:** "A because in future we will blueprint that so not required."
+
+**What This Means:**
+1. No reading/extraction phase needed for AI-generated text
+2. Text is already clean, structured, and ready
+3. Skip directly to Screen 3 (Understanding + Feature Detection)
+4. No wasted time or tokens re-processing AI's own output
+5. Blueprinting happens later anyway, so no need to extract structure now
+
+---
+
+### **Q2.3 — For pasted text: How much cleanup?**
+
+**Question:** If user pastes text directly, should app clean it up?
+
+**Options Presented:**
+- **Option A:** No cleanup — take as-is
+- **Option B:** Basic cleanup (remove extra spaces, fix encoding)
+- **Option C:** AI cleanup (fix formatting, detect structure)
+- **Option D:** Your preference
+
+**Lead's Decision:** Option A
+
+**What This Means:**
+1. Pasted text is taken exactly as user provides it
+2. No automatic modification of user's content
+3. User is responsible for content quality
+4. Keeps processing fast and simple
+5. If user wants better structure, they can paste cleaner text
+
+---
+
+## **STAGE 3: UNDERSTANDING + FEATURE DETECTION (Screen 3)**
+
+---
+
+### **Q3.1 — Analysis Prompt Architecture: How many AI calls to analyze content?**
+
+**Question:** The app needs to detect subject, topics, definitions, formulas, PYQs, locations, personalities, charts, institutions, and more (~130 sub-features across 12 bundles). Should this be ONE prompt, TWO prompts, or MULTIPLE prompts?
+
+**Options Explored:**
+
+**Option A: ONE Mega-Prompt**
+- Single AI call detects everything
+- Pros: Fastest, cheapest, simplest
+- Cons: AI attention dilutes when detecting 130 things at once. Accuracy drops ~40% with >20 targets. Hallucination risk (AI invents features). If call fails, entire analysis restarts.
+
+**Option B: TWO Prompts (Basic + Advanced)**
+- First call detects subject + basics, second detects bundles
+- Pros: Second prompt is smarter (knows subject). Better accuracy than A.
+- Cons: Second prompt still asks for 130 things (still diluted).
+
+**Option C: 12 Prompts (One Per Bundle)**
+- One prompt per bundle category (12 separate calls)
+- Pros: Highest accuracy (each focused on 10-15 sub-features). Can run in parallel.
+- Cons: Highest token cost (sends source 12 times). Complex to implement. Wasteful for narrow content (CS textbook doesn't need Medical/Legal prompts).
+
+**Option D: Hybrid — 3 Prompts + Smart Routing**
+- Prompt 1: Subject Detection (fast, 5-10s)
+- Prompt 2: Deep Extraction (definitions, formulas, PYQs — 15-20s)
+- Prompt 3: Smart Bundle Detection (only relevant bundles, 15-30s)
+
+**Lead's Decision:** Option D — Hybrid (3 Prompts + Smart Routing)
+
+**How It Works in Detail:**
+
+**Prompt 1 — Subject Detection (5-10 seconds):**
+```
+"Read this content and return ONLY:
+- Primary subject (Economics/CS/Medicine/Literature/Law/etc.)
+- Sub-discipline
+- Content signals detected (does it have: formulas? dates? 
+  code? locations? persons? legal refs? diagrams?)
+- Confidence score per signal
+Return as JSON."
+```
+
+**Prompt 2 — Deep Extraction (15-20 seconds):**
+```
+"Given this is [Economics/Macroeconomics] content, extract:
+- All topics (with page refs)
+- All definitions (with IDs)
+- All formulas (with variables)
+- All PYQs (with year/type)
+- All comparisons
+- All examples
+- All timelines
+- All tables
+Return structured JSON."
+```
+
+**Prompt 3 — Smart Bundle Detection (15-30 seconds):**
+Based on Prompt 1's content signals, ONLY fire prompts for bundles that are relevant.
+
+Example for Economics PDF:
+- Signals detected: formulas ✓, personalities ✓, data/charts ✓, administration ✓, historical ✓
+- Bundles to detect: Formula Ops, Personalities, Chart/Data, Administration, Historical, Storytelling (6 bundles)
+- Skip: Geography (no locations), Legal (no laws), Medical, Scientific, CS
+- Fire 6 parallel prompts (or one combined prompt for 6 relevant bundles)
+
+**Why This Was Chosen:**
+- Best accuracy without token waste
+- Smart routing means irrelevant bundles don't run
+- Parallel execution keeps it fast (~40s total instead of 3-6 minutes)
+- User sees 3 clean prompts (not 12)
+- Force-enable still works — if user wants Geography for Economics content, they toggle it on → triggers on-demand Geography prompt
+- Failure recovery — if one bundle fails, retry only that bundle
+
+**Sub-decisions made:**
+- Signal → bundle routing is **rule-based** (deterministic, fast, easy to debug)
+- When user force-enables a hidden bundle, it fires a **new prompt for that bundle only**
+- Prompt 3 bundles sent as **one combined prompt for relevant bundles** (cheaper for MVP, upgrade to parallel individual later if accuracy issues arise)
+- Prompt visibility UI: **Accordion on Screen 3**, collapsed by default
+
+---
+
+### **Q3.2 — Feature Bundle Auto-Selection: Who decides which features to enable?**
+
+**Question:** After AI detects bundles, who decides which sub-features get turned on?
+
+**Options Explored:**
+
+**Option A: AI decides 100%** — User can override later
+**Option B: AI suggests, user must approve** — Blocks flow until user clicks approve
+**Option C: AI enables top features, rest visible** — Balanced approach
+**Option D: Three-tier display** — Auto-on, Suggested, Force-enable
+
+**Lead's Decision:** Option D — Three-Tier Display
+
+**How It Works:**
+```
+Bundle: Formula Operations ✅ (detected)
+  ☑ Formula Derivation       → GREEN (auto-on, high confidence)
+  ☑ Variable Deep Dive       → GREEN (auto-on, high confidence)
+  ☑ Common Mistakes          → GREEN (auto-on, high confidence)
+  ☐ Sensitivity Analysis     → YELLOW (suggested, medium confidence)
+  ☐ Formula Family Tree      → YELLOW (suggested, medium confidence)
+
+[Show more options ▼]
+  ☐ Historical Evolution     → GREY (not detected, force-enable)
+```
+
+**Why This Was Chosen:**
+- Matches the doc's existing Screen 3 mockup (which already shows ✅ detected + ❌ not applicable + "Show more options")
+- No blocking = respects "Continue always active" principle from doc
+- Users see what's available without being overwhelmed
+- High confidence items work automatically
+- Medium confidence items are visible but user decides
+- Low/undetected items are hidden but accessible
+
+---
+
+### **Q3.3 — Confidence Scoring: Should AI report how confident it is?**
+
+**Question:** Should the app show confidence levels like "Geography: 82% confident"?
+
+**Options Explored:**
+
+**Option A: Show confidence per bundle** — Numbers for everything
+**Option B: Only for borderline cases** — Numbers only when unsure
+**Option C: Just show detected/not detected** — Binary, no confidence
+**Option D: Visual icons, no numbers** — Color-coded with hover reasoning
+
+**Lead's Decision:** Option D — Visual Confidence, No Numbers
+
+**How It Works:**
+```
+🟢 Geography Bundle          (hover: "12 place names found")
+🟡 Storytelling Bundle       (hover: "abstract concepts detected")
+⚪ Medical Bundle            (hover: "not detected — force enable?")
+```
+
+**Why This Was Chosen:**
+- Percentages (65%, 82%) feel fake and invite arguments ("why 65 not 70?")
+- Icons/colors communicate confidence instantly without cluttering UI
+- Hover tooltip shows reasoning — user sees WHY, not a fake number
+- Simple: 🟢 = strong signals (auto-on), 🟡 = weak signals (suggested), ⚪ = not detected (available via force-enable)
+
+---
+
+### **Q3.4 — When AI detects a LOCATION, what should it extract?**
+
+**Question:** When AI finds "Madhya Pradesh" in content, what information should it pull?
+
+**Options Explored:**
+
+**Option A: All upfront during Screen 3** — Fetch everything now (slow)
+**Option B: All during Screen 7** — Fetch when generating (delays generation)
+**Option C: Split** — Basic detection Screen 3, deep extraction Screen 7
+**Option D: Lead's custom approach**
+
+**Lead's Decision:** Option D — Deep Facts + Context
+
+**Lead's Exact Words:** "Check all the facts related to that place wrt that topic, if it is in current affair then facts of that place as well, if a country in news then map of that country sharing with which neighboring country as well with their capital, popular sea or passage."
+
+**What This Means:**
+1. Check all facts related to that place **with respect to the topic** (not generic facts)
+2. If the place is in current affairs → include those CA facts
+3. If a country is mentioned → include:
+   - Map showing the country
+   - Neighboring countries with their capitals
+   - Popular seas or passages nearby
+4. All of this is relevant to PSC/UPSC exam preparation
+5. **Timing:** Basic detection happens on Screen 3 (name, count, page refs). Deep facts are fetched on Screen 7 when that part generates (to avoid wasting tokens on parts user might skip). Shared locations are cached.
+
+---
+
+### **Q3.5 — When AI detects a FORMULA, what should it extract?**
+
+**Question:** When AI finds "GDP = C+I+G+NX", what operations should it perform and when?
+
+**Options Explored:**
+
+**Option A: All upfront during Screen 3** — Extract all formula facts immediately
+**Option B: All during Screen 7** — Deep dive only when generating notes
+**Option C: Split** — Detect formula in Screen 3, operate on it in Screen 7
+**Option D: Custom**
+
+**Lead's Decision:** Option C — Split
+
+**What This Means:**
+1. **Screen 3 (Detection):** Identify the formula, extract variables, note page reference, basic one-line purpose
+2. **Screen 7 (Deep Operations):** When generating that part's notes, perform:
+   - Full derivation steps
+   - Formula facts (e.g., "if C↑ and I↓ by same amount, GDP unchanged")
+   - Variable deep dive
+   - Substitution examples
+   - Edge cases
+   - Real-world applications
+   - Common mistakes
+3. Cached if the same formula appears across multiple parts
+
+---
+
+### **Q3.6 — When AI detects a PERSON (e.g., "Amartya Sen"), what should it extract?**
+
+**Question:** How much biographical data should AI fetch, and when?
+
+**Options Explored:**
+
+**Option A: Full bio card during Screen 3** — Immediate but slow
+**Option B: Name + role in Screen 3, full bio in Screen 7** — Split approach
+**Option C: Lead's custom approach**
+
+**Lead's Decision:** Focus on PSC-relevant facts + current affairs
+
+**Lead's Exact Words:** "All important facts related to PSC and current affairs so in prompt we will mention to put all facts of that person wrt PSC and important current affairs."
+
+**What This Means:**
+1. The prompt must specifically ask for facts relevant to **PSC/UPSC exams**
+2. Include important **current affairs** related to that person
+3. Not a generic Wikipedia bio — focused, exam-relevant information
+4. Examples:
+   - Amartya Sen → Nobel Prize, Capability Approach, recent statements on Indian economy, books relevant to PSC
+   - Manmohan Singh → PM tenure, economic reforms 1991, recent policy discussions
+5. **Timing:** Name + role detected on Screen 3. Full PSC-relevant facts fetched on Screen 7 when that part generates. Cached for reuse.
+
+---
+
+## **STAGE 4: PARTS (Screen 4)**
+
+---
+
+### **Q4.1 — Part Splitting: Does AI decide or follow rules?**
+
+**Question:** The doc has a page-count table (1-10 pages = 1-3 parts, etc.) but also says "conceptual coherence." Which takes priority?
+
+**Options Explored:**
+
+**Option A: Follow page-count table strictly, then adjust**
+**Option B: AI ignores table, decides entirely by content logic**
+**Option C: AI proposes, user overrides (add/remove/merge)**
+**Option D: Rules as guardrails, coherence first, user final say**
+
+**Lead's Decision:** Option D — Rules as Guardrails, Coherence First, User Final Say
+
+**How It Works:**
+1. AI first calculates suggested range from table (22 pages → 2-6 parts)
+2. AI then applies splitting rules:
+   - Never split a formula from its explanation
+   - PYQs stay with the topic they test
+   - Related topics stay together (conceptual coherence)
+   - Never create a tiny part with just 1-2 paragraphs
+3. AI proposes N parts within the range
+4. User can add/merge/edit parts on Screen 4
+
+**Sub-decision:** What if AI wants to go outside table range?
+- Allow it, but show warning: "AI suggests 8 parts but table recommends 2-6 for this length. Continue?"
+
+---
+
+### **Q4.2 — The splitting prompt: What inputs does it receive?**
+
+**Question:** Should the splitting AI get the full raw text, just the analysis output, or both?
+
+**Options Explored:**
+
+**Option A: Full extracted text only** — Huge token count, AI must re-analyze
+**Option B: Analysis output only (Stage 3 JSON)** — Cheap but may miss nuance
+**Option C: Both full text + analysis** — Best accuracy but expensive
+**Option D: Analysis + compressed raw context** — Balance
+
+**Lead's Decision:** Option C with a Smart Twist
+
+**Lead's Exact Words:** Analysis output is primary. Full text included only if under token limit. If over, send text summary per topic instead. "During analysis we already fetched what is there in it."
+
+**What This Means:**
+1. **Primary input:** Stage 3 analysis JSON (topics with page refs, definitions, formulas, PYQs) — structured and cheap
+2. **Secondary input:** Full text included ONLY IF under token limit
+3. **If over token limit:** Send text summary per topic instead
+4. Stage 3 analysis already tells us what's in the content — the doc's example split ("Part 1: Pages 3-5, Part 2: Pages 6-10") is driven by topic-to-page mapping from Stage 3
+5. Full text is a safety net for nuance, but we chunk/summarize it for large documents (ties to Gap 12 — large file handling)
+
+---
+
+### **Q4.3 — Should each part know which bundles apply to it?**
+
+**Question:** Part 2 (GDP Methods) has formulas, so Formula bundle applies. Part 6 (HDI & PYQs) has no formulas. Should bundles be assigned per-part?
+
+**Options Explored:**
+
+**Option A: AI auto-assigns per part** — Efficient but no user control
+**Option B: All bundles apply to all parts equally** — Wasteful, may hallucinate
+**Option C: AI suggests per-part, user adjusts** — Good control
+**Option D: Auto-assign with inheritance from global + per-part override** — Best of C with global awareness
+
+**Lead's Decision:** Option D — Auto-Assign with Per-Part Override
+
+**How It Works:**
+1. If user enables a bundle globally on Screen 3, AI auto-includes it in parts where that content exists
+2. AI auto-assigns bundles per part based on content:
+   - Part 2 has formulas → Formula Ops bundle applies
+   - Part 6 has PYQs but no formulas → PYQ bundle applies, Formula bundle doesn't
+3. User can override per part:
+   - Screen 5: Bundle icons shown on each blueprint card (chip UI)
+   - Screen 6: Add/remove bundle chips per part in detail view
+
+**Why:**
+- Efficiency (don't run Formula bundle on Part 1 with no formulas)
+- Prevents hallucination (AI won't invent formulas for Part 1)
+- User can force-add if they disagree
+- Global inheritance means user doesn't re-configure everything per part
+
+---
+
+## **STAGE 5 & 6: BLUEPRINT (Screen 5 & 6)**
+
+---
+
+### **Q5.1 — Blueprint generation: One prompt per part or one mega-prompt for all?**
+
+**Question:** For 6 parts, should AI generate 6 separate blueprints or one combined blueprint?
+
+**Options Explored:**
+
+**Option A: One per part (6 sequential calls)** — High quality but 3-6 minutes sequential
+**Option B: One mega-prompt for all 6** — Fast but diluted quality
+**Option C: One per part, run in parallel** — Quality + speed
+
+**Lead's Decision:** Option C — Parallel Per-Part
+
+**Lead's Exact Words:** "5 separate prompts fired in parallel in 1 second gap."
+
+**How It Works:**
+1. Each part gets its own focused blueprint prompt (AI concentrates on one part's content)
+2. All prompts fire in parallel (with 1-second gap between each to avoid rate limits)
+3. 5-6 blueprints ready in ~20 seconds instead of 2+ minutes
+4. If Part 3 blueprint fails, retry only Part 3 (no re-running all 6)
+5. Progress bar shows: "✓ Part 1 ⏳ Part 2 ✓ Part 3 ⏳ Part 4..."
+
+---
+
+### **Q5.2 — What should the blueprint prompt produce?**
+
+**Question:** The blueprint has 5 sections (Headings, Text Plan, Image Plan, CA Plan, Validation Plan). Generate all 5 in one call or separate calls?
+
+**Options Explored:**
+
+**Option A: One prompt produces all 5 sections** — Coherent output
+**Option B: Separate prompts per section** — Independent but disconnected
+**Option C: Lead's preference**
+
+**Lead's Decision:** Option A — One Prompt, All 5 Sections
+
+**Lead's Additional Input:** "Image plan here as well as when we generate the text during validation if AI thinks image is required on that time also it will popup to put image at that part in this style."
+
+**What This Means:**
+1. Single prompt per part returns JSON with: `{headings, text_plan, image_plan, ca_plan, validation_plan}`
+2. All 5 sections are coherent (image plan knows text plan, CA plan knows topics)
+3. **Additional image discovery:** During Screen 7 validation, if AI identifies that an image would help somewhere, it can suggest adding one at that point
+4. Mixed image styles in single images are supported (e.g., metrics in graphs + data in tables + categories in flowcharts — all combined in one image)
+5. User can regenerate individual sections: "Regenerate Image Plan Only" sends existing text plan + asks for new image plan (cheaper than full blueprint regen)
+
+---
+
+### **Q5.3 — Image plan: Who decides image count and styles?**
+
+**Question:** Should AI decide both how many images and what style, or should user have control?
+
+**Options Explored:**
+
+**Option A: AI decides both count and style** — Zero friction but no control
+**Option B: AI decides count, user picks style** — Tedious
+**Option C: AI suggests, user adjusts** — Balanced
+**Option D: AI smart defaults, user override** — Best of C with smart defaults
+
+**Lead's Decision:** Option D — AI Smart Defaults, User Override
+
+**How It Works:**
+1. AI picks style based on content type:
+   - Formula → Pictograph/Icon Array
+   - Comparison → Comparison Matrix
+   - Process → Flowchart
+   - Story → Comic Strip
+2. AI outputs per image: `{title, style_recommended, style_reasoning, prompt}`
+3. Screen 6 dropdown shows all 35 styles, defaulting to AI's recommendation
+4. Hover shows reasoning: "Chose Comic Story because content has narrative example (Shyam)"
+5. User overrides only when AI got it wrong (~20% of the time)
+
+---
+
+### **Q5.4 — CA search queries: When should they execute?**
+
+**Question:** Blueprint generates CA search queries. Should they execute during blueprint or wait until Screen 7?
+
+**Options Explored:**
+
+**Option A: Generate queries only, user searches manually** — Bad UX
+**Option B: Generate AND execute during blueprint** — Might be stale by Screen 7
+**Option C: Generate queries in blueprint, execute on Screen 7** — Freshest results
+**Option D: Toggle-based** — Auto or on-demand based on user's global setting
+
+**Lead's Decision:** Option C with auto-generate support
+
+**Lead's Exact Words:** "But yes if user click on autogenerate for that part or autogenerate everything then it will get generate, I mean button get clicked automatically."
+
+**What This Means:**
+1. **Blueprint stage (Screen 5/6):** AI generates CA search query strings only (no execution)
+2. **Generation stage (Screen 7):** CA executes when user clicks "Fetch CA" button
+3. **Auto-generate shortcut:** If user clicks "Auto-generate Part" or "Auto-generate All," the CA fetch button is automatically triggered as part of the generation pipeline
+4. Deferred execution = freshest results (CA changes daily)
+5. No wasted searches on parts user might edit or remove
+
+---
+
+### **Q5.5 — Blueprint detail (Screen 6) AI chat: How do modifications work?**
+
+**Question:** When user chats with AI on Screen 6 and says "Add more formulas," how should the blueprint update?
+
+**Options Explored:**
+
+**Option A: AI modifies blueprint JSON directly, UI re-renders** — Fast but risky
+**Option B: AI suggests changes, user clicks "Apply"** — Safe but sluggish
+**Option C: AI regenerates entire blueprint** — Destructive
+**Option D: Surgical modification with undo** — Targeted and safe
+
+**Lead's Decision:** Option D — Surgical Modification with Lightweight Undo
+
+**How It Works:**
+1. User says "Add more formulas"
+2. AI modifies ONLY the Text Plan section's formula containers (not other sections)
+3. UI re-renders that section with a subtle highlight: "✏️ Text Plan updated"
+4. Lightweight "Undo last change" button available (not full version history)
+5. Other sections untouched
+
+**Why This Was Chosen:**
+- Doc's Screen 6 AI chat examples show targeted changes ("Remove the comic for Shyam, make it a flowchart" → changes only Image 2)
+- This is surgical modification, not full regeneration
+- Option B's "Apply" click on every message makes chat feel sluggish
+- Minimal undo for safety without building full version history (Gap 17, out of scope)
+
+---
+
+## **STAGE 7: GENERATION (Screen 7)**
+
+---
+
+### **Q7.1 — Text generation: What inputs feed the prompt?**
+
+**Question:** When generating notes for Part 2 (GDP Methods, pages 6-10), what should the AI receive?
+
+**Options Explored:**
+
+**Option A: Blueprint plan only** — Cheap but hallucination risk, no SOURCE_BACKED tags
+**Option B: Blueprint + full source text** — Accurate but wasteful (22 pages when only 5 needed)
+**Option C: Blueprint + source + analysis** — Better but still heavy
+**Option D: Blueprint + source + analysis + bundle selections** — Everything
+**Option E: Sliced inputs** — Only what's relevant for this specific part
+
+**Lead's Decision:** Option E — Sliced Inputs
+
+**How It Works:**
+```
+Text Generation Prompt for Part 2:
+- Part metadata: {title, pages 6-10, applied_bundles: [Formula Ops, Storytelling]}
+- Relevant source slice: [text from pages 6-10 ONLY]
+- Relevant analysis: {formulas: [F-001, F-002], definitions: [D-002, D-003]}
+- Blueprint plan: {text_plan, image_plan, ca_plan}
+- Instruction: "Write comprehensive notes. Tag content as 
+  SOURCE_BACKED (from source), RESEARCH_REQUIRED (AI inferred), 
+  or OPTIONAL_ENRICHMENT (added for clarity)."
+```
+
+**Why:**
+- Sending full 22 pages when Part 2 only uses pages 6-10 wastes 70% of tokens
+- Sliced approach keeps SOURCE_BACKED tags accurate (with page refs)
+- Bundle awareness ensures right containers get injected
+- If a formula from Part 3 is referenced in Part 2, include just that formula's context (1-2 sentences from Part 3)
+
+---
+
+### **Q7.2 — Text generation output format?**
+
+**Question:** Should AI return plain markdown, raw HTML, or structured JSON?
+
+**Options Explored:**
+
+**Option A: Plain markdown** — Simple but needs parser for containers
+**Option B: HTML with containers** — Direct render but XSS risk
+**Option C: Structured JSON** — Safe, flexible but needs renderer
+**Option D: Custom**
+
+**Lead's Decision:** Properly formatted HTML that embeds into the page
+
+**Lead's Exact Words:** "It will be properly formatted text in that HTML. Once approved it will get embedded into that HTML and same for images and current affairs. If I click on approve part then all text, CA and images get auto approved."
+
+**What This Means:**
+1. AI generates well-formatted HTML content with styled containers
+2. Once a part is approved, its text, images, and CA get embedded into the final document view
+3. "Approve Part" is a single action that approves everything in that part (text + images + CA)
+4. The rendered HTML is the final product — what user sees is what gets exported
+
+---
+
+### **Q7.3 — Image generation: How is the detailed prompt created?**
+
+**Question:** Blueprint says "Create infographic showing GDP formula." The actual image API needs more detail. How is the detailed prompt created?
+
+**Options Explored:**
+
+**Option A: Blueprint description IS the final prompt** — Too brief, poor images
+**Option B: AI auto-expands into detailed prompt** — Fast but no user control before generation
+**Option C: AI expands, user reviews, then generates** — Safe but slow
+**Option D: AI expands + generates immediately, show prompt for regeneration** — Fast + transparent
+
+**Lead's Decision:** Option D — Expand + Generate + Show Prompt for Regen
+
+**How It Works:**
+1. Blueprint image plan ("GDP formula infographic") → AI expands to detailed 5-line prompt
+2. Image generates immediately (no approval step before generation)
+3. Generated image appears with controls: `[Show Prompt ▼] [🔄 Regenerate] [✏️ Edit Prompt & Regen] [🎨 Different Style]`
+4. If image is good → no friction, user moves on
+5. If image is bad → user sees expanded prompt, can edit and regenerate
+
+**Sub-decision:** Global setting on Screen 1: `☐ Preview image prompts before generation`
+- If checked → Option C behavior (approve each prompt before generating)
+- Default: unchecked (Option D behavior — generate first, fix if needed)
+
+---
+
+### **Q7.4 — Current Affairs: How does CA search work?**
+
+**Question:** How does the app fetch live current affairs data?
+
+**Options Explored:**
+
+**Option A: Gemini searches web** — Live data, medium cost
+**Option B: User searches manually** — Terrible UX
+**Option C: Google Search API (separate from Gemini)** — Violates "no external API" rule
+**Option D: Gemini training data (no live search)** — Stale data
+**Option E: Built-in Gemini grounding + fallback** — Best of both
+
+**Lead's Decision:** Option E — Built-in Gemini with Grounding/Search
+
+**Lead's Exact Words:** "Inbuilt Gemini with grounding/search enabled (built-in feature, no external API key). Returns fresh data. If grounding unavailable, fallback to Option D with disclaimer."
+
+**What This Means:**
+1. **Primary method:** Gemini's native grounding/search feature (built into the API, no external key needed)
+2. Returns live, fresh data (e.g., "India GDP grew 6.7% in Q2 FY25, MoSPI Nov 2024")
+3. **Fallback:** If grounding is unavailable in user's Gemini setup, use regular Gemini with disclaimer: `[CA_STATUS: Based on training data. Verify with current sources.]`
+4. Complies with doc constraint: "no external API keys"
+5. Cache CA results with timestamp. Screen 7 shows: `📰 India GDP 6.7% (Nov 2024) — [Refresh CA]`
+
+---
+
+### **Q7.5 — AI Validation: The Complete System**
+
+**Question:** How does validation work when user approves parts?
+
+**This was the most detailed discussion. Lead provided extensive custom requirements.**
+
+**Lead's Decision:** Two-Layer Validation System
+
+---
+
+#### **LAYER 1: Per-Part Validation (Triggered When User Clicks "Approve Part")**
+
+**Step 1:** User reads Part 2 on Screen 7.
+
+**Step 2:** User clicks "Approve Part 2."
+
+**Step 3:** AI call fires with everything in that part:
+- Full generated text
+- All images in that part
+- What each image shows (descriptions)
+
+**Step 4:** AI creates a summary:
+```
+📋 Part 2 Summary:
+
+Text Covered:
+• Nominal vs Real GDP explanation
+• Value Addition Method (Shyam bread story)
+• Income Method (factors of production)
+• Expenditure Method (C+I+G+NX)
+
+Images Created (3):
+1. Nominal vs Real Infographic — Split screen showing 
+   supermarket prices vs inflation-adjusted values
+2. Shyam Bread Comic — 4-panel story showing value addition
+3. GDP Formula Pictograph — Icons for C/I/G/NX components
+
+Sources: Pages 6-10 of uploaded PDF
+Enrichments: 2 real-world analogies added
+```
+
+**Step 5:** AI checks for issues/gaps and shows popup:
+```
+Part 2 Validation
+
+[Summary above]
+
+Suggestions:
+⚠️ Missing: Comparison table of 3 GDP methods
+⚠️ Image 3 could include latest India GDP data
+
+[❌ Cross/Cancel]  [✅ Approve Modifications]  [⏭ Ignore & Approve As-Is]
+```
+
+**Step 6:** User chooses:
+- **Approve Modifications:** AI applies suggested changes, then part is approved
+- **Ignore:** Part approved as-is, suggestions discarded
+- **Cancel:** Popup closes, part stays unapproved
+
+---
+
+#### **"APPROVE ALL" BEHAVIOR**
+
+If user clicks "Approve All Parts" master button:
+- Same popup appears **one by one for each part** (not silently)
+- Progress bar: "Validating Part 3 of 6..."
+- User can approve/ignore/cancel each individually
+- If user cancels midway, previously approved parts stay approved
+- User can remove parts during this process if they decide to
+
+---
+
+#### **LAYER 2: Final Consolidated Validation (Auto-Triggers After ALL Parts Approved)**
+
+Once all remaining parts are approved:
+
+**Step 1:** AI receives ALL approved parts as one consolidated document.
+
+**Step 2:** AI checks against subject-specific requirements:
+
+| Subject | What AI Checks For |
+|---|---|
+| PSC/UPSC (Economics) | Key metrics (GDP, inflation, growth rate), India rankings, recent policy changes, Economic Survey mentions |
+| PSC/UPSC (Polity) | Constitutional articles, landmark judgments with **both sides** (plea + facts + verdict), amendments timeline |
+| PSC/UPSC (History) | Timeline completeness, dynasty/period coverage, cause-effect chains, contemporary events |
+| PSC/UPSC (Geography) | Locations mapped, neighboring context, physical + political + economic geography balance |
+| Academic (CS) | Complexity analysis complete, edge cases covered, code examples for major concepts |
+| Academic (Medicine) | Anatomy diagrams, symptom-diagnosis-treatment chain, latest guidelines |
+| General | Coverage completeness, factual consistency, source traceability |
+
+**Step 3:** Final validation popup:
+```
+🔍 Final Document Validation
+
+Subject: Economics (PSC/UPSC context)
+Total Parts: 6 (all approved)
+
+✅ WHAT'S COVERED WELL:
+• GDP calculation methods (all 3)
+• Nominal vs Real GDP distinction
+• India's GDP calculation approach
+• HDI and welfare measures
+
+⚠️ POTENTIAL GAPS (PSC Perspective):
+• Missing: India's GDP growth rate for last 5 years
+• Missing: Comparison with China/USA GDP (frequently asked)
+• Missing: Latest Economic Survey findings on GDP
+
+💡 SUGGESTIONS TO ADD:
+• Add Part 7: "Recent GDP Data & Rankings"
+• Enrich Part 5: Include Green GDP policy timeline
+• Add comparison table: India vs Top 5 Economies
+
+[❌ Skip All]  [✅ Apply Selected Suggestions]  [👁 Review Each]
+```
+
+**Step 4:** User handles final suggestions:
+- **Skip All:** Proceed to Screen 8 (Export)
+- **Apply Selected:** Chosen suggestions become new parts/sections → generation happens → validation re-runs → export
+- **Review Each:** Popup for each suggestion, user picks individually
+
+---
+
+### **Q7.6 — Refinement chat: When user says "Make it simpler"**
+
+**Question:** How should the app modify generated content when user gives natural language instructions?
+
+**Options Explored:**
+
+**Option A: Regenerate entire part** — Loses manual edits
+**Option B: Modify only highlighted section** — Requires user to highlight first
+**Option C: AI suggests edits, user approves each** — Slow
+**Option D: Smart scope detection + diff preview** — AI figures out what to change
+
+**Lead's Decision:** Option D — Smart Scope Detection + Diff Preview
+
+**How It Works:**
+1. User says "Make the formula explanation simpler"
+2. AI analyzes: "This affects formula sections in this part"
+3. AI proposes targeted edits, shows diff (before/after)
+4. Buttons: `[Apply All]` `[Apply Selective]` `[Discard]` `[Expand Scope to Whole Part]`
+5. If user says "make whole part simpler" → detect keywords ("whole", "entire") → propose full regen with confirmation
+6. Cost warning for full regen: "This will regenerate all sections. Your manual edits will be lost. Continue?"
+
+---
+
+### **Q7.7 — Highlight-to-Visualize: How is image prompt auto-created?**
+
+**Question:** When user highlights text and clicks "Visualize This," how does AI create the image prompt?
+
+**Options Explored:**
+
+**Option A: AI reads selected text only** — Too narrow
+**Option B: Template-based ("Create [style] showing [text]")** — Too generic
+**Option C: AI reads selected text + surrounding context** — Better
+**Option D: Full contextual awareness (text + paragraph + part metadata)** — Best
+
+**Lead's Decision:** Option D — Full Contextual Awareness
+
+**How It Works:**
+1. Capture: selected text + parent paragraph + part metadata (which bundles apply, which subject)
+2. AI receives all context: "Generate an image prompt for this highlighted content within its context. Recommend 3 styles from the 35-style catalog based on content type."
+3. Returns: expanded prompt + 3 recommended styles + reasoning per style
+4. User sees popup (per doc spec on Screen 7)
+5. If user highlights across multiple paragraphs: use all highlighted content + first paragraph before + last paragraph after as context
+
+---
+
+### **Q7.8 — When user adds a NEW part via AI on Screen 7**
+
+**Question:** User wants to add "Fiscal Policy" as a new part during generation. What's the process?
+
+**Options Explored:**
+
+**Option A: Full pipeline (analysis → split → blueprint → generate)** — Overkill, 2-3 minutes
+**Option B: Skip to generation (just topic = enough)** — Poor quality
+**Option C: Quick blueprint + generate** — Balanced
+**Option D: Quick blueprint with optional edit** — Best of C with user control
+
+**Lead's Decision:** Option D — Quick Blueprint with Optional Edit
+
+**How It Works:**
+1. User clicks "Add New Part" → modal appears: `{Topic input, Sub-topics optional}`
+2. Two buttons:
+   - **[Generate Immediately]** → Auto-blueprint (uses defaults from Screen 3 bundle selections) → generation starts
+   - **[Configure Blueprint First]** → Opens Screen 6-style detail view for new part → user edits blueprint → then generates
+3. **CA auto-decision:**
+   - If global CA toggle is ON → include CA automatically
+   - If global toggle is OFF but topic contains time markers ("2024", "recent", "current") → suggest CA with checkbox
+   - User can always toggle CA in the modal
+
+---
+
+## **STAGE 8: EXPORT (Screen 8)**
+
+---
+
+### **Q8.1 — Export: Does AI help with export?**
+
+**Question:** Should AI be involved in the export process?
+
+**Options Explored:**
+
+**Option A: No AI — pure formatting** — Instant, reliable
+**Option B: AI generates cover page and TOC** — Small enhancement
+**Option C: AI reviews entire document before export** — Slow but thorough
+**Option D: AI cover/TOC + optional final review** — Best of B+C
+
+**Lead's Decision:** Pure formatting only (no additional AI)
+
+**Lead's Exact Words:** "We already validated through AI so just formatted embedded text and images I want with copy formatted text and images, option to save as PDF."
+
+**What This Means:**
+1. No AI involved in export — validation already happened in Stage 7
+2. Export is pure formatting: compile all approved parts with embedded text and images
+3. Two export options:
+   - **Copy formatted text and images** (to clipboard with formatting preserved)
+   - **Save as PDF** (via browser print)
+4. No additional AI review needed — the two-layer validation system already ensures quality
+5. Fast, reliable, no token cost at export
+
+---
+
+## **CROSS-STAGE QUESTIONS**
+
+---
+
+### **QX.1 — Error handling: When AI call fails after 2 retries**
+
+**Question:** What should the user see when an AI operation fails even after automatic retries?
+
+**Options Explored:**
+
+**Option A: Popup with [Try Again] [Skip] [Cancel]** — Basic
+**Option B: Auto-retry with simplified prompt** — Silent
+**Option C: Show error + let user edit prompt** — Transparent
+**Option D: Combined popup with all recovery options** — Complete
+
+**Lead's Decision:** Option D — Combined Popup with All Recovery Options
+
+**How It Works:**
+```
+❌ Failed to generate Part 4
+Reason: Context limit exceeded (input too large)
+
+Failed Prompt:
+[textarea showing full prompt, editable]
+
+[🔄 Retry As-Is]  [✂️ Retry with Simplified Prompt]  
+[✏️ Retry with Edited Prompt]  [⏭ Skip This Part]  [❌ Cancel]
+
+Suggestion: The prompt is 15K tokens. Try simplified version 
+(auto-trims optional context to fit).
+```
+
+**Smart detection:**
+- If error contains "context", "token", "length", "limit" → highlight "Retry Simplified" button
+- If error is "rate limit" → auto-wait 30 seconds before showing popup
+- If error is "network" → different retry logic (auto-retry when connection returns)
+
+---
+
+### **QX.2 — Token/context limits: When source text is too long for one AI call**
+
+**Question:** What if a 500-page PDF exceeds Gemini's context window?
+
+**Options Explored:**
+
+**Option A: Chunk text, send multiple calls, merge** — Quality but complex
+**Option B: Summarize first, analyze summary** — Fast but loses detail
+**Option C: Send important sections, skip rest** — Loses content
+**Option D: Semantic chunking at natural boundaries + structured merge** — Best quality
+
+**Lead's Decision:** Option D — Semantic Chunking + Structured Merge
+
+**How It Works:**
+1. **Detect:** If token count > 80% of model limit → trigger chunking
+2. **Split at natural boundaries:** Chapter headings > Section headings > Page boundaries (in order of preference)
+3. **Each chunk gets context:** `{chunk_id, section_boundaries, previous_chunk_summary, next_chunk_preview}` for continuity
+4. **Analyze each chunk** through Stage 1/2/3 pipeline separately
+5. **Merge analyses:** Union topics, deduplicate definitions/formulas by content, concatenate PYQs
+6. **Stage 4 splitting** then works on merged analysis (parts can span original chunks)
+
+**Sub-decision:** If even one section is too large for a single call:
+- Fall back to sub-section chunking (paragraph groups)
+- Warning to user: "Very large section detected — analysis may have reduced granularity"
+
+---
+
+### **QX.3 — Prompt visibility: System prompt vs User prompt**
+
+**Question:** Should the user see the AI's system instructions (meta-rules) or just the content-specific prompt?
+
+**Options Explored:**
+
+**Option A: Show both system + user prompt** — Full transparency but overwhelming
+**Option B: Show only user prompt** — Clean but hides how AI works
+**Option C: Show user prompt by default, toggle to see system prompt** — Best of both
+**Option D: Toggle with read-only system prompt** — Safe version of C
+
+**Lead's Decision:** Option C
+
+**What This Means:**
+1. **Default view:** User sees only the content-specific prompt (the part they can edit and understand)
+2. **Toggle available:** "Show System Instructions ▼" reveals the system prompt
+3. System prompt shows the rules AI follows (e.g., "Return valid JSON", "Tag content as SOURCE_BACKED")
+4. Both prompts are visible for full transparency
+5. User can edit the user prompt and regenerate
+6. System prompt visibility helps power users understand AI behavior
+
+---
+
+## **📋 MASTER SUMMARY TABLE**
+
+| Q# | Question | Decision |
+|---|---|---|
+| 1.1 | AI Draft Text type | Full notes; AI first fetches related topics, then generates |
+| 1.2 | AI Draft length | Medium default, comprehensive option available |
+| 1.3 | Sub-topic structure | AI uses sub-topics as foundation, can add more |
+| 1.4 | Generated text destination | Into Method 3 paste area for user editing |
+| 2.1 | File extraction method | Technical first, auto-failover to AI if needed |
+| 2.2 | AI Draft reading phase | Skip entirely |
+| 2.3 | Paste text cleanup | Take as-is |
+| 3.1 | Analysis architecture | 3-Prompt Hybrid with Smart Routing |
+| 3.2 | Feature enablement | Three-tier: Auto-on / Suggested / Force-enable |
+| 3.3 | Confidence display | Visual icons (🟢🟡⚪), no numbers, hover for reasoning |
+| 3.4 | Location extraction | Full facts related to topic + CA + neighboring countries + maps |
+| 3.5 | Formula extraction | Detect Screen 3, deep operations Screen 7 |
+| 3.6 | Personality extraction | PSC-relevant facts + current affairs |
+| 4.1 | Part splitting | Rules as guardrails, coherence first, user final say |
+| 4.2 | Splitting inputs | Analysis + compressed context (full text if small) |
+| 4.3 | Per-part bundles | Auto-assign with global inheritance + per-part override |
+| 5.1 | Blueprint prompting | Parallel per-part (1-second gap) |
+| 5.2 | Blueprint sections | One prompt, all 5 sections (coherent) |
+| 5.3 | Image styles | AI smart defaults, user override |
+| 5.4 | CA execution | Generate queries in blueprint, execute on Screen 7 (auto if auto-generate) |
+| 5.5 | S6 AI chat | Surgical modification + lightweight undo |
+| 7.1 | Text gen inputs | Sliced: blueprint + relevant pages + relevant analysis + bundles |
+| 7.2 | Text gen format | Properly formatted HTML, embedded on approval |
+| 7.3 | Image prompt expansion | Auto-expand + generate, show prompt for regen |
+| 7.4 | CA search method | Gemini grounding (built-in), fallback to training data |
+| 7.5 | Validation system | Two layers: Per-part (on approve) + Final consolidated (after all approved) |
+| 7.6 | Refinement chat | Smart scope detection + diff preview |
+| 7.7 | Highlight-to-visualize | Full context: selection + paragraph + part metadata |
+| 7.8 | Add new part | Quick blueprint + optional edit |
+| 8.1 | Export | No AI; formatted embedded text + images; copy or PDF |
+| X.1 | Error handling | Combined popup: retry / simplified / edit / skip / cancel |
+| X.2 | Token limits | Semantic chunking at natural boundaries + merge |
+| X.3 | Prompt visibility | User prompt default, toggle for system prompt |
+
+---
+
+**Document Complete. All decisions locked. Ready for implementation.**

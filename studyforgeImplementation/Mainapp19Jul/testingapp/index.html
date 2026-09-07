@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Current Affairs Generator</title>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --bg-color: #0f172a;
+            --surface: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(to right, #818cf8, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 40px;
+            background: var(--surface);
+            padding: 20px;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 15px 20px;
+            font-size: 1.1rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--bg-color);
+            color: var(--text-main);
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus {
+            border-color: var(--primary);
+        }
+
+        button {
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            background-color: var(--primary);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-2px);
+        }
+
+        button:disabled {
+            background-color: var(--border);
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .result-section {
+            display: none;
+            background: var(--surface);
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            padding: 30px;
+            margin-bottom: 30px;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .result-section.active {
+            display: block;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            color: #e2e8f0;
+            margin-top: 0;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .content-box {
+            background: var(--bg-color);
+            padding: 20px;
+            border-radius: 8px;
+            white-space: pre-wrap;
+            color: #cbd5e1;
+        }
+
+        .image-container {
+            width: 100%;
+            text-align: center;
+        }
+
+        .image-container img {
+            max-width: 100%;
+            border-radius: 12px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        .loader {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+            margin-left: 10px;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .status-text {
+            text-align: center;
+            color: var(--text-muted);
+            font-style: italic;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>AI Current Affairs Generator</h1>
+            <p style="color: var(--text-muted);">Enter a topic to search the web, generate an article, and create an illustration.</p>
+        </header>
+
+        <div class="input-group">
+            <input type="text" id="topicInput" placeholder="e.g., Space Exploration, AI advancements..." />
+            <button id="generateBtn" onclick="handleGenerate()">Generate</button>
+        </div>
+
+        <div id="statusText" class="status-text"></div>
+
+        <div id="searchSection" class="result-section">
+            <h2>Live Web Search Results</h2>
+            <div id="searchContent" class="content-box"></div>
+        </div>
+
+        <div id="articleSection" class="result-section">
+            <h2>Generated Article</h2>
+            <div id="articleContent" class="content-box"></div>
+        </div>
+
+        <div id="imageSection" class="result-section">
+            <h2>Generated Illustration</h2>
+            <div class="image-container">
+                <img id="generatedImage" src="" alt="Generated illustration" style="display: none;" />
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 1. Search the web using Gemini 3 Flash + Grounding
+        async function searchWithInbuiltGemini(searchQuery) {
+            const apiKey = ""; 
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: `Search the web for the latest current affairs and news about: "${searchQuery}". Provide a detailed and concise summary of the most recent events.` }] }],
+                    tools: [{ googleSearch: {} }] 
+                })
+            });
+
+            if (!response.ok) throw new Error(`Search API Error: ${response.status}`);
+            const result = await response.json();
+            return result?.candidates?.[0]?.content?.parts?.[0]?.text || "No search results found.";
+        }
+
+        // 2. Generate content using Gemini 3 Flash
+        async function generateTextWithInbuiltGemini(topic, searchContext) {
+            const apiKey = ""; 
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+
+            const promptText = `You are an expert journalist. Based on the following recent news and search results about "${topic}":\n\n${searchContext}\n\nPlease write a comprehensive, engaging, and well-structured article about this topic. Use headings where appropriate.`;
+
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: promptText }] }]
+                })
+            });
+
+            if (!response.ok) throw new Error(`Text Generation API Error: ${response.status}`);
+            const result = await response.json();
+            return result?.candidates?.[0]?.content?.parts?.[0]?.text || "Failed to generate article.";
+        }
+
+        // 3. Generate Image using Imagen 4
+        async function generateImageWithInbuiltGemini(topic) {
+            const apiKey = ""; 
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${apiKey}`;
+
+            const imagePrompt = `A high quality, editorial style illustration representing the latest news and current affairs about ${topic}. Modern, visually striking, digital art.`;
+
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    instances: [{ prompt: imagePrompt }],
+                    parameters: { sampleCount: 1, aspectRatio: "16:9" }
+                })
+            });
+
+            if (!response.ok) throw new Error(`Image Generation API Error: ${response.status}`);
+            const result = await response.json();
+            const base64Encoded = result?.predictions?.[0]?.bytesBase64Encoded;
+            
+            if (!base64Encoded) throw new Error("No image data returned.");
+            return `data:image/png;base64,${base64Encoded}`;
+        }
+
+        async function handleGenerate() {
+            const topic = document.getElementById('topicInput').value.trim();
+            if (!topic) {
+                alert("Please enter a topic first.");
+                return;
+            }
+
+            const btn = document.getElementById('generateBtn');
+            const statusText = document.getElementById('statusText');
+            const searchSection = document.getElementById('searchSection');
+            const articleSection = document.getElementById('articleSection');
+            const imageSection = document.getElementById('imageSection');
+            
+            const searchContent = document.getElementById('searchContent');
+            const articleContent = document.getElementById('articleContent');
+            const generatedImage = document.getElementById('generatedImage');
+
+            // Reset UI
+            btn.disabled = true;
+            btn.innerHTML = 'Processing <div class="loader"></div>';
+            searchSection.classList.remove('active');
+            articleSection.classList.remove('active');
+            imageSection.classList.remove('active');
+            generatedImage.style.display = 'none';
+
+            try {
+                // Step 1: Web Search
+                statusText.innerText = `Searching the web for "${topic}"...`;
+                statusText.style.color = "var(--text-muted)";
+                const searchResults = await searchWithInbuiltGemini(topic);
+                searchContent.innerText = searchResults;
+                searchSection.classList.add('active');
+
+                // Step 2: Generate Article
+                statusText.innerText = `Generating article based on search results...`;
+                const articleResult = await generateTextWithInbuiltGemini(topic, searchResults);
+                articleContent.innerText = articleResult;
+                articleSection.classList.add('active');
+
+                // Step 3: Generate Image
+                statusText.innerText = `Creating an illustration for "${topic}"...`;
+                const imageDataUrl = await generateImageWithInbuiltGemini(topic);
+                generatedImage.src = imageDataUrl;
+                generatedImage.style.display = 'inline-block';
+                imageSection.classList.add('active');
+
+                statusText.innerText = "Generation complete!";
+                statusText.style.color = "#4ade80"; // Green success text
+            } catch (error) {
+                console.error(error);
+                statusText.innerText = `Error: ${error.message}`;
+                statusText.style.color = '#ef4444'; // Red error text
+            } finally {
+                btn.disabled = false;
+                btn.innerText = 'Generate';
+            }
+        }
+    </script>
+</body>
+</html>

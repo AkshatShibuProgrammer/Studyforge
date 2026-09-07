@@ -1,0 +1,1163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StudyForge Skeleton</title>
+    <style>
+        /* =========================================================
+           1. CSS VARIABLES & RESET
+        ========================================================= */
+        :root {
+            --primary: #2563EB;
+            --primary-hover: #1D4ED8;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --danger: #EF4444;
+            --bg-body: #F3F4F6;
+            --bg-surface: #FFFFFF;
+            --border: #E5E7EB;
+            --text-main: #111827;
+            --text-muted: #6B7280;
+            --font: system-ui, -apple-system, sans-serif;
+            --sidebar-w: 260px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: var(--font); }
+        body { background: var(--bg-body); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
+        
+        /* =========================================================
+           2. LAYOUT COMPONENTS
+        ========================================================= */
+        .flex { display: flex; }
+        .flex-col { display: flex; flex-direction: column; }
+        .items-center { align-items: center; }
+        .justify-between { justify-content: space-between; }
+        .justify-center { justify-content: center; }
+        .gap-1 { gap: 0.25rem; } .gap-2 { gap: 0.5rem; } .gap-3 { gap: 0.75rem; } .gap-4 { gap: 1rem; }
+        
+        .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+        
+        .w-full { width: 100%; } .h-full { height: 100%; }
+        .p-2 { padding: 0.5rem; } .p-4 { padding: 1rem; } .p-6 { padding: 1.5rem; }
+        .mt-2 { margin-top: 0.5rem; } .mt-4 { margin-top: 1rem; } .mt-6 { margin-top: 1.5rem; }
+        .mb-2 { margin-bottom: 0.5rem; } .mb-4 { margin-bottom: 1rem; }
+        
+        .text-center { text-align: center; } .text-right { text-align: right; }
+        .text-sm { font-size: 0.875rem; } .text-xs { font-size: 0.75rem; } .text-lg { font-size: 1.125rem; }
+        .font-bold { font-weight: bold; } .text-muted { color: var(--text-muted); }
+        .hidden { display: none !important; }
+
+        /* =========================================================
+           3. UI ELEMENTS
+        ========================================================= */
+        .card { background: var(--bg-surface); border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        
+        .btn { padding: 0.5rem 1rem; border-radius: 6px; border: 1px solid transparent; cursor: pointer; font-weight: 500; font-size: 0.875rem; transition: 0.2s; background: white; color: var(--text-main); border-color: var(--border); }
+        .btn:hover { background: #F9FAFB; }
+        .btn-primary { background: var(--primary); color: white; border-color: var(--primary); }
+        .btn-primary:hover { background: var(--primary-hover); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .input, .textarea, .select { width: 100%; padding: 0.5rem 0.75rem; border: 1px solid var(--border); border-radius: 6px; font-size: 0.875rem; margin-top: 0.25rem; }
+        .input:focus, .textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 2px rgba(37,99,235,0.2); }
+        .textarea { resize: vertical; min-height: 100px; }
+
+        .toggle-switch { position: relative; display: inline-block; width: 36px; height: 20px; }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .3s; border-radius: 20px; }
+        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 2px; bottom: 2px; background-color: white; transition: .3s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--primary); }
+        input:checked + .slider:before { transform: translateX(16px); }
+
+        table { width: 100%; border-collapse: collapse; font-size: 0.875rem; text-align: left; }
+        th, td { border: 1px solid var(--border); padding: 0.5rem; }
+        th { background: #F9FAFB; font-weight: bold; }
+
+        /* =========================================================
+           4. STRUCTURE (SIDEBAR, NAV, SCREENS)
+        ========================================================= */
+        #sidebar { width: var(--sidebar-w); background: var(--bg-surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; z-index: 10; }
+        .sidebar-item { padding: 0.75rem 1.5rem; font-size: 0.875rem; font-weight: 500; color: var(--text-muted); cursor: pointer; display: flex; justify-content: space-between; align-items: center; border-left: 3px solid transparent; }
+        .sidebar-item:hover:not(.locked) { background: #F3F4F6; }
+        .sidebar-item.active { background: #EFF6FF; color: var(--primary); border-left-color: var(--primary); font-weight: bold; }
+        .sidebar-item.locked { opacity: 0.5; cursor: not-allowed; }
+
+        #main { flex: 1; display: flex; flex-direction: column; position: relative; }
+        #topbar { height: 60px; background: var(--bg-surface); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 1.5rem; }
+        #content-area { flex: 1; overflow-y: auto; padding: 2rem; position: relative; }
+
+        .progress-bar-container { flex: 1; display: flex; gap: 4px; margin: 0 2rem; max-width: 600px; }
+        .progress-segment { height: 6px; flex: 1; background: var(--border); border-radius: 3px; }
+        .progress-segment.completed { background: var(--success); cursor: pointer; }
+        .progress-segment.active { background: var(--primary); }
+
+        .screen { display: none; max-width: 1000px; margin: 0 auto; width: 100%; animation: fadeIn 0.3s ease; }
+        .screen.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* =========================================================
+           5. 15 SPECIAL CONTAINERS & TAGS
+        ========================================================= */
+        .box-formula { background: #EFF6FF; border-left: 4px solid #3B82F6; padding: 1rem; border-radius: 4px; font-family: monospace; margin: 1rem 0; }
+        .box-story { background: #FEFCE8; border-left: 4px solid #F59E0B; padding: 1rem; border-radius: 4px; margin: 1rem 0; }
+        .box-confusion { background: #FEF2F2; border-left: 4px solid #EF4444; padding: 1rem; border-radius: 4px; margin: 1rem 0; }
+        .box-concept { background: #F0FDF4; border-left: 4px solid #22C55E; padding: 1rem; border-radius: 4px; margin: 1rem 0; }
+        .box-legal { background: #FAF5FF; border-left: 4px solid #A855F7; padding: 1rem; border-radius: 4px; margin: 1rem 0; }
+        .box-table { margin: 1rem 0; overflow-x: auto; border-radius: 4px; }
+        .box-table table tr:nth-child(even) { background: #F9FAFB; }
+        .box-timeline { padding: 1rem; border-left: 2px dashed var(--border); margin: 1rem 0 1rem 1rem; position: relative; }
+        .box-timeline::before { content: '📍'; position: absolute; left: -12px; top: 12px; }
+        .box-code { background: #1F2937; color: #E5E7EB; font-family: monospace; padding: 1rem; border-radius: 4px; margin: 1rem 0; overflow-x: auto; }
+        .box-io { display: flex; border: 1px solid var(--border); border-radius: 4px; margin: 1rem 0; }
+        .box-io > div { padding: 1rem; flex: 1; } .box-io > div:first-child { border-right: 1px solid var(--border); background: #F9FAFB; }
+        .box-complexity { border: 1px solid var(--border); border-radius: 4px; padding: 1rem; margin: 1rem 0; }
+        .box-application { background: #F3F4F6; padding: 1rem; border-radius: 4px; margin: 1rem 0; display: flex; gap: 0.5rem; }
+        .box-concept-takeaway { border: 2px solid var(--text-main); padding: 1rem; border-radius: 8px; margin: 1rem 0; font-weight: bold; text-align: center; }
+
+        .tag { display: inline-block; padding: 2px 6px; border-radius: 99px; font-size: 0.7rem; font-weight: bold; margin-left: 4px; }
+        .tag-source { background: #DCFCE7; color: #166534; }
+        .tag-research { background: #DBEAFE; color: #1E3A8A; }
+        .tag-enrich { background: #FEF3C7; color: #92400E; }
+
+        /* =========================================================
+           6. OVERLAYS & MODALS
+        ========================================================= */
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 100; }
+        .modal-content { background: var(--bg-surface); padding: 1.5rem; border-radius: 8px; max-width: 500px; width: 100%; max-height: 90vh; overflow-y: auto; }
+        
+        #overlay-blueprint { position: fixed; top: 60px; left: 0; right: 0; bottom: 0; background: var(--bg-body); z-index: 50; display: none; }
+        
+        #toast { position: fixed; bottom: 20px; right: 20px; background: #111827; color: white; padding: 1rem; border-radius: 8px; display: none; z-index: 1000; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+    </style>
+</head>
+<body>
+
+    <!-- SIDEBAR -->
+    <aside id="sidebar">
+        <div class="p-4" style="border-bottom: 1px solid var(--border);">
+            <h1 class="text-lg font-bold" style="color: var(--primary);">StudyForge</h1>
+            <button class="btn text-xs mt-2" onclick="startOver()">Start Over / Clear State</button>
+        </div>
+        <div class="flex-col" id="sidebar-nav" style="padding-top: 1rem;">
+            <div class="sidebar-item active" id="nav-input" onclick="navTo(1)">1. INPUT <span></span></div>
+            <div class="sidebar-item locked" id="nav-reading" onclick="navTo(2)">2. READING <span>🔒</span></div>
+            <div class="sidebar-item locked" id="nav-understanding" onclick="navTo(3)">3. UNDERSTANDING <span>🔒</span></div>
+            <div class="sidebar-item locked" id="nav-parts" onclick="navTo(4)">4. PARTS <span>🔒</span></div>
+            <div class="sidebar-item locked" id="nav-blueprint" onclick="navTo(5)">5. BLUEPRINT <span>🔒</span></div>
+            <div class="sidebar-item locked" id="nav-blueprint-detail" onclick="openBlueprintDetail()">6. BLUEPRINT DETAIL <span>🔒</span></div>
+            <div class="sidebar-item locked" id="nav-generation" onclick="navTo(7)">7. GENERATION <span>🔒</span></div>
+            <div class="sidebar-item locked" id="nav-export" onclick="navTo(8)">8. EXPORT <span>🔒</span></div>
+        </div>
+    </aside>
+
+    <main id="main">
+        <!-- TOPBAR -->
+        <header id="topbar">
+            <div class="font-bold">Step <span id="top-step-num">1</span>: <span id="top-step-name">INPUT</span></div>
+            <div class="progress-bar-container" id="top-progress">
+                <div class="progress-segment active" onclick="navTo(1)"></div>
+                <div class="progress-segment" onclick="navTo(2)"></div>
+                <div class="progress-segment" onclick="navTo(3)"></div>
+                <div class="progress-segment" onclick="navTo(4)"></div>
+                <div class="progress-segment" onclick="navTo(5)"></div>
+                <div class="progress-segment" onclick="openBlueprintDetail()"></div>
+                <div class="progress-segment" onclick="navTo(7)"></div>
+                <div class="progress-segment" onclick="navTo(8)"></div>
+            </div>
+            <button class="btn text-xs" onclick="simulateErrorPopup()">🔧 Test Error Popup</button>
+        </header>
+
+        <div id="content-area">
+            
+            <!-- ==========================================
+                 SCREEN 1: INPUT 
+            =========================================== -->
+            <section id="screen-1" class="screen active">
+                <div class="text-center mb-6">
+                    <h1 class="text-lg font-bold">Transform any material into structured study notes</h1>
+                    <p class="text-muted text-sm">Choose ONE method below to get started.</p>
+                </div>
+
+                <div class="grid-3 mb-6">
+                    <!-- Method 1: File -->
+                    <div class="card flex-col">
+                        <h3 class="font-bold mb-4">Method 1: Upload File</h3>
+                        <div style="border: 2px dashed var(--border); padding: 2rem; text-align: center; border-radius: 8px; cursor: pointer; flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center;" onclick="document.getElementById('file-upload').click()">
+                            <span style="font-size: 2rem;">📄</span>
+                            <span class="text-sm mt-2">Drop file here or click to browse</span>
+                            <span class="text-xs text-muted mt-2">.pdf, .txt, .doc, .docx, .html, .md, .jpg, .png</span>
+                        </div>
+                        <input type="file" id="file-upload" class="hidden" accept=".pdf,.txt,.doc,.docx,.html,.md,.jpg,.png" onchange="handleFile(this)">
+                        <div id="file-info" class="text-sm mt-2 font-bold" style="color: var(--primary); display: none;"></div>
+                    </div>
+
+                    <!-- Method 2: Topic -->
+                    <div class="card flex-col">
+                        <h3 class="font-bold mb-4">Method 2: Type Topic</h3>
+                        <label class="text-xs font-bold">Main Topic</label>
+                        <input type="text" id="in-topic" class="input mb-2" placeholder="e.g., National Income" oninput="checkInput()">
+                        
+                        <div id="subtopics-container">
+                            <label class="text-xs font-bold">Sub-topics (Max 10)</label>
+                            <input type="text" class="input mb-2 subtopic" placeholder="e.g., GDP, GNP, NDP">
+                        </div>
+                        <button class="btn text-xs mb-2" onclick="addSubtopic()">+ Add another sub-topic</button>
+                        
+                        <label class="text-xs font-bold">Specific Focus (Optional)</label>
+                        <input type="text" id="in-focus" class="input" placeholder="e.g., Focus on Indian economy data">
+                    </div>
+
+                    <!-- Method 3: Paste -->
+                    <div class="card flex-col">
+                        <h3 class="font-bold mb-4">Method 3: Paste Text</h3>
+                        <textarea id="in-paste" class="textarea" style="flex:1;" placeholder="Paste your study material here..." oninput="updateCharCount()"></textarea>
+                        <div class="text-right text-xs text-muted mt-1" id="char-count">0 / 50000</div>
+                    </div>
+                </div>
+
+                <div class="card mb-6">
+                    <h3 class="font-bold mb-4">Optional Settings</h3>
+                    <div class="grid-2">
+                        <div>
+                            <label class="text-xs font-bold">Exam Target</label>
+                            <select class="select mb-2" id="set-exam"><option>Blank</option><option>UPSC</option><option>State PSC</option><option>Academic</option><option>Other</option></select>
+                            <label class="text-xs font-bold">State Focus</label>
+                            <input type="text" class="input" id="set-state" placeholder="MP, UP, Bihar...">
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold">Objective</label>
+                            <select class="select mb-4" id="set-obj"><option>Blank</option><option>Notes</option><option>Answer Writing</option><option>Revision</option></select>
+                            <div class="flex items-center gap-2">
+                                <label class="toggle-switch"><input type="checkbox" id="set-ca"><span class="slider"></span></label>
+                                <span class="text-sm font-bold">Include Current Affairs</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between">
+                    <span id="input-error" class="text-sm" style="color: var(--danger); font-weight: bold;"></span>
+                    <button class="btn btn-primary" onclick="submitInput()">Continue ➔</button>
+                </div>
+            </section>
+
+            <!-- ==========================================
+                 SCREEN 2: READING 
+            =========================================== -->
+            <section id="screen-2" class="screen" style="max-width: 600px; margin-top: 5vh;">
+                <div class="card text-center p-6">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">📖</div>
+                    <h2 class="font-bold mb-6">Reading your material...</h2>
+                    
+                    <div class="text-left mb-6" style="max-width: 400px; margin: 0 auto;">
+                        <div class="flex items-center gap-2 mb-2" id="read-step-1" style="opacity: 0; transition: 0.3s;"><span style="color:var(--success);">✅</span> <span id="read-source-text">File accepted</span></div>
+                        <div class="flex items-center gap-2 mb-2" id="read-step-2" style="opacity: 0; transition: 0.3s;"><span style="color:var(--success);">✅</span> <span>Extracted <span id="read-pgs">22</span> pages of text</span></div>
+                        <div class="flex items-center gap-2 mb-2" id="read-step-3" style="opacity: 0; transition: 0.3s;"><span style="color:var(--success);">✅</span> <span>Found <span id="read-imgs">5</span> images — reading text from them</span></div>
+                        <div class="flex items-center gap-2 mb-2" id="read-step-4" style="opacity: 0; transition: 0.3s;"><span style="color:var(--success);">✅</span> <span>Cleaned up noise and watermarks</span></div>
+                        <div class="flex items-center gap-2" id="read-step-5" style="opacity: 0; transition: 0.3s;"><span style="color:var(--primary);">⏳</span> <span style="color:var(--primary); font-weight:bold;">Understanding the content...</span></div>
+                    </div>
+
+                    <div style="width: 100%; height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; margin-bottom: 0.5rem;">
+                        <div id="read-progress" style="height: 100%; width: 0%; background: var(--primary); transition: width 0.1s linear;"></div>
+                    </div>
+                    <p class="text-xs text-muted">This may take 30-60 seconds</p>
+                </div>
+            </section>
+
+            <!-- ==========================================
+                 SCREEN 3: UNDERSTANDING 
+            =========================================== -->
+            <section id="screen-3" class="screen">
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <h1 class="text-lg font-bold">Here's what I understood ✨</h1>
+                        <p class="text-sm text-muted">Review detection before blueprinting.</p>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-sm font-bold">🎯 Subject: Economics (Macroeconomics)</div>
+                        <div class="text-sm">📋 Purpose: National Income Accounting</div>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 1.5rem;">
+                    <!-- LEFT 60% -->
+                    <div style="flex: 3; display: flex; flex-direction: column; gap: 1.5rem;">
+                        <div class="card">
+                            <h3 class="font-bold mb-4 border-b pb-2">Found in Material</h3>
+                            <div class="grid-3 text-sm">
+                                <div>• 19 topics<br>• 20 definitions<br>• 12 formulas</div>
+                                <div>• 4 PYQs<br>• 6 diagrams<br>• 5 comparisons</div>
+                                <div>• 7 examples<br>• 3 timelines<br>• 6 tables</div>
+                            </div>
+                            <button class="btn w-full mt-4 text-sm font-bold" onclick="document.getElementById('full-details').classList.toggle('hidden')">👁 See full details ▼</button>
+                        </div>
+
+                        <div id="full-details" class="hidden flex-col gap-4">
+                            <div class="card p-0" style="overflow: hidden;">
+                                <div class="p-2 font-bold text-sm bg-gray-50 border-b">Definitions Found</div>
+                                <table><tr><th>ID</th><th>Definition</th><th>Pg</th></tr>
+                                <tr><td>D-001</td><td>National Income means the total money value...</td><td>3</td></tr>
+                                <tr><td>D-002</td><td>GDP is the total market value...</td><td>4</td></tr>
+                                <tr><td>D-003</td><td>GNP is the total value...</td><td>10</td></tr>
+                                <tr><td>D-004</td><td>NDP is GDP minus depreciation...</td><td>12</td></tr>
+                                <tr><td>D-005</td><td>Per Capita Income is average income...</td><td>15</td></tr>
+                                </table>
+                            </div>
+                            <div class="card p-0" style="overflow: hidden;">
+                                <div class="p-2 font-bold text-sm bg-gray-50 border-b">Formulas Found</div>
+                                <table><tr><th>ID</th><th>Formula</th><th>Variables</th><th>Pg</th></tr>
+                                <tr><td>F-001</td><td>GDP at MP = C + I + G + NX(X-M)</td><td>C=Cons, I=Inv...</td><td>10</td></tr>
+                                <tr><td>F-002</td><td>GNP = GDP + NFIA</td><td>NFIA = Net Factor...</td><td>11</td></tr>
+                                <tr><td>F-003</td><td>NDP = GDP - Depreciation</td><td>-</td><td>12</td></tr>
+                                <tr><td>F-004</td><td>Real GDP = (Nominal/Deflator)*100</td><td>Deflator=Index</td><td>13</td></tr>
+                                </table>
+                            </div>
+                            <div class="card p-0" style="overflow: hidden;">
+                                <div class="p-2 font-bold text-sm bg-gray-50 border-b">PYQs Found</div>
+                                <table><tr><th>ID</th><th>Year</th><th>Type</th><th>Question</th><th>Ans</th></tr>
+                                <tr><td>P-001</td><td>2012</td><td>Prelims</td><td>The Multi-dimensional Poverty...</td><td>(a)</td></tr>
+                                <tr><td>P-002</td><td>2013</td><td>Prelims</td><td>The national income of a...</td><td>(a)</td></tr>
+                                <tr><td>P-003</td><td>2015</td><td>Prelims</td><td>Economic growth is usually...</td><td>(b)</td></tr>
+                                <tr><td>P-004</td><td>2017</td><td>Prelims</td><td>Which of the following is/are...</td><td>(d)</td></tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- RIGHT 40% -->
+                    <div class="card" style="flex: 2; height: fit-content;">
+                        <h3 class="font-bold mb-4 border-b pb-2">Features Detected</h3>
+                        <div class="flex-col gap-3 text-sm">
+                            <label class="flex items-center gap-2"><input type="checkbox" checked class="feat-toggle"> Current Affairs (economics topic)</label>
+                            <label class="flex items-center gap-2"><input type="checkbox" checked class="feat-toggle"> State-Specific Data (MP focus set)</label>
+                            <label class="flex items-center gap-2"><input type="checkbox" checked class="feat-toggle"> PYQ Integration (4 PYQs found)</label>
+                            <label class="flex items-center gap-2"><input type="checkbox" checked class="feat-toggle"> Formula Breakdown (12 formulas)</label>
+                            <label class="flex items-center gap-2"><input type="checkbox" checked class="feat-toggle"> Comparison Tables (5 comparisons)</label>
+                            <label class="flex items-center gap-2"><input type="checkbox" checked class="feat-toggle"> Timeline/History (3 timelines)</label>
+                            <label class="flex items-center gap-2"><input type="checkbox" checked class="feat-toggle"> Story/Scenario Boxes (7 examples)</label>
+                            <label class="flex items-center gap-2"><input type="checkbox" checked class="feat-toggle"> Legal/Constitutional (policy related)</label>
+                            <div id="hidden-features" class="hidden flex-col gap-3 mt-3 pt-3" style="border-top:1px solid var(--border);">
+                                <label class="flex items-center gap-2"><input type="checkbox" class="feat-toggle"> Code Examples (not applicable)</label>
+                                <label class="flex items-center gap-2"><input type="checkbox" class="feat-toggle"> Algorithm Analysis (not applicable)</label>
+                            </div>
+                            <button class="btn text-xs mt-2" onclick="document.getElementById('hidden-features').classList.toggle('hidden')">Show more options ▼</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-between mt-6" style="border-top: 1px solid var(--border); padding-top: 1rem;">
+                    <div class="flex gap-2">
+                        <button class="btn" onclick="showToast('Re-analyzing...')">🔄 Re-analyze</button>
+                        <button class="btn" onclick="showToast('Manual fix opened')">✏️ Fix manually</button>
+                    </div>
+                    <button class="btn btn-primary font-bold" onclick="completeStepAndGo(3, 4)">Looks good → Continue</button>
+                </div>
+            </section>
+
+            <!-- ==========================================
+                 SCREEN 4: PARTS 
+            =========================================== -->
+            <section id="screen-4" class="screen">
+                <h1 class="text-lg font-bold mb-6">📋 How I'll split your material (6 parts)</h1>
+                
+                <div class="flex-col gap-4 mb-6">
+                    <!-- Part 1 -->
+                    <div class="card flex justify-between" style="border-left: 4px solid var(--primary);">
+                        <div>
+                            <div class="font-bold mb-1 flex items-center gap-2">Part 1: <input type="text" class="input" style="width: 300px; padding:2px; margin:0; border:none; font-weight:bold; background:transparent;" value="Foundations of National Income"></div>
+                            <div class="text-xs text-muted mb-2">Pages 3-5 | 3 topics | 6 definitions</div>
+                            <div class="text-sm">Covers what NI means, why it matters, and basic definitions...</div>
+                        </div>
+                        <div class="flex gap-2"><button class="btn text-xs">✏️ Edit</button></div>
+                    </div>
+                    <!-- Part 2 -->
+                    <div class="card flex justify-between" style="border-left: 4px solid var(--primary);">
+                        <div>
+                            <div class="font-bold mb-1 flex items-center gap-2">Part 2: <input type="text" class="input" style="width: 350px; padding:2px; margin:0; border:none; font-weight:bold; background:transparent;" value="Types of GDP & Measurement Methods"></div>
+                            <div class="text-xs text-muted mb-2">Pages 6-10 | 4 topics | 5 formulas</div>
+                            <div class="text-sm">Nominal vs Real GDP, Value addition method, Income and Expenditure methods.</div>
+                        </div>
+                        <div class="flex gap-2"><button class="btn text-xs">✏️ Edit</button></div>
+                    </div>
+                    <!-- Part 3 -->
+                    <div class="card flex justify-between" style="border-left: 4px solid var(--primary);">
+                        <div>
+                            <div class="font-bold mb-1 flex items-center gap-2">Part 3: <input type="text" class="input" style="width: 350px; padding:2px; margin:0; border:none; font-weight:bold; background:transparent;" value="NDP, GNP, NNP & Other Measures"></div>
+                            <div class="text-xs text-muted mb-2">Pages 10-13 | 5 topics | 4 formulas</div>
+                            <div class="text-sm">Deriving net aggregates from gross, factor cost vs market price.</div>
+                        </div>
+                        <div class="flex gap-2"><button class="btn text-xs">✏️ Edit</button></div>
+                    </div>
+                    <!-- Part 4 -->
+                    <div class="card flex justify-between" style="border-left: 4px solid var(--primary);">
+                        <div>
+                            <div class="font-bold mb-1 flex items-center gap-2">Part 4: <input type="text" class="input" style="width: 350px; padding:2px; margin:0; border:none; font-weight:bold; background:transparent;" value="GDP Deflator, Base Year, India's GDP"></div>
+                            <div class="text-xs text-muted mb-2">Pages 13-16 | 4 topics | 1 formula</div>
+                            <div class="text-sm">Price indices, inflation adjustment, and India specific base year methodology.</div>
+                        </div>
+                        <div class="flex gap-2"><button class="btn text-xs">✏️ Edit</button></div>
+                    </div>
+                    <!-- Part 5 -->
+                    <div class="card flex justify-between" style="border-left: 4px solid var(--primary);">
+                        <div>
+                            <div class="font-bold mb-1 flex items-center gap-2">Part 5: <input type="text" class="input" style="width: 350px; padding:2px; margin:0; border:none; font-weight:bold; background:transparent;" value="GDP, Welfare & Alternative Measures"></div>
+                            <div class="text-xs text-muted mb-2">Pages 17-20 | 4 topics | 0 formulas</div>
+                            <div class="text-sm">Limitations of GDP, Green GDP, externalities.</div>
+                        </div>
+                        <div class="flex gap-2"><button class="btn text-xs">✏️ Edit</button></div>
+                    </div>
+                    <!-- Part 6 -->
+                    <div class="card flex justify-between" style="border-left: 4px solid var(--primary);">
+                        <div>
+                            <div class="font-bold mb-1 flex items-center gap-2">Part 6: <input type="text" class="input" style="width: 350px; padding:2px; margin:0; border:none; font-weight:bold; background:transparent;" value="HDI, Indices & Previous Year Questions"></div>
+                            <div class="text-xs text-muted mb-2">Pages 20-22 | 3 topics | 4 PYQs</div>
+                            <div class="text-sm">Human Development Index, multi-dimensional poverty, and exam practice.</div>
+                        </div>
+                        <div class="flex gap-2"><button class="btn text-xs">✏️ Edit</button></div>
+                    </div>
+                </div>
+
+                <div class="flex justify-between mt-6 border-t" style="padding-top: 1rem; position: sticky; bottom: 0; background: var(--bg-body); padding-bottom: 1rem;">
+                    <div class="flex gap-2">
+                        <button class="btn" onclick="showToast('Add Part clicked')">➕ Add Part</button>
+                        <button class="btn" onclick="showToast('Merge clicked')">🔀 Merge Parts</button>
+                    </div>
+                    <button class="btn btn-primary font-bold" onclick="completeStepAndGo(4, 5)">Continue to Blueprint →</button>
+                </div>
+            </section>
+
+            <!-- ==========================================
+                 SCREEN 5: BLUEPRINT CARDS 
+            =========================================== -->
+            <section id="screen-5" class="screen">
+                <div class="flex justify-between items-center mb-6">
+                    <h1 class="text-lg font-bold">Teaching Plan (Blueprint)</h1>
+                    <button class="btn font-bold" onclick="approveAllBP()">☑️ Approve All Blueprints</button>
+                </div>
+
+                <div class="grid-2 mb-10" id="bp-grid">
+                    <!-- Populated via JS -->
+                </div>
+
+                <div class="flex justify-between items-center" style="position: sticky; bottom: 0; background: var(--bg-surface); padding: 1rem; border: 1px solid var(--border); border-radius: 8px;">
+                    <div class="font-bold text-sm"><span id="bp-count">0</span> of 6 approved</div>
+                    <button class="btn btn-primary font-bold" id="btn-start-gen" disabled onclick="completeStepAndGo(5, 7); completeStep(6);">Approve & Start Generation →</button>
+                </div>
+            </section>
+
+            <!-- ==========================================
+                 SCREEN 7: GENERATION (MAIN WORKSPACE)
+            =========================================== -->
+            <section id="screen-7" class="screen" style="max-width: 100%; height: calc(100vh - 120px); display: flex; flex-direction: column; margin: -2rem;">
+                <!-- Internal Top Bar -->
+                <div class="flex justify-between items-center p-4" style="background: var(--bg-surface); border-bottom: 1px solid var(--border);">
+                    <button class="btn btn-primary text-sm font-bold" onclick="simulateErrorPopup()">Generate All</button>
+                    <div class="flex items-center gap-2 text-sm font-bold">
+                        <span>Progress: 1/6 parts done</span>
+                        <div style="width: 200px; height: 8px; background: var(--border); border-radius: 4px; overflow: hidden;">
+                            <div style="width: 17%; height: 100%; background: var(--success);"></div>
+                        </div>
+                        <span>17%</span>
+                    </div>
+                </div>
+
+                <div class="flex" style="flex: 1; overflow: hidden;">
+                    <!-- Internal Sidebar -->
+                    <div style="width: 200px; background: var(--bg-surface); border-right: 1px solid var(--border); overflow-y: auto;">
+                        <div class="p-3 text-sm flex items-center gap-2 border-b"><span title="Approved">✅</span> Part 1: Foundations</div>
+                        <div class="p-3 text-sm flex items-center gap-2 border-b bg-blue-50 font-bold" style="color:var(--primary);"><span title="Generating">🔄</span> Part 2: Types of GDP</div>
+                        <div class="p-3 text-sm flex items-center gap-2 border-b"><span title="Pending">⬜</span> Part 3: NDP & GNP</div>
+                        <div class="p-3 text-sm flex items-center gap-2 border-b"><span title="Pending">⬜</span> Part 4: Deflator</div>
+                        <div class="p-3 text-sm flex items-center gap-2 border-b"><span title="Pending">⬜</span> Part 5: Welfare</div>
+                        <div class="p-3 text-sm flex items-center gap-2 border-b"><span title="Pending">⬜</span> Part 6: HDI</div>
+                    </div>
+
+                    <!-- Main Content Generation Area -->
+                    <div style="flex: 1; overflow-y: auto; padding: 2rem; background: var(--bg-body);">
+                        <div style="max-width: 800px; margin: 0 auto;">
+                            
+                            <!-- Part 1 (Completed state) -->
+                            <div class="card mb-6 p-0" style="opacity: 0.8;">
+                                <div class="p-4 bg-gray-50 flex justify-between items-center border-b">
+                                    <h2 class="font-bold">PART 1: Foundations of National Income</h2>
+                                    <span class="tag tag-source">✅ APPROVED</span>
+                                </div>
+                                <div class="p-4 text-center">
+                                    <button class="btn text-xs">🔓 Unlock to Edit</button>
+                                </div>
+                            </div>
+
+                            <div class="text-center font-bold text-muted text-xs mb-6" style="letter-spacing: 2px;">═══ SEPARATOR — NEXT PART BEGINS ═══</div>
+
+                            <!-- Part 2 (Active state) -->
+                            <div class="card mb-6 p-0" style="border: 2px solid var(--primary);" id="gen-part-2">
+                                <div class="p-4 bg-blue-50 flex justify-between items-center border-b">
+                                    <h2 class="font-bold text-lg" style="color: var(--primary);">PART 2: Types of GDP & Measurement Methods</h2>
+                                    <div class="flex items-center gap-2">
+                                        <button class="btn btn-primary text-xs" onclick="simulateErrorPopup()">Generate</button>
+                                        <label class="text-xs font-bold flex items-center gap-1"><input type="checkbox"> Approve Text</label>
+                                        <label class="text-xs font-bold flex items-center gap-1"><input type="checkbox"> Approve Images</label>
+                                    </div>
+                                </div>
+
+                                <div class="p-6 text-main" style="line-height: 1.6;" onmouseup="checkHighlight()">
+                                    <!-- Container 1: Concept -->
+                                    <div class="box-concept">
+                                        <strong>💡 Concept Clarification</strong><br>
+                                        Before understanding types of GDP, remember: GDP measures the total market value of all final goods and services produced within a country's borders during a year. <span class="tag tag-source">[SOURCE_BACKED]</span>
+                                    </div>
+
+                                    <h3 class="font-bold mt-6 mb-2 border-b pb-1">Nominal GDP (GDP at Current Prices)</h3>
+                                    <p class="mb-2">The total monetary value of all goods and services produced in the domestic territory, counted on the basis of market prices prevailing in that year.</p>
+                                    <ul class="mb-2" style="padding-left: 1.5rem;">
+                                        <li>Calculated at current market price</li>
+                                        <li>Does NOT adjust for inflation</li>
+                                        <li>Can be misleading for growth comparison</li>
+                                    </ul>
+                                    <div class="text-right"><span class="tag tag-source">[SOURCE_BACKED]</span></div>
+
+                                    <!-- Container 2: Formula -->
+                                    <div class="box-formula">
+                                        <strong>Nominal GDP = Σ (Current Year Price × Current Year Quantity)</strong><br><br>
+                                        <span style="font-family: var(--font);">Example:<br>If a country produces 300 cars at ₹10 each in 2022-23:<br>Nominal GDP = 300 × 10 = ₹33,000</span>
+                                        <div class="text-right mt-2"><span class="tag tag-source">[SOURCE_BACKED]</span></div>
+                                    </div>
+
+                                    <h3 class="font-bold mt-6 mb-2 border-b pb-1">Real GDP (GDP at Constant Prices)</h3>
+                                    <p class="mb-2">The total monetary value of all final goods and services valued at a constant base year price.</p>
+
+                                    <!-- Container 3: Alert -->
+                                    <div class="box-confusion">
+                                        <strong>⚠️ Common Confusion Alert</strong><br>
+                                        Students often confuse:<br>
+                                        • Nominal GDP growing does NOT mean economy is growing<br>
+                                        • Prices might just be rising (inflation)<br>
+                                        • ALWAYS check Real GDP for actual growth
+                                        <div class="text-right mt-2"><span class="tag tag-enrich">[OPTIONAL_ENRICHMENT]</span></div>
+                                    </div>
+
+                                    <!-- Image 1 -->
+                                    <div style="border: 2px dashed var(--border); padding: 1.5rem; text-align: center; border-radius: 8px; margin: 2rem 0; background: #F9FAFB;">
+                                        <div style="font-size: 2rem; margin-bottom: 0.5rem;">🖼️</div>
+                                        <div class="font-bold text-muted mb-2">[GENERATED IMAGE: Nominal vs Real Value Infographic]</div>
+                                        <div class="text-xs text-muted mb-4">Shows: Supermarket prices, bank account (Nominal) vs Inflation-adjusted purchasing power (Real)</div>
+                                        <div class="flex justify-center gap-2 items-center">
+                                            <button class="btn text-xs" onclick="simulateErrorPopup()">🔄 Regenerate</button>
+                                            <select class="select text-xs" style="width:auto; margin:0;" id="img-dropdown-1"></select>
+                                            <button class="btn text-xs">✏️ Edit Prompt</button>
+                                            <label class="text-xs font-bold" style="color:var(--primary);"><input type="checkbox"> ☑️ Approve Image</label>
+                                        </div>
+                                    </div>
+
+                                    <!-- Container 4: Story -->
+                                    <h3 class="font-bold mt-6 mb-2 border-b pb-1">Value Addition Method (Production Method)</h3>
+                                    <div class="box-story">
+                                        <strong>😊 Meet Shyam — The Bread Maker</strong><br>
+                                        Step 1: Shyam buys flour from a miller for ₹50 (This is intermediate consumption)<br>
+                                        Step 2: Shyam bakes the flour into bread (Production activity)<br>
+                                        Step 3: Shyam sells the bread for ₹100 (This is the value of output)<br>
+                                        Step 4: Value Added by Shyam = ₹100 - ₹50 = ₹50<br>
+                                        The ₹50 is what Shyam truly created.
+                                        <div class="text-right mt-2"><span class="tag tag-source">[SOURCE_BACKED]</span></div>
+                                    </div>
+
+                                    <!-- CA Zone -->
+                                    <div style="border: 1px solid var(--border); border-radius: 8px; margin-top: 2rem; overflow: hidden;">
+                                        <div class="p-3 bg-gray-50 border-b flex justify-between items-center font-bold cursor-pointer" onclick="document.getElementById('ca-results').classList.toggle('hidden')">
+                                            Current Affairs Zone
+                                            <button class="btn btn-primary text-xs" onclick="event.stopPropagation(); document.getElementById('ca-results').classList.remove('hidden'); simulateErrorPopup()">🔍 Generate Current Affairs</button>
+                                        </div>
+                                        <div id="ca-results" class="hidden p-4 flex-col gap-4">
+                                            <!-- CA Item 1 -->
+                                            <div class="border p-3 rounded">
+                                                <h4 class="font-bold text-sm mb-2">📰 National Recent (2024-Today)</h4>
+                                                <ul class="text-sm pl-4 mb-3"><li>India GDP grew 6.7% in Q2 FY25 (MoSPI, Nov 2024)</li><li>GDP growth at 8.2% for FY2023-24</li></ul>
+                                                <div class="flex gap-2 border-t pt-2">
+                                                    <button class="btn text-xs" style="color:var(--primary); border:none;">↩️ Merge into notes above</button>
+                                                    <select class="select text-xs" style="width:auto; margin:0;"><option>Merge at specific spot ▼</option></select>
+                                                </div>
+                                            </div>
+                                            <!-- CA Item 2 -->
+                                            <div class="border p-3 rounded">
+                                                <h4 class="font-bold text-sm mb-2">📰 MP State (2024-Today)</h4>
+                                                <ul class="text-sm pl-4 mb-3"><li>MP GSDP growth at 7.1% (2024 estimate)</li></ul>
+                                                <div class="flex gap-2 border-t pt-2"><button class="btn text-xs" style="color:var(--primary); border:none;">↩️ Merge into notes</button></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="p-4 bg-gray-50 border-t flex-col gap-4">
+                                    <div class="flex justify-between">
+                                        <div class="flex gap-2">
+                                            <button class="btn text-xs font-bold" onclick="document.getElementById('modal-validate').style.display='flex'">🔍 AI Validate This Part</button>
+                                            <button class="btn text-xs font-bold" onclick="document.getElementById('modal-refine').style.display='flex'">🤖 AI Refine</button>
+                                            <button class="btn text-xs">✏️ Inline Edit</button>
+                                            <button class="btn text-xs">🔄 Regenerate Entire Text</button>
+                                        </div>
+                                    </div>
+                                    <div class="text-right border-t pt-4">
+                                        <button class="btn btn-primary font-bold" onclick="approveGenPart2()">☑️ Approve Entire Part 2</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="text-center font-bold text-muted text-xs mb-6" style="letter-spacing: 2px;">═══ SEPARATOR — NEXT PART BEGINS ═══</div>
+                            
+                            <!-- Part 3 -->
+                            <div class="card mb-6 p-0">
+                                <div class="p-4 bg-gray-50 flex justify-between items-center border-b">
+                                    <h2 class="font-bold">PART 3: NDP, GNP, NNP & Other Measures</h2>
+                                    <div class="flex gap-2"><button class="btn text-xs">Generate Part 3</button><button class="btn text-xs">Approve Part 3</button></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Floating Visualize Button -->
+                <button id="btn-visualize" class="btn btn-primary text-xs" style="position:fixed; display:none; z-index:100; box-shadow: 0 4px 6px rgba(0,0,0,0.2);" onclick="openVisualize()">🎨 Visualize This</button>
+            </section>
+
+            <!-- ==========================================
+                 SCREEN 8: EXPORT 
+            =========================================== -->
+            <section id="screen-8" class="screen">
+                <div class="text-center mb-6">
+                    <h1 class="text-lg font-bold" style="color: var(--success);">✅ All 6 parts approved!</h1>
+                </div>
+                
+                <div class="grid-2">
+                    <div class="card h-full">
+                        <h3 class="font-bold mb-4 border-b pb-2">Export Settings</h3>
+                        
+                        <div class="text-sm font-bold mb-2">Format</div>
+                        <div class="flex-col gap-2 mb-6 text-sm">
+                            <label><input type="radio" name="fmt" checked> HTML (styled webpage)</label>
+                            <label><input type="radio" name="fmt"> PDF (via browser print)</label>
+                            <label><input type="radio" name="fmt"> Markdown (plain text)</label>
+                            <label><input type="radio" name="fmt"> Copy to clipboard</label>
+                        </div>
+
+                        <div class="text-sm font-bold mb-2">Include</div>
+                        <div class="flex-col gap-2 mb-6 text-sm">
+                            <label><input type="checkbox" checked> Cover page (topic, date, exam)</label>
+                            <label><input type="checkbox" checked> Table of contents</label>
+                            <label><input type="checkbox" checked> All generated images (inline)</label>
+                            <label><input type="checkbox" checked> Current affairs sections</label>
+                            <label><input type="checkbox" checked> PYQ section</label>
+                            <label><input type="checkbox" checked> Source tags (green/blue/gold)</label>
+                            <label><input type="checkbox"> Blueprint prompts (for reference)</label>
+                        </div>
+
+                        <div class="flex gap-2 mt-4 pt-4 border-t">
+                            <button class="btn" style="flex:1;">👁️ Preview</button>
+                            <button class="btn btn-primary" style="flex:1;" onclick="downloadDummy()">📥 Download</button>
+                        </div>
+                    </div>
+
+                    <div class="card h-full flex-col p-0" style="background: #F9FAFB;">
+                        <div class="p-4 border-b font-bold">Preview Section</div>
+                        <div style="flex: 1; padding: 2rem; background: white; margin: 1rem; border: 1px solid var(--border); overflow-y: auto; max-height: 400px; font-family: serif;">
+                            <div class="text-center mb-8 border-b pb-6">
+                                <h1 style="font-size: 2rem; font-weight: bold; margin-bottom: 0.5rem;">NATIONAL INCOME</h1>
+                                <h2 style="font-size: 1.25rem; color: #4B5563; margin-bottom: 1.5rem;">Comprehensive Study Notes</h2>
+                                <p class="text-sm mb-1">Target: MPSC | State: MP</p>
+                                <p class="text-sm">Generated: January 2025</p>
+                            </div>
+                            
+                            <h3 class="font-bold mb-4">TABLE OF CONTENTS</h3>
+                            <div class="text-sm flex-col gap-2 mb-8">
+                                <div class="flex justify-between border-b border-dashed pb-1"><span>1. Foundations of National Income</span><span>p.1</span></div>
+                                <div class="flex justify-between border-b border-dashed pb-1"><span>2. Types of GDP & Methods</span><span>p.5</span></div>
+                                <div class="flex justify-between border-b border-dashed pb-1"><span>3. NDP, GNP, NNP & Other Measures</span><span>p.12</span></div>
+                                <div class="flex justify-between border-b border-dashed pb-1"><span>4. GDP Deflator, Base Year, India</span><span>p.18</span></div>
+                                <div class="flex justify-between border-b border-dashed pb-1"><span>5. GDP, Welfare & Alternatives</span><span>p.23</span></div>
+                                <div class="flex justify-between border-b border-dashed pb-1"><span>6. HDI, Indices & PYQs</span><span>p.28</span></div>
+                            </div>
+                            <div class="text-center text-muted italic text-sm">[Full rendered preview scrollable here]</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- =========================================================
+         7. OVERLAY: SCREEN 6 (BLUEPRINT DETAIL)
+    ========================================================= -->
+    <div id="overlay-blueprint">
+        <div class="flex h-full">
+            <!-- Left 70% -->
+            <div style="flex: 7; padding: 2rem; overflow-y: auto;">
+                <button class="btn text-sm font-bold mb-6" onclick="closeBlueprintDetail()">← Back to Blueprint Cards</button>
+                <h1 class="text-lg font-bold mb-6 border-b pb-4" style="color: var(--primary);">Part 2: Types of GDP & Measurement Methods</h1>
+
+                <h2 class="text-sm font-bold text-muted mb-2">── SECTION 1: HEADINGS ──</h2>
+                <div class="mb-6 pl-4 text-sm font-bold">
+                    1. Nominal GDP vs Real GDP<br>2. Real and Nominal Value<br>3. Production/Value Added<br>4. Income/Factor Earning<br>5. Expenditure Method
+                </div>
+
+                <h2 class="text-sm font-bold text-muted mb-2">── SECTION 2: TEXT PLAN ──</h2>
+                <div class="card mb-6">
+                    <div class="text-sm font-bold mb-2" style="color: #166534;">📗 From your PDF (green tag):</div>
+                    <ul class="text-sm pl-6 mb-4"><li>Nominal GDP definition and calculation at current price</li><li>Real GDP at constant price</li><li>Car production example</li><li>Shyam bread value addition</li><li>All 3 methods with formulas</li></ul>
+                    
+                    <div class="text-sm font-bold mb-2" style="color: #1E3A8A;">🔍 Will be researched (blue tag):</div>
+                    <ul class="text-sm pl-6 mb-4"><li>Latest GDP data for India</li><li>MP GSDP if available</li><li>Simple prerequisite on "What is an economy"</li></ul>
+                    
+                    <div class="text-sm font-bold mb-2" style="color: #92400E;">✨ Optional enrichment (gold tag):</div>
+                    <ul class="text-sm pl-6 mb-4"><li>Global GDP ranking table</li><li>Fun fact about GDP history</li></ul>
+
+                    <div class="font-bold text-sm mb-2">Containers planned:</div>
+                    <div class="grid-2 text-sm mb-4 bg-gray-50 p-3 rounded border">
+                        <label><input type="checkbox" checked> ☑️ Formula Derivation Box</label>
+                        <label><input type="checkbox" checked> ☑️ Story/Scenario Box</label>
+                        <label><input type="checkbox" checked> ☑️ Comparison Table</label>
+                        <label><input type="checkbox" checked> ☑️ Common Confusion Alert</label>
+                        <label><input type="checkbox"> ☐ Legal/Case Law Box</label>
+                        <label><input type="checkbox"> ☐ Timeline Strip</label>
+                    </div>
+
+                    <div class="font-bold text-sm flex justify-between">Generation Prompt: <div class="flex gap-2"><button class="btn text-xs p-1">📋 Copy</button><button class="btn text-xs p-1">🔄 Regenerate</button></div></div>
+                    <textarea class="textarea text-sm" style="font-family: monospace; background:#111827; color:#A7F3D0;">Write comprehensive notes on Types of GDP covering Nominal vs Real, all 3 methods...</textarea>
+                </div>
+
+                <h2 class="text-sm font-bold text-muted mb-2">── SECTION 3: IMAGE PLAN ──</h2>
+                <div class="card mb-6">
+                    <div class="flex justify-between items-center border-b pb-2 mb-2">
+                        <div class="font-bold text-sm" style="color:var(--primary);">Image 1 of 5: 🎨 Nominal vs Real Comparison</div>
+                        <select class="select text-xs" style="width:auto; margin:0;" id="img-dropdown-2"></select>
+                    </div>
+                    <div class="text-sm mb-2">"Left side: Nominal value — what you see in supermarket, bank account, pay slips. Right side: Real value — adjusted for inflation, better for comparisons"</div>
+                    <div class="text-xs text-muted mb-2">Labels: Nominal Value, Real Value, Prices, Inflation, Purchasing Power</div>
+                    <textarea class="textarea text-xs" style="min-height: 40px;">Create a split-screen infographic comparing nominal vs real value</textarea>
+                    <div class="text-right mt-2"><button class="btn text-xs">Edit prompt</button></div>
+                    
+                    <div class="flex justify-between items-center border-b pb-2 mb-2 mt-6">
+                        <div class="font-bold text-sm" style="color:var(--primary);">Image 2 of 5: 🎨 Shyam Bread Value Addition</div>
+                        <select class="select text-xs" style="width:auto; margin:0;"><option>Comic Story</option><option>Flowchart</option></select>
+                    </div>
+                    <div class="text-sm mb-2">"4-panel comic: Panel 1: Miller sells flour to Shyam for ₹50. Panel 2: Shyam bakes bread. Panel 3: Shyam sells bread for ₹100. Panel 4: Value Added = ₹50 (₹100 - ₹50)"</div>
+                    <div class="text-right mt-2"><button class="btn text-xs">Edit prompt</button></div>
+
+                    <div class="font-bold text-sm mt-4 text-muted">Image 3: 3 methods flowchart</div>
+                    <div class="font-bold text-sm mt-2 text-muted">Image 4: GDP formula breakdown pictograph</div>
+                    <div class="font-bold text-sm mt-2 text-muted">Image 5: Factor income pie chart</div>
+                </div>
+
+                <h2 class="text-sm font-bold text-muted mb-2">── SECTION 4: CA PLAN ──</h2>
+                <div class="grid-2 mb-6">
+                    <div class="card p-4"><div class="text-xs font-bold" style="color:var(--primary);">Search 1: "India GDP growth rate 2024 latest quarterly"</div><div class="text-xs text-muted">Purpose: Latest GDP number</div><button class="btn text-xs mt-2">Edit query</button></div>
+                    <div class="card p-4"><div class="text-xs font-bold" style="color:var(--primary);">Search 2: "India GDP method change 2020 2021 2022 2023"</div><div class="text-xs text-muted">Purpose: Major methodological changes</div><button class="btn text-xs mt-2">Edit query</button></div>
+                    <div class="card p-4"><div class="text-xs font-bold" style="color:var(--primary);">Search 3: "Madhya Pradesh GSDP 2024 growth economics"</div><div class="text-xs text-muted">Purpose: MP state data</div><button class="btn text-xs mt-2">Edit query</button></div>
+                    <div class="card p-4"><div class="text-xs font-bold" style="color:var(--primary);">Search 4: "MP economic achievements 2020 2021 2022"</div><div class="text-xs text-muted">Purpose: MP major news</div><button class="btn text-xs mt-2">Edit query</button></div>
+                </div>
+
+                <h2 class="text-sm font-bold text-muted mb-2">── SECTION 5: VALIDATION PLAN ──</h2>
+                <div class="card text-sm flex-col gap-2 mb-6 bg-gray-50">
+                    <label><input type="checkbox" checked disabled> ☑️ Check all formulas correct</label>
+                    <label><input type="checkbox" checked disabled> ☑️ Verify facts against source</label>
+                    <label><input type="checkbox" checked disabled> ☑️ Review images match content</label>
+                    <label><input type="checkbox" checked disabled> ☑️ Suggest missing visuals</label>
+                    <label><input type="checkbox" checked disabled> ☑️ Check CA is properly placed</label>
+                </div>
+
+                <div class="flex justify-between border-t pt-4">
+                    <button class="btn font-bold">💾 Save Changes</button>
+                    <button class="btn btn-primary font-bold" onclick="approveBP('detail')">☑️ Approve this Part's Blueprint</button>
+                </div>
+            </div>
+            
+            <!-- Right 30% Sticky Chat -->
+            <div style="flex: 3; border-left: 1px solid var(--border); display: flex; flex-direction: column; background: var(--bg-surface);">
+                <div class="p-4 font-bold text-white" style="background: var(--primary);">🤖 AI Assistant</div>
+                <div style="flex: 1; padding: 1rem; overflow-y: auto; background: #F9FAFB; display: flex; flex-direction: column; gap: 1rem;" class="text-sm">
+                    <div class="text-center text-xs text-muted">Ask me to modify anything about this part's plan</div>
+                    <div style="align-self: flex-end; background: #DBEAFE; color: #1E3A8A; padding: 0.75rem; border-radius: 8px 8px 0 8px; max-width: 85%;">Add more focus on formulas</div>
+                    <div style="align-self: flex-start; background: white; border: 1px solid var(--border); padding: 0.75rem; border-radius: 8px 8px 8px 0; max-width: 85%;">I'll add more formula breakdown boxes to text plan</div>
+                    <div style="align-self: flex-end; background: #DBEAFE; color: #1E3A8A; padding: 0.75rem; border-radius: 8px 8px 0 8px; max-width: 85%;">Remove the comic for Shyam, make it a flowchart</div>
+                    <div style="align-self: flex-start; background: white; border: 1px solid var(--border); padding: 0.75rem; border-radius: 8px 8px 8px 0; max-width: 85%;">Changed Image 2 style from Comic to Flowchart</div>
+                    <div style="align-self: flex-end; background: #DBEAFE; color: #1E3A8A; padding: 0.75rem; border-radius: 8px 8px 0 8px; max-width: 85%;">Add MP GSDP comparison with India GDP</div>
+                    <div style="align-self: flex-start; background: white; border: 1px solid var(--border); padding: 0.75rem; border-radius: 8px 8px 8px 0; max-width: 85%;">Added new image plan + CA search query</div>
+                </div>
+                <div class="p-4 border-t flex gap-2 background: white;">
+                    <input type="text" class="input m-0" placeholder="Type here...">
+                    <button class="btn btn-primary" onclick="showToast('AI request sent')">Send</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- =========================================================
+         8. MODALS & POPUPS
+    ========================================================= -->
+    <!-- Error Modal -->
+    <div class="modal-overlay" id="modal-error">
+        <div class="modal-content" style="border-top: 4px solid var(--danger);">
+            <h2 class="font-bold text-lg mb-4" style="color: var(--danger);">❌ Failed to generate</h2>
+            <div class="bg-gray-50 border p-3 text-sm font-monospace mb-4 border-radius">Reason: [DUMMY ERROR MESSAGE] Connection timed out.</div>
+            <div class="grid-2">
+                <button class="btn btn-primary" style="background: var(--danger); border-color: var(--danger);" onclick="closeModal('modal-error')">🔄 Try Again</button>
+                <button class="btn" onclick="closeModal('modal-error')">✏️ Modify Prompt & Try Again</button>
+                <button class="btn" onclick="closeModal('modal-error')">⏭️ Skip This Step</button>
+                <button class="btn" onclick="closeModal('modal-error')">❌ Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Visualize Modal -->
+    <div class="modal-overlay" id="modal-visualize">
+        <div class="modal-content">
+            <h2 class="font-bold text-lg mb-4 border-b pb-2">🖼️ Visualize Selected Text</h2>
+            <div class="text-sm font-bold text-muted mb-1">Selected:</div>
+            <div class="p-2 border rounded text-sm mb-4 bg-gray-50" id="vis-selected-text">"GDP at MP = C + I + G + NX(X-M)..."</div>
+            
+            <div class="text-sm font-bold text-muted mb-1">Auto-generated prompt:</div>
+            <textarea class="textarea text-xs font-monospace mb-4">Create an infographic showing GDP formula breakdown. Center: GDP bubble. Four branches: C (Consumption) with household icons, I (Investment) with factory icon, G (Government) with parliament icon, NX (Net Export) with ship icon. Below each: what's included, what's NOT.</textarea>
+            
+            <div class="text-sm font-bold text-muted mb-1">Recommended styles:</div>
+            <div class="flex gap-2 mb-2">
+                <span class="tag tag-enrich" style="font-size:0.875rem;">★ Pictograph/Icon Array</span>
+                <span class="tag" style="background:#E5E7EB; font-size:0.875rem;">○ Mind Map</span>
+                <span class="tag" style="background:#E5E7EB; font-size:0.875rem;">○ Infographic</span>
+            </div>
+            <select class="select text-sm mb-4" id="img-dropdown-3"></select>
+            
+            <div class="text-sm font-bold text-muted mb-1">OR describe your own vision:</div>
+            <textarea class="textarea text-xs mb-4" style="min-height: 40px;">I want a pie chart showing rough percentage of each component for India...</textarea>
+            
+            <div class="flex justify-between border-t pt-4">
+                <button class="btn" onclick="closeModal('modal-visualize')">Cancel</button>
+                <button class="btn btn-primary font-bold" onclick="closeModal('modal-visualize'); document.getElementById('modal-vis-result').style.display='flex'">Generate Image</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Visualize Result Modal -->
+    <div class="modal-overlay" id="modal-vis-result">
+        <div class="modal-content">
+            <h2 class="font-bold text-lg mb-4 border-b pb-2">🖼️ Generated Image Preview</h2>
+            <div style="background: #E5E7EB; padding: 4rem 1rem; text-align: center; border-radius: 8px; font-weight: bold; color: var(--text-muted); margin-bottom: 1.5rem;">[Generated Image Placeholder]</div>
+            <div class="flex-col gap-2">
+                <button class="btn btn-primary w-full font-bold" onclick="closeModal('modal-vis-result')">✅ Insert Here</button>
+                <div class="grid-2">
+                    <button class="btn text-xs">🔄 Regenerate Same Style</button>
+                    <select class="select text-xs m-0"><option>Try Different Style ▼</option></select>
+                </div>
+                <div class="grid-2">
+                    <button class="btn text-xs">✏️ Edit Prompt & Retry</button>
+                    <button class="btn text-xs" style="color:var(--danger);" onclick="closeModal('modal-vis-result')">❌ Discard</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Validate Modal -->
+    <div class="modal-overlay" id="modal-validate">
+        <div class="modal-content">
+            <h2 class="font-bold text-lg mb-4 border-b pb-2">🔍 AI Validation Results</h2>
+            <div class="p-3 bg-green-50 text-green-800 font-bold border border-green-200 rounded mb-4">Overall Score: ✅ Good</div>
+            <div class="text-sm flex-col gap-3 mb-6">
+                <div class="flex gap-2"><span>✅</span> <span>All 5 formulas correctly presented</span></div>
+                <div class="flex gap-2"><span>✅</span> <span>All examples match source material</span></div>
+                <div class="flex gap-2"><span>⚠️</span> <span>Story box is engaging and accurate</span></div>
+                <div class="flex gap-2"><span>⚠️</span> <div>Image 3 (3 methods flowchart) could include a small data table below each method.<br><button class="btn text-xs mt-1 p-1">Accept & Regenerate Image</button> <button class="btn text-xs mt-1 p-1 border-0">Ignore</button></div></div>
+                <div class="flex gap-2"><span>⚠️</span> <div>Missing: Comparison table for 3 methods.<br><button class="btn text-xs mt-1 p-1">Accept & Generate Table</button> <button class="btn text-xs mt-1 p-1 border-0">Ignore</button></div></div>
+                <div class="flex gap-2"><span>💡</span> <div>Suggestion: Add a "Quick Revision" box at end summarizing all formulas.<br><button class="btn text-xs mt-1 p-1">Accept & Add</button> <button class="btn text-xs mt-1 p-1 border-0">Ignore</button></div></div>
+            </div>
+            <div class="text-right border-t pt-4"><button class="btn" onclick="closeModal('modal-validate')">Close</button></div>
+        </div>
+    </div>
+
+    <!-- Refine Modal -->
+    <div class="modal-overlay" id="modal-refine">
+        <div class="modal-content flex-col" style="height: 500px;">
+            <h2 class="font-bold text-lg mb-4 border-b pb-2">🔄 Refinement Chat</h2>
+            <div style="flex: 1; overflow-y: auto; padding: 1rem; background: #F9FAFB; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 1rem; display: flex; flex-direction: column; gap: 1rem;" class="text-sm">
+                <div style="align-self: flex-end; background: #DBEAFE; color: #1E3A8A; padding: 0.75rem; border-radius: 8px 8px 0 8px; max-width: 85%;">You: "Make the formula explanation simpler, a 10th grader should understand"</div>
+                <div style="align-self: flex-start; background: white; border: 1px solid var(--border); padding: 0.75rem; border-radius: 8px 8px 8px 0; max-width: 85%;">AI: "I'll rewrite the formula section with simpler language and a household budget analogy..."<br><br><span class="text-muted text-xs">[text updates in the notes above]</span></div>
+                <div style="align-self: flex-end; background: #DBEAFE; color: #1E3A8A; padding: 0.75rem; border-radius: 8px 8px 0 8px; max-width: 85%;">You: "Add MP comparison wherever India data exists"</div>
+                <div style="align-self: flex-start; background: white; border: 1px solid var(--border); padding: 0.75rem; border-radius: 8px 8px 8px 0; max-width: 85%;">AI: "Adding MP GSDP data alongside India GDP data in all relevant sections..."<br><br><span class="text-muted text-xs">[text updated]</span></div>
+            </div>
+            <div class="flex gap-2"><input type="text" class="input m-0" placeholder="Type here..."><button class="btn btn-primary">Send</button></div>
+            <div class="text-center mt-2"><button class="btn text-xs border-0" onclick="closeModal('modal-refine')">Close window</button></div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast">Message</div>
+
+    <!-- =========================================================
+         9. JAVASCRIPT LOGIC
+    ========================================================= -->
+    <script>
+        // 35 STYLES DATA
+        const ALL_STYLES = [
+            {group: 'Process/Flow', items: ['Flowchart', 'Step-by-Step Sequence', 'Decision Tree', 'Sankey Diagram', 'Process Map', 'Timeline', 'Gantt Chart']},
+            {group: 'Structural/Hierarchical', items: ['Entity Relationship Diagram', 'Hierarchical Tree', 'Network Diagram', 'Sequence Diagram', 'Use Case Diagram', 'State Machine Diagram', 'Mind Map']},
+            {group: 'Data/Quantitative', items: ['Bar Chart', 'Pie Chart', 'Line Graph', 'Scatter Plot', 'Heat Map', 'Radar Chart', 'Bubble Chart', 'Stacked Area Chart', 'Pictograph', 'Heat-Map Table']},
+            {group: 'Conceptual/Qualitative', items: ['Concept Map', 'Venn Diagram', 'Comparison Matrix', 'Scenario / Comic Story', 'Infographic Illustration', '3D Model Render', 'Icon Array', 'Geographic Map Overlay', 'Funnel Diagram', 'Storyboard', 'Mixed Multi-Style Visual']}
+        ];
+
+        let state = {
+            completed: [],
+            current: 1,
+            subtopics: 1,
+            bpApproved: 0,
+            part2Approved: false
+        };
+
+        // INIT
+        window.onload = () => {
+            if(localStorage.getItem('sf_state')) {
+                state = JSON.parse(localStorage.getItem('sf_state'));
+                if(state.current === 6) state.current = 5; // Don't reload into overlay
+                navTo(state.current, true);
+            }
+            populateDropdowns();
+            renderBlueprints();
+            updateUI();
+        };
+
+        function saveState() {
+            localStorage.setItem('sf_state', JSON.stringify(state));
+        }
+        function startOver() {
+            localStorage.clear();
+            location.reload();
+        }
+
+        function populateDropdowns() {
+            [1, 2, 3].forEach(id => {
+                const select = document.getElementById(`img-dropdown-${id}`);
+                if(!select) return;
+                select.innerHTML = '<option>Change style ▼</option>';
+                ALL_STYLES.forEach(group => {
+                    const optgroup = document.createElement('optgroup');
+                    optgroup.label = group.group;
+                    group.items.forEach(item => {
+                        const option = document.createElement('option');
+                        option.value = item; option.text = item;
+                        optgroup.appendChild(option);
+                    });
+                    select.appendChild(optgroup);
+                });
+            });
+        }
+
+        // INPUT LOGIC
+        function handleFile(input) {
+            if(input.files && input.files[0]) {
+                const info = document.getElementById('file-info');
+                info.innerText = `${input.files[0].name} (${(input.files[0].size/1024).toFixed(1)} KB)`;
+                info.style.display = 'block';
+                checkInput();
+            }
+        }
+        function addSubtopic() {
+            if(state.subtopics >= 10) { showToast('Max 10 subtopics'); return; }
+            const div = document.createElement('input');
+            div.className = 'input mb-2 subtopic';
+            div.placeholder = `e.g., Sub-topic ${state.subtopics + 1}`;
+            document.getElementById('subtopics-container').appendChild(div);
+            state.subtopics++;
+        }
+        function updateCharCount() {
+            document.getElementById('char-count').innerText = document.getElementById('in-paste').value.length + " / 50000";
+            checkInput();
+        }
+        function checkInput() { document.getElementById('input-error').innerText = ''; }
+        function submitInput() {
+            const hasFile = document.getElementById('file-upload').files.length > 0;
+            const hasTopic = document.getElementById('in-topic').value.trim() !== '';
+            const hasPaste = document.getElementById('in-paste').value.trim() !== '';
+            if(!hasFile && !hasTopic && !hasPaste) {
+                document.getElementById('input-error').innerText = 'Please upload a file, type a topic, or paste text.';
+                return;
+            }
+            completeStepAndGo(1, 2);
+            startReading();
+        }
+
+        // READING LOGIC
+        function startReading() {
+            document.getElementById('read-progress').style.width = '0%';
+            for(let i=1; i<=5; i++) document.getElementById(`read-step-${i}`).style.opacity = '0';
+            
+            setTimeout(() => document.getElementById('read-progress').style.width = '100%', 100);
+            
+            [500, 1500, 2500, 3500, 4500].forEach((delay, i) => {
+                setTimeout(() => document.getElementById(`read-step-${i+1}`).style.opacity = '1', delay);
+            });
+            
+            setTimeout(() => completeStepAndGo(2, 3), 5500);
+        }
+
+        // BLUEPRINT LOGIC
+        function renderBlueprints() {
+            const grid = document.getElementById('bp-grid');
+            if(grid.innerHTML !== '') return;
+            const titles = ["Foundations of National Income", "Types of GDP & Measurement Methods", "NDP, GNP, NNP & Other Measures", "GDP Deflator, Base Year, India's GDP", "GDP, Welfare & Alternative Measures", "HDI, Indices & Previous Year Questions"];
+            
+            titles.forEach((t, i) => {
+                grid.innerHTML += `
+                <div class="card flex-col justify-between">
+                    <div>
+                        <h3 class="font-bold border-b pb-2 mb-4" style="color:var(--primary);">✏️ Part ${i+1}: ${t}</h3>
+                        <div class="text-sm mb-4">
+                            <strong>📝 Text Plan:</strong><br><span class="text-muted ml-4 inline-block mb-2">• Nominal vs Real GDP<br>• Value Addition method<br>• Income method</span><br>
+                            <strong>🎨 Images Planned: 5</strong><br><span class="text-muted ml-4 inline-block mb-2">• Nominal vs Real comparison<br>• Shyam bread comic</span><br>
+                            <strong>📰 CA Queries: 2 search queries</strong><br>
+                            <strong>🔍 Validation: Planned</strong>
+                        </div>
+                    </div>
+                    <div class="flex-col gap-2">
+                        <button class="btn font-bold w-full" onclick="openBlueprintDetail()">Click to see full blueprint →</button>
+                        <button class="btn font-bold w-full bp-approve-btn" onclick="approveBP(this)">☑️ Approve this Part</button>
+                    </div>
+                </div>`;
+            });
+        }
+        
+        function approveBP(btn) {
+            if(btn === 'detail') {
+                showToast("Part 2 Blueprint Approved");
+                closeBlueprintDetail();
+                return;
+            }
+            if (btn.classList.contains('btn-primary')) {
+                btn.classList.remove('btn-primary'); btn.innerText = '☑️ Approve this Part'; state.bpApproved--;
+            } else {
+                btn.classList.add('btn-primary'); btn.innerText = '✅ Approved'; state.bpApproved++;
+            }
+            updateBPCount();
+        }
+        function approveAllBP() {
+            document.querySelectorAll('.bp-approve-btn').forEach(btn => {
+                if(!btn.classList.contains('btn-primary')) { btn.classList.add('btn-primary'); btn.innerText = '✅ Approved'; }
+            });
+            state.bpApproved = 6;
+            updateBPCount();
+        }
+        function updateBPCount() {
+            document.getElementById('bp-count').innerText = state.bpApproved;
+            document.getElementById('btn-start-gen').disabled = (state.bpApproved !== 6);
+        }
+
+        // GENERATION LOGIC
+        function approveGenPart2() {
+            state.part2Approved = true;
+            document.getElementById('gen-part-2').style.opacity = '0.7';
+            document.getElementById('gen-part-2').style.pointerEvents = 'none';
+            completeStep(7); // unlock export
+            showToast("Part 2 Approved!");
+            updateUI();
+        }
+        function checkHighlight() {
+            const sel = window.getSelection().toString();
+            if(sel.length > 10) {
+                document.getElementById('vis-selected-text').innerText = `"${sel.substring(0,50)}..."`;
+                const btn = document.getElementById('btn-visualize');
+                btn.style.display = 'block';
+                btn.style.top = '50%'; btn.style.left = '50%'; btn.style.transform = 'translate(-50%,-50%)';
+                setTimeout(() => btn.style.display='none', 3000);
+            }
+        }
+        function openVisualize() { document.getElementById('modal-visualize').style.display='flex'; document.getElementById('btn-visualize').style.display='none'; }
+
+        function downloadDummy() {
+            const a = document.createElement('a');
+            a.href = 'data:text/html;charset=utf-8,' + encodeURIComponent('<h1>Dummy Export File</h1>');
+            a.download = 'studyforge_notes.html';
+            a.click();
+        }
+
+        // NAVIGATION LOGIC
+        const screenNames = ["INPUT", "READING", "UNDERSTANDING", "PARTS", "BLUEPRINT", "BLUEPRINT DETAIL", "GENERATION", "EXPORT"];
+        
+        function completeStep(n) {
+            if(!state.completed.includes(n)) state.completed.push(n);
+            saveState();
+            updateUI();
+        }
+        function completeStepAndGo(current, next) {
+            completeStep(current);
+            navTo(next);
+        }
+        
+        function navTo(n, force=false) {
+            if(!force && n > state.current && !state.completed.includes(state.current)) {
+                showToast("Please complete current step first"); return;
+            }
+            if(n === 6) return openBlueprintDetail();
+            
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(`screen-${n}`).classList.add('active');
+            closeBlueprintDetail();
+            state.current = n;
+            document.getElementById('top-step-num').innerText = n;
+            document.getElementById('top-step-name').innerText = screenNames[n-1];
+            saveState();
+            updateUI();
+        }
+
+        function openBlueprintDetail() {
+            if(!state.completed.includes(5) && state.current < 5) return showToast("Reach Blueprint stage first");
+            document.getElementById('overlay-blueprint').style.display = 'block';
+            completeStep(5); // Make sure 5 is done so we don't break flow
+            document.getElementById('top-step-num').innerText = '6';
+            document.getElementById('top-step-name').innerText = 'BLUEPRINT DETAIL';
+        }
+        function closeBlueprintDetail() {
+            document.getElementById('overlay-blueprint').style.display = 'none';
+            if(document.getElementById('screen-5').classList.contains('active')) {
+                document.getElementById('top-step-num').innerText = '5';
+                document.getElementById('top-step-name').innerText = 'BLUEPRINT';
+            }
+        }
+
+        function updateUI() {
+            // Sidebar
+            [1,2,3,4,5,6,7,8].forEach(n => {
+                const item = document.getElementById(n===6 ? 'nav-blueprint-detail' : `nav-${screenNames[n-1].toLowerCase().replace(' ','-')}`);
+                if(!item) return;
+                item.className = 'sidebar-item ' + (state.current === n ? 'active' : '');
+                const span = item.querySelector('span');
+                
+                if(state.completed.includes(n) || n < state.current) {
+                    item.classList.remove('locked'); span.innerText = '✅';
+                } else if(n === state.current) {
+                    item.classList.remove('locked'); span.innerText = '';
+                } else {
+                    item.classList.add('locked'); span.innerText = '🔒';
+                }
+            });
+
+            // Topbar
+            const segments = document.getElementById('top-progress').children;
+            Array.from(segments).forEach((seg, i) => {
+                const n = i+1;
+                seg.className = 'progress-segment ' + (state.completed.includes(n) || n < state.current ? 'completed' : (n === state.current ? 'active' : ''));
+            });
+        }
+
+        // UTILS
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.innerText = msg; t.style.display = 'block';
+            setTimeout(() => t.style.display = 'none', 3000);
+        }
+        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+        function simulateErrorPopup() {
+            if(Math.random() < 0.2 || arguments.length === 0) { // 20% chance, or forced if called via button
+                document.getElementById('modal-error').style.display = 'flex';
+            } else {
+                showToast("Action successful (no error triggered)");
+            }
+        }
+    </script>
+</body>
+</html>

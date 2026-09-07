@@ -1,0 +1,1170 @@
+═══════════════════════════════════════════════════════
+STUDYFORGE — SUBLEAD ONBOARDING & DEEP UNDERSTANDING
+═══════════════════════════════════════════════════════
+
+Hi [Sublead Name],
+
+You are being handed lead responsibility for the StudyForge build. 
+Before you interact with any developer, you must FULLY understand 
+the product — both what's documented AND what's missing from the doc.
+
+═══════════════════════════════════════════════════════
+STEP 1 — READ THE FULL PRODUCT DOCUMENT (18 pages + images)
+═══════════════════════════════════════════════════════
+
+You will receive:
+- StudyForge Complete Product Document (18 pages)
+- All associated images/screenshots
+- Detailed Stage Specifications
+- Existing developer builds (v1 and v2)
+- Prior verification checklists (230-point and 310-point)
+
+Read every page. Study every image. Understand:
+- The 3 input methods (file, topic, paste)
+- The 8-screen flow (Input → Reading → Understanding → Parts → 
+  Blueprint → Detail → Generation → Export)
+- All 22 special container types with their colors and use cases
+- The 35 image generation styles
+- The AI validation system
+- The 3-level approval system
+- The traceability tag system (green/blue/gold)
+- The prompt architecture chain
+- The save-and-resume system
+- The error handling universal pattern
+
+═══════════════════════════════════════════════════════
+STEP 2 — UNDERSTAND WHAT THE DOC DOES NOT MENTION
+═══════════════════════════════════════════════════════
+
+The current 18-page doc is incomplete. During review, we discovered 
+critical gaps that the doc does NOT cover. You must internalize these:
+
+GAP 1 — DYNAMIC FEATURE DETECTION IS NOT A FLAT LIST
+The doc shows Screen 3 as a simple toggle list of ~12 features 
+(Current Affairs, PYQ, Formula Breakdown, etc.). This is WRONG.
+
+Real content requires a 12-CATEGORY DYNAMIC BUNDLE SYSTEM with 
+~130 sub-features:
+
+1. 🗺️ Geography Bundle (15 sub-features)
+   - Location maps, neighboring analysis, physical features, 
+     climate zones, resources, connectivity, strategic importance, 
+     historical rulers, cultural heritage, notable personalities 
+     from place, current news, comparisons, route diagrams, etc.
+
+2. 👥 Personalities Bundle (12 sub-features)
+   - Bio cards, contemporaries, contributions timeline, works, 
+     awards, influence network, places associated, quotes, 
+     legacy, recent news, family/lineage trees, etc.
+
+3. 🧮 Formula Operations Bundle (13 sub-features)
+   - Not just showing the formula — but derivation steps, 
+     formula facts (e.g., "if C↑ and I↓ by same amount, GDP 
+     unchanged"), variable deep dive, substitution examples, 
+     edge cases, unit analysis, formula family tree, sensitivity 
+     analysis, common mistakes, real-world applications, 
+     transformation, comparison tables, historical evolution
+
+4. 📊 Chart/Data Operations Bundle (13 sub-features)
+   - Auto-extract facts from data (e.g., "India GDP grew 8x in 
+     20 years"), trend analysis, peak/valley detection, 
+     percentage changes, correlation, anomaly detection, 
+     what-if scenarios, chart type alternatives, data story, 
+     reading skills, related data suggestions, Q&A, overlays
+
+5. 🏛️ Administration/Governance Bundle (13 sub-features)
+   - Org hierarchy, powers table, appointment flowchart, 
+     term & tenure, salary, landmark decisions, constitutional 
+     provisions, amendments timeline, international comparison, 
+     committee reports, officeholders, institution network, 
+     reform suggestions
+
+6. 📖 Storytelling Bundle (10 sub-features)
+   - Character stories (like Shyam bread), case studies, 
+     analogies, historical events, day-in-the-life, contrasting 
+     scenarios, hypotheticals, personal journeys, dialogue boxes, 
+     village/city micro-scenarios
+
+7. 📅 Historical Bundle (13 sub-features)
+   - Master timeline, cause & effect chains, contemporary world 
+     events, empire extent maps, dynasty trees, battle maps, 
+     rise & fall analysis, architecture galleries, cultural 
+     achievements, administrative structure, economy of era, 
+     legacy box, sources of info
+
+8. ⚖️ Legal/Constitutional Bundle (10 sub-features)
+   - Article deep dive, landmark judgments, amendment history, 
+     comparative constitution, enforcement mechanism, penalties, 
+     exceptions, related laws network, controversies, committee 
+     reports
+
+9. 📰 Current Affairs Layers Bundle (12 sub-features)
+   - 7-day recent, 30-day recent, 1-year recent, 5-year 
+     landmarks, related places news, related personalities news, 
+     international perspective, committee reports, government 
+     schemes, upcoming events, controversies, data updates
+
+10. 🔬 Scientific/Experiment Bundle (10 sub-features)
+    - Experiment setup diagrams, procedure steps, expected 
+      results, observations table, precautions, applications, 
+      discoverer timeline, related experiments, extensions, 
+      common errors
+
+11. 🩺 Medical/Biological Bundle (10 sub-features)
+    - Anatomy diagrams, physiological process flow, disease 
+      progression, symptom checker, treatment comparison, drug 
+      interactions, diagnostic flowcharts, case studies, 
+      prevention, latest research
+
+12. 💻 Computer Science Bundle (15 sub-features)
+    - Code blocks, algorithm pseudocode, complexity analysis, 
+      data structure visualizations, architecture diagrams, 
+      UML, database schema, network topology, state machines, 
+      design patterns, debugging walkthroughs, optimizations, 
+      real-world systems, interview questions, common bugs
+
+For each detected content type, the app must auto-suggest features 
+from these bundles. Undetected bundles must show as [Force Enable] 
+options — user can manually turn on any category.
+
+GAP 2 — CONTENT DETECTION ENGINE IS UNDEFINED
+The doc says "AI analyzes and detects features" but never explains 
+HOW. The engine must detect:
+- Location mentions → trigger geography bundle
+- Person names → trigger personalities bundle
+- Numerical data → trigger chart/data bundle
+- Formulas → trigger formula operations bundle
+- Time periods → trigger historical bundle
+- Institutions → trigger administration bundle
+- Abstract concepts → trigger storytelling bundle
+- Legal references → trigger legal bundle
+- Scientific terms → trigger science bundle
+- Medical terms → trigger medical bundle
+- Code/technical content → trigger CS bundle
+- Process/creation → trigger process bundle
+
+GAP 3 — PROMPT TRANSPARENCY IS MISSING FROM DOC
+The doc mentions "prompt architecture" but never shows the actual 
+prompts to users. Every AI operation must have a visible, 
+copyable, editable prompt:
+- Screen 3: Meta-prompt used to analyze source
+- Screen 4: Meta-prompt used to split into parts
+- Screen 5: Meta-prompt used to create each blueprint
+- Screen 6: Prompt that will generate the notes
+- Screen 7: Prompt for text generation per part
+- Screen 7: Prompt for each image
+- Screen 7: Prompt for CA search
+- Screen 7: Prompt for AI validation
+
+GAP 4 — DYNAMIC PART OPERATIONS IN SCREEN 7 NOT SPECIFIED
+The doc allows adding/merging parts on Screen 4 but does NOT 
+mention that Screen 7 must ALSO allow:
+- Removing a generated part
+- Adding a brand new part with AI (input topic + subtopic → 
+  AI generates + auto-decides if CA needed based on user's 
+  global setting OR topic sensitivity)
+
+GAP 5 — GRANULAR APPROVAL SYSTEM UNDER-SPECIFIED
+Doc mentions 3-level approval but doesn't detail Screen 7 needs:
+- Separate [Approve Text ☐] checkbox per part
+- Separate [Approve Images ☐] checkbox per part
+- Master [Approve All Parts] button
+- Part-level approve only activates when Text AND Images approved
+
+GAP 6 — 22 CONTAINER TYPES (DOC ONLY MENTIONS ~12)
+Original 12 containers: Formula Box, Story Box, Common Confusion, 
+Concept Clarification, Legal/Case Law, Comparison Table, Timeline 
+Strip, Code Block, Input/Output Demo, Complexity Table, 
+Application Box, Concept Box
+
+NEW 10 CONTAINERS (bundle-based, missing from doc):
+13. Geography/Location Box (teal)
+14. Personality Bio Card (indigo)
+15. Data Insight Box (cyan)
+16. Formula Operations Box (navy)
+17. Institution/Admin Box (slate)
+18. Current Affairs Box (rose)
+19. Analogy Box (mint)
+20. Process/Creation Box (amber)
+21. Experiment Box (emerald)
+22. Medical Info Box (peach)
+
+GAP 7 — ROUTING LOGIC UNDEFINED
+Doc doesn't distinguish between:
+- Forward navigation (must update maxScreen state)
+- Backward navigation (jump to completed screen)
+Developers built strict navTo() that blocks forward movement.
+
+GAP 8 — RESUME SESSION MUST REPOPULATE UI FIELDS
+Doc says "save and resume" but doesn't specify that on resume:
+- File upload field must show previous filename
+- Method 2 topic/subtopics/focus fields must repopulate
+- Method 3 paste textarea must restore content + char count
+- All optional settings (exam, objective, state, CA toggle) restore
+- Dynamic sub-topic fields must be recreated
+
+GAP 9 — AI DRAFT TEXT FEATURE MISSING FROM DOC
+Method 2 (Topic input) needs a "🤖 AI Draft Text for This Topic" 
+button that auto-generates dummy content and injects into Method 3.
+
+GAP 10 — EDIT SETTINGS MODAL NEEDS TO BE REAL
+Doc mentions Screen 4 has Edit button but doesn't specify it needs 
+a proper modal (not a toast) with editable fields for part title, 
+page range, topic count, description, feature bundles applied.
+
+═══════════════════════════════════════════════════════
+STEP 3 — UNDERSTAND CURRENT BUILD STATE
+═══════════════════════════════════════════════════════
+
+Three developers attempted the build:
+
+1. akshatpck (aka AkshatGemini) — ~85% complete, HONEST
+   - Real routing bugs identified with technical root cause
+   - Uses forcing-function reply format (Part 1-4)
+   - Willing to be held accountable
+   - CONTINUE WORKING WITH THIS DEVELOPER
+
+2. anilfamily — Claimed 310/310, actual ~180-200/310
+   - Auto-filled all ✅ checkmarks without testing
+   - Marketing language, no proof
+   - DROP THIS DEVELOPER
+
+3. Sindhu Sinha — Claimed 310/310, admitted 294.5/310 when caught
+   - Missing 7+ features they claimed done
+   - Additional deep gaps: no prompt visibility, no AI 
+     validation workflow, no add/remove parts
+   - HIGH RISK — do not trust self-reports
+
+═══════════════════════════════════════════════════════
+STEP 4 — CURRENT STAGE OF THE APP
+═══════════════════════════════════════════════════════
+
+Skeleton stage:
+- Screen 1: Working (95%) — needs AI Draft Text button restored
+- Screen 2: Working (100%) — timed animation, no real parsing
+- Screen 3: Partial (70%) — needs full 12-bundle system rebuild
+- Screen 4: Working (85%) — Edit Settings modal broken (toast only)
+- Screen 5: Working (85%) — Continue button routing broken
+- Screen 6: Working (90%) — Modify Bundle button is toast only
+- Screen 7: Partial (60%) — missing granular approvals, validation 
+  workflow, add/remove parts, prompt visibility
+- Screen 8: Working (95%) — needs new bundle-based export options
+
+Real AI integration: 0% (all dummy currently)
+Real file parsing: 0%
+Real image generation: 0%
+Real CA search: 0%
+
+═══════════════════════════════════════════════════════
+STEP 5 — YOUR RESPONSIBILITIES AS SUBLEAD
+═══════════════════════════════════════════════════════
+
+You now own:
+1. All communication with akshatpck (drop other 2 devs)
+2. Writing fix sheets in the 4-part accountability format
+3. Verifying every claim manually before accepting
+4. Never trusting self-scored ✅ checklists
+5. Ensuring no gap (from list above) is missed
+6. Stage-by-stage audit of algorithms implemented
+7. Reporting back to me with binary status only
+
+═══════════════════════════════════════════════════════
+STEP 6 — THE 4-PART REPLY FORMAT (ENFORCE STRICTLY)
+═══════════════════════════════════════════════════════
+
+For every developer task, demand this reply format:
+
+PART 1 — Binary Confirmation (DONE / PARTIAL / NOT DONE per fix)
+PART 2 — Function Map (real function names, real element IDs)
+PART 3 — Manual Test Walkthrough (what user sees when they click)
+PART 4 — Honest Declaration (100% done because ___ OR gaps: ___)
+
+DO NOT accept:
+- Prose without structure
+- "Excellent!" / "Perfect!" / "310/310!" claims
+- Auto-checked ✅ checklists
+- Marketing language
+
+═══════════════════════════════════════════════════════
+STEP 7 — CONFIRM YOU'RE READY
+═══════════════════════════════════════════════════════
+
+Before you begin, reply with:
+
+1. "I have read all 18 pages of the doc" — YES/NO
+2. "I understand all 10 gaps not covered in the doc" — YES/NO
+3. "I know which developer to continue with and which to drop" — YES/NO
+4. "I understand the 12-category bundle system with 130 sub-features" — YES/NO
+5. "I will enforce the 4-part reply format from every developer" — YES/NO
+6. "I will never accept a self-scored checklist without manual verification" — YES/NO
+
+If all YES → you are cleared to take over the developer communication.
+If any NO → tell me which sections you need clarification on.
+
+Once ready, I will send you the Stage-by-Stage Algorithm Audit 
+Prompt for verifying each app stage in detail.
+═══════════════════════════════════════════════════════
+STUDYFORGE — STAGE-BY-STAGE ALGORITHM AUDIT
+For Sublead to send to Developer, one stage at a time
+═══════════════════════════════════════════════════════
+
+INSTRUCTIONS FOR SUBLEAD:
+Send this prompt ONCE PER STAGE. Do not audit multiple stages 
+in one message. Focus fully on Stage N before moving to Stage N+1.
+
+Replace [STAGE NAME] and [FEATURE LIST] with the current stage 
+being audited from the list below.
+
+═══════════════════════════════════════════════════════
+STAGES TO AUDIT (in order)
+═══════════════════════════════════════════════════════
+
+STAGE 1: INPUT (Screen 1)
+- File upload with type/size detection
+- Method 2 dynamic sub-topics (add/remove, max 10)
+- Method 2 AI Draft Text button (auto-inject to Method 3)
+- Method 3 paste with live character count
+- Optional settings (exam, objective, state, CA toggle)
+- Input validation before continue
+- State persistence across refresh
+- Session resume repopulates all fields
+
+STAGE 2: READING (Screen 2)
+- File type detection algorithm
+- Text extraction per file type (PDF, DOCX, etc.)
+- Image OCR handling
+- Junk cleanup (watermarks, page numbers, headers)
+- Reading order organization
+- Progress display with checklist
+- Auto-advance logic
+
+STAGE 3: UNDERSTANDING + FEATURE DETECTION (Screen 3)
+- Subject detection algorithm
+- Content type detection engine (12 categories)
+- Definition extraction algorithm
+- Formula extraction algorithm  
+- PYQ detection algorithm
+- Dynamic bundle rendering (12 bundles, 130 sub-features)
+- Bundle expand/collapse persistence
+- Force enable for undetected bundles
+- Meta-prompt visibility for analysis
+- Continue with saved feature selections
+
+STAGE 4: PARTS (Screen 4)
+- Part count decision algorithm (based on page count)
+- Splitting rules algorithm (conceptual coherence)
+- Edit Settings modal (real modal, not toast)
+- Add/Merge parts logic
+- Continue button routing (navigate vs navTo)
+- Meta-prompt visibility for parts split
+
+STAGE 5: BLUEPRINT CARDS (Screen 5)
+- Blueprint generation per part algorithm
+- Feature bundle application per part logic
+- Image count decision algorithm
+- CA query generation logic
+- Individual approve tracking
+- Master approve unlocks Continue
+- Meta-prompt visibility for blueprint
+
+STAGE 6: BLUEPRINT DETAIL (Screen 6)
+- 5-section rendering (Headings, Text Plan, Image Plan, CA Plan, Validation)
+- Section 0: Applied Feature Bundles display
+- 35-style image dropdown functionality
+- Editable prompt textareas
+- Modify Bundle overlay (real modal)
+- Sticky AI chat panel logic
+- Save changes persistence
+
+STAGE 7: GENERATION (Screen 7) — LARGEST STAGE
+- Sequential/parallel generation logic
+- Text generation per part algorithm
+- Image generation per plan algorithm
+- CA search execution logic
+- Container rendering (all 22 types)
+- Bundle-based container injection (Geography, Personality, etc.)
+- Highlight-to-visualize workflow
+- AI validation workflow (real modal with suggestions)
+- Refinement chat workflow
+- Granular approvals (Text/Images separate)
+- Dynamic Add Part with AI
+- Dynamic Remove Part
+- Prompt visibility for every generation
+- Auto-decide CA based on user global setting OR topic sensitivity
+
+STAGE 8: EXPORT (Screen 8)
+- Format conversion (HTML/PDF/Markdown/Clipboard)
+- Include options (17 checkboxes including new bundle-based ones)
+- Cover page generation
+- TOC generation with page numbers
+- Preview rendering
+- Download file creation
+
+═══════════════════════════════════════════════════════
+AUDIT PROMPT TEMPLATE (Copy for each stage)
+═══════════════════════════════════════════════════════
+
+Hi AkshatGemini,
+
+I need to audit STAGE [N]: [STAGE NAME] in depth.
+
+Please answer the following about your current implementation:
+
+═══════════════════════════════════════════════════════
+PART A — ALGORITHM EXPLANATION
+═══════════════════════════════════════════════════════
+
+For each feature below, explain the exact algorithm you 
+implemented. Not the UI. The LOGIC.
+
+Feature list for this stage:
+[LIST ALL FEATURES FOR THIS STAGE FROM ABOVE]
+
+For each feature, tell me:
+1. What is the input (data or user action)?
+2. What is the step-by-step logic?
+3. What is the output (state change or UI update)?
+4. What edge cases are handled?
+5. What edge cases are NOT handled?
+
+Example format:
+FEATURE: Dynamic sub-topics add/remove
+1. Input: User clicks [+ Add another sub-topic] button
+2. Logic:
+   Step 1: Count current sub-topic fields
+   Step 2: If count >= 10, do nothing (button already hidden)
+   Step 3: If count < 10, create new input field with unique ID
+   Step 4: Attach [×] remove button to new field
+   Step 5: Append to DOM below last sub-topic
+   Step 6: If new count == 10, hide the Add button
+3. Output: DOM updated, state.subTopics array length increases
+4. Edge cases handled: Max 10 enforcement, empty field skip on submit
+5. Edge cases NOT handled: What if user pastes 20 sub-topics 
+   in one field? (currently allows unlimited chars in one field)
+
+═══════════════════════════════════════════════════════
+PART B — FUNCTION MAP
+═══════════════════════════════════════════════════════
+
+List every function you wrote for this stage:
+
+| Function Name | What It Does | Called By |
+|---|---|---|
+| addSubTopic() | Adds new sub-topic input field | + button click |
+| removeSubTopic(id) | Removes sub-topic field by ID | × button click |
+| ... | ... | ... |
+
+═══════════════════════════════════════════════════════
+PART C — STATE MAP
+═══════════════════════════════════════════════════════
+
+List every state variable this stage reads or writes:
+
+| State Key | Type | Read/Write | Purpose |
+|---|---|---|---|
+| state.subTopics | Array | R/W | Stores all sub-topic values |
+| state.currentScreen | Number | Write | Updated on continue |
+| ... | ... | ... | ... |
+
+═══════════════════════════════════════════════════════
+PART D — MANUAL TEST WALKTHROUGH
+═══════════════════════════════════════════════════════
+
+Walk me through what a user sees when they:
+[LIST 5-8 SPECIFIC USER ACTIONS FOR THIS STAGE]
+
+Example for Stage 1:
+1. User opens the app for first time — describe what they see
+2. User clicks file upload without selecting anything — describe
+3. User uploads a 5MB PDF — describe what appears
+4. User switches to Method 2 and adds 12 sub-topics — describe
+5. User clicks AI Draft Text button — describe the flow
+6. User pastes 5000 chars in Method 3 — describe char count
+7. User clicks Continue without filling anything — describe validation
+8. User closes browser and reopens — describe resume behavior
+
+═══════════════════════════════════════════════════════
+PART E — GAP ACKNOWLEDGMENT
+═══════════════════════════════════════════════════════
+
+For this stage, tell me honestly:
+
+1. Which features from the list are 100% complete? (list them)
+2. Which are partially built? (list + what's missing)
+3. Which are not started? (list them)
+4. Which features exist but might have bugs? (list + describe)
+5. Are there any features you built that I didn't ask for? (list)
+6. Are there any features I asked for that don't make sense? 
+   (raise concerns)
+
+═══════════════════════════════════════════════════════
+PART F — READINESS DECLARATION
+═══════════════════════════════════════════════════════
+
+Fill in ONE of these:
+
+Option A: "Stage [N] is 100% production-ready. All algorithms 
+implemented as documented. Ready to move to Stage [N+1]."
+
+Option B: "Stage [N] is [X]% complete. Blockers before moving 
+forward: [list them]. Estimated time to fix: [days]."
+
+Option C: "Stage [N] has fundamental design issues I want to 
+raise before proceeding: [list them]."
+
+═══════════════════════════════════════════════════════
+RULES FOR YOUR REPLY
+═══════════════════════════════════════════════════════
+
+1. Do NOT include the full HTML file
+2. Do NOT use marketing language ("perfect", "excellent")
+3. Do NOT auto-check ✅ marks
+4. Do NOT skip any of PART A through F
+5. Answer in plain text, structured under each PART heading
+6. Be honest about gaps — I will discover them anyway during 
+   manual testing
+7. If you don't know an answer, say "I don't know" — do NOT 
+   fabricate
+
+I will not proceed to the next stage until you complete this 
+audit honestly.
+
+reply from lead
+It is exaggerated you dont have to go too much technical but yes prompt visibility and other consideration you can take and the thing which is not required right now tell lead in a prompt that this is not required i am attaching client response as well so that you can check and then instruct me later 
+═══════════════════════════════════════════════════════
+STUDYFORGE — COMPLETE GAP SWEEP + JUDGMENT PROTOCOL
+Supplementary to Onboarding Prompt A
+═══════════════════════════════════════════════════════
+
+Hi [Sublead Name],
+
+Before you audit any developer, read this document. It contains:
+1. Additional functional gaps we may have missed
+2. Non-functional requirements not covered anywhere
+3. Edge cases the doc ignores
+4. Architectural checks you must perform
+5. The correct judgment protocol (before/during/after)
+
+═══════════════════════════════════════════════════════
+SECTION 1 — ADDITIONAL FUNCTIONAL GAPS NOT IN DOC OR PROMPT A
+═══════════════════════════════════════════════════════
+
+GAP 11 — MULTI-LANGUAGE SUPPORT
+Doc doesn't mention language handling.
+- What if user uploads a Hindi PDF?
+- What if content is bilingual (English + regional language)?
+- Should output be in same language as input, or user-selectable?
+- Should we support Devanagari, Tamil, Telugu, Bengali scripts?
+Ask developer: what happens if I upload non-English content?
+
+GAP 12 — LARGE FILE HANDLING
+Doc says "500 pages max" but doesn't specify:
+- What if file is 501 pages? Hard reject or graceful?
+- What if file is 50MB but only 100 pages (images-heavy)?
+- Progress indicator for very large files (multi-minute reads)?
+- Chunking strategy for AI context limits?
+- Memory management in browser (localStorage has ~5MB limit)?
+
+GAP 13 — DUPLICATE / REPEATED CONTENT DETECTION
+- What if same formula appears 5 times in source?
+- What if same PYQ is repeated?
+- What if user uploads same file twice?
+- Deduplication logic before generation?
+
+GAP 14 — CONTENT WITH MIXED SUBJECTS
+- What if PDF has both Economics AND Geography chapters?
+- Should app split by subject and generate separate documents?
+- Should app force single subject and warn user?
+- How does subject-adaptive UI handle multi-subject?
+
+GAP 15 — HANDLING POOR-QUALITY SOURCE
+- What if OCR fails on scanned PDF?
+- What if PDF has garbled text (encoding issues)?
+- What if paste text has formatting artifacts (bullet chars, weird spaces)?
+- Fallback behavior?
+
+GAP 16 — USER-PROVIDED IMAGES IN INPUT
+- What if user uploads JPG/PNG only (no text file)?
+- OCR strategy for pure-image input?
+- What if image has diagrams (flowcharts) not just text?
+- Should app extract diagram meaning, not just text?
+
+GAP 17 — VERSIONING & UNDO
+Doc doesn't mention:
+- Can user undo an approval?
+- Can user rollback a regeneration to previous version?
+- Version history for each part?
+- Compare-versions view?
+- "Show what changed" after regeneration?
+
+GAP 18 — COLLABORATIVE FEATURES
+Doc treats app as single-user. Should we support:
+- Sharing a session via URL?
+- Read-only preview link?
+- Multi-user editing?
+- Comments/annotations by others?
+(Probably out of scope but confirm with architect)
+
+GAP 19 — CONTENT SAFETY & MODERATION
+- What if source has offensive content?
+- What if AI generates inappropriate output?
+- Content warning system?
+- Filter for exam-inappropriate material?
+
+GAP 20 — CITATION & ATTRIBUTION
+Traceability tags exist (SOURCE_BACKED etc.) but doc doesn't specify:
+- Page number citation format?
+- Bibliographic references for research-required content?
+- How to cite AI-generated content in exams?
+- Copyright handling for uploaded material?
+
+GAP 21 — SEARCH WITHIN GENERATED NOTES
+- Can user search across all 6 parts of generated notes?
+- Find & replace functionality?
+- Filter by tag (show only SOURCE_BACKED)?
+- Filter by container type (show only formulas)?
+
+GAP 22 — BOOKMARK / STAR SYSTEM
+- Can user bookmark important sections?
+- Star specific formulas/definitions for quick review?
+- Generate a "starred items only" export?
+
+GAP 23 — REVISION MODE
+- After full generation, can user enter "revision mode"?
+- Auto-hide answers, show only questions?
+- Flashcard mode from generated content?
+- Quiz generation from PYQs and content?
+
+GAP 24 — PRINT OPTIMIZATION
+- PDF export via browser print — is it print-optimized?
+- Page breaks at right places (not mid-formula)?
+- Print-friendly color scheme (or B&W mode)?
+- Print preview before download?
+
+GAP 25 — MOBILE / TABLET USE
+Doc says "modern browsers" but:
+- Is UI responsive for tablet?
+- Touch-friendly for mobile?
+- Highlight-to-visualize on touchscreens?
+- Sidebar collapse on small screens?
+
+GAP 26 — ACCESSIBILITY (A11Y)
+Doc doesn't mention:
+- Screen reader support (ARIA labels)?
+- Keyboard-only navigation?
+- Color contrast for visually impaired?
+- Alt text for generated images?
+- Font size adjustment?
+
+GAP 27 — ANALYTICS & USAGE TRACKING
+- Does app log user actions locally?
+- Anonymous usage stats for improving product?
+- Which features are most used?
+- Which parts users regenerate most (indicates poor quality)?
+
+GAP 28 — OFFLINE MODE
+- Can app work offline once loaded?
+- What if AI call fails due to network?
+- Queue actions for when connection returns?
+
+GAP 29 — SESSION MANAGEMENT
+- What if user opens app in 2 tabs?
+- localStorage conflict handling?
+- Session timeout for security?
+- Multiple sessions per browser?
+
+GAP 30 — DATA EXPORT/IMPORT
+- Can user export the app state as JSON (backup)?
+- Import previous session from JSON?
+- Migrate between browsers?
+- Cloud sync (if supported later)?
+
+GAP 31 — TEMPLATES & PRESETS
+- Save current settings as template for reuse?
+- "UPSC Prelims preset" that auto-selects relevant bundles?
+- "Academic notes preset"?
+- Community-shared presets?
+
+GAP 32 — PROMPT LIBRARY
+- Save custom prompts as reusable templates?
+- Share prompts between parts?
+- Prompt version history?
+- Rate/improve prompts based on output quality?
+
+GAP 33 — FEEDBACK LOOP
+- User rates each generated part (thumbs up/down)?
+- User marks specific issues (factual error, poor image, etc.)?
+- Feedback fed back to improve future generations?
+
+GAP 34 — HELP & ONBOARDING
+- First-time user tutorial?
+- Tooltips on every button?
+- Contextual help ("What is a blueprint?")?
+- Video walkthroughs?
+- FAQ section?
+
+GAP 35 — MULTIPLE DOCUMENT COMPARISON
+- What if user wants to compare 2 sources?
+- Side-by-side upload and unified notes?
+
+═══════════════════════════════════════════════════════
+SECTION 2 — NON-FUNCTIONAL REQUIREMENTS NOT COVERED
+═══════════════════════════════════════════════════════
+
+PERFORMANCE:
+- Doc says "smooth for 500 pages" but no benchmarks defined
+- Target FCP (First Contentful Paint)?
+- Target TTI (Time To Interactive)?
+- Max acceptable AI call latency?
+- Max acceptable image generation time?
+- Memory usage cap?
+- CPU usage on generation?
+Ask developer: measure and report actual numbers.
+
+SECURITY:
+- Uploaded files stored where? (browser only? sent to server?)
+- If sent to server, encryption in transit?
+- User data privacy — what's stored, for how long?
+- CSRF protection?
+- XSS protection (esp. in generated HTML output)?
+- Input sanitization for paste text?
+- Safe HTML rendering (no injected scripts)?
+
+RELIABILITY:
+- Auto-retry defined (2 retries, 2s + 4s wait) — but:
+  - What after 2 failed retries — silent fail or notify?
+  - Circular retry loop prevention?
+  - Rate limit handling?
+- Recovery from browser crash?
+- Recovery from localStorage full?
+
+SCALABILITY:
+- What if user creates 20 parts (not 6)?
+- What if 50 images per part?
+- UI performance with 100+ containers on one page?
+- Lazy loading strategy for long documents?
+
+MAINTAINABILITY:
+- Code modularity (single HTML — but is JS well-organized?)
+- Function naming conventions
+- Comments for complex logic
+- Ability to swap AI providers later
+- Ability to add new bundles later
+- Ability to add new container types later
+
+USABILITY:
+- Consistent button placement across screens
+- Consistent color meaning (green = success everywhere?)
+- Loading states for every async action
+- Empty states (what if no CA found?)
+- Error states (what if generation returns nothing?)
+- Success confirmations (visual/audio feedback)
+
+COMPATIBILITY:
+- Chrome version min?
+- Firefox version min?
+- Edge version min?
+- Safari support?
+- Screen resolution min/max?
+
+OBSERVABILITY:
+- Console logs for debugging?
+- Error reporting mechanism?
+- Performance profiling hooks?
+- Feature flag system for A/B testing?
+
+═══════════════════════════════════════════════════════
+SECTION 3 — EDGE CASES DOC IGNORES
+═══════════════════════════════════════════════════════
+
+INPUT EDGE CASES:
+- Empty file uploaded (0 bytes)
+- Corrupt PDF
+- Password-protected PDF
+- File with only images, no text
+- File in unsupported language script
+- Paste text with 1 million characters
+- Topic name with special characters (₹, emoji, HTML tags)
+- Sub-topic list with all 10 fields identical
+
+READING EDGE CASES:
+- Source content is 3 sentences (too short to split)
+- Source content is 2000 pages (over limit)
+- Source is entirely tables, no prose
+- Source is entirely diagrams (image-heavy)
+- Multiple columns in PDF
+- Right-to-left text (Urdu, Arabic)
+
+FEATURE DETECTION EDGE CASES:
+- Content has NO detectable features (rare abstract essay)
+- Content has ALL features simultaneously
+- Content forces contradictory features (fiction + formulas)
+- Detection confidence too low (< 30%) — hide feature?
+
+BLUEPRINT EDGE CASES:
+- User approves blueprint but then edits back to unapproved state
+- User approves all blueprints then removes one — reset generation?
+- User modifies blueprint after generation started
+- Blueprint requires bundles user disabled — warn or override?
+
+GENERATION EDGE CASES:
+- AI generates blank response — retry or show empty?
+- AI generates broken markdown — sanitize how?
+- Image generation fails 3 times — placeholder or skip?
+- CA search returns 0 results — hide section or show "none"?
+- Validation finds critical error — block approval or warn?
+
+APPROVAL EDGE CASES:
+- User approves part then edits it — unapprove automatically?
+- User approves all parts then adds new part — new part needs approval?
+- Partial approval (text approved, image not) — export handling?
+
+EXPORT EDGE CASES:
+- User exports mid-generation (only 3 of 6 parts done)
+- Export with all include options unchecked — what happens?
+- HTML export with broken images (regenerate placeholders?)
+- Download blocked by browser — user notification?
+
+STATE EDGE CASES:
+- localStorage quota exceeded during generation
+- Multiple tabs open with same session
+- User clears cookies mid-session
+- Browser private/incognito mode (no persistence)
+- Cross-device continuation (not supported? explicit warning?)
+
+═══════════════════════════════════════════════════════
+SECTION 4 — ARCHITECTURAL CHECKS SUBLEAD MUST DO
+═══════════════════════════════════════════════════════
+
+Before judging any developer's work, verify these:
+
+CHECK A — CODE ARCHITECTURE
+Ask developer:
+1. Show me your JS module structure
+2. Where is state defined?
+3. Where are AI calls abstracted?
+4. Where is rendering logic?
+5. Where is event handling?
+6. Is there separation between UI, state, and logic?
+7. Or is it all mixed in one file?
+
+Good architecture = separated concerns, clear layers
+Bad architecture = spaghetti code, tightly coupled
+
+CHECK B — STATE MANAGEMENT
+Ask developer:
+1. Show me your state object structure
+2. Every state variable — its type and purpose
+3. Where is state read from localStorage?
+4. Where is state written to localStorage?
+5. Any state that lives outside your central state object?
+6. Race conditions when async operations update state?
+
+Good = single source of truth, all mutations go through defined functions
+Bad = scattered globals, direct DOM edits without state update
+
+CHECK C — EVENT HANDLING & BUTTON MAPPING
+Sublead must manually check EVERY button on EVERY screen:
+1. Does it have an onclick handler?
+2. Which function does it call?
+3. Does that function actually exist?
+4. Does the function do what the button label promises?
+5. Any button that's decorative (fake)?
+
+Create a spreadsheet:
+| Screen | Button Label | Handler Function | Actually Works? |
+|---|---|---|---|
+| 1 | Continue | handleContinue1() | Yes |
+| 4 | Edit Settings | showEditModal() | No — only toast |
+
+CHECK D — ROUTING LOGIC
+1. Every navigation path — forward and backward
+2. Which function moves between screens?
+3. Are there guards (must approve before continue)?
+4. Can user break flow by clicking sidebar?
+5. Deep-linking support?
+
+Draw the state machine on paper:
+Screen 1 → Screen 2 (auto, no user action)
+Screen 2 → Screen 3 (auto, timer-based)
+Screen 3 → Screen 4 (user click "Continue")
+etc.
+
+CHECK E — DATA FLOW
+Trace one piece of data end-to-end:
+- User types "National Income" in Method 2
+- Where is it stored?
+- How does it get passed to Screen 2?
+- How does it become part of the analysis prompt?
+- Where does it appear in Screen 3 output?
+- Is it in the final export?
+
+If any link in this chain is broken, entire feature is fake.
+
+CHECK F — PROMPT VISIBILITY
+Every AI operation should have visible prompt:
+1. Count total AI operations in the app (analyze, split, blueprint, 
+   text, image, CA, validation, refine)
+2. For each, check if there's a "View Prompt" affordance
+3. Verify prompt shown matches prompt actually used (not fake display)
+4. Verify user can edit and regenerate with edited prompt
+
+CHECK G — CONTAINER RENDERING
+For each of the 22 container types:
+1. Is CSS defined?
+2. Is HTML template ready?
+3. Is there a function that renders this container with data?
+4. Show me one live example on Screen 7 for each type
+5. Any container that's defined but never rendered?
+
+CHECK H — FEATURE BUNDLE INTEGRATION
+1. When user toggles a bundle feature on Screen 3, where is it saved?
+2. When Screen 5 shows bundle icons per part, where does it read from?
+3. When Screen 7 renders bundle containers, which state key drives it?
+4. Is there a code path from toggle → save → render → export?
+
+If the chain breaks anywhere, bundles are cosmetic.
+
+═══════════════════════════════════════════════════════
+SECTION 5 — JUDGMENT PROTOCOL (BEFORE/DURING/AFTER)
+═══════════════════════════════════════════════════════
+
+BEFORE JUDGING A DEVELOPER'S WORK:
+
+Step 1 — Get the file
+- Save with clear name: [devname]-[phase]-[date].html
+- Verify file opens in Chrome, Firefox, Edge
+- Note file size (should be < 500KB for skeleton)
+
+Step 2 — Get their algorithm explanation
+- Send Prompt B (stage-by-stage audit)
+- Wait for full 4-part reply
+- Do NOT proceed if reply is prose or marketing
+
+Step 3 — Understand their architecture
+- Ask CHECK A questions from Section 4
+- Ask them to draw or describe their component tree
+- Ask about state management approach
+- Note their answers verbatim
+
+DURING JUDGING:
+
+Step 4 — Test the buttons systematically
+- Open browser dev tools
+- Click every button on every screen
+- Note any console errors
+- Check network tab (should be empty for skeleton — no API calls)
+- Verify each button either:
+  a) Opens a real modal/overlay
+  b) Updates the UI meaningfully
+  c) Persists something to localStorage
+  Not just: shows a toast that disappears
+
+Step 5 — Test the flows end-to-end
+- Fresh session: complete all 8 screens
+- Refresh on Screen 4: verify state restored
+- Refresh on Screen 7: verify state restored + all parts still visible
+- Click "Start Over": verify complete reset
+- Complete session in incognito: verify works without prior state
+
+Step 6 — Test edge cases from Section 3
+- Pick 5 edge cases per screen
+- Actually try them
+- Note behavior: graceful / crash / silent fail
+
+Step 7 — Test the gaps from Section 1
+- For each of the 35 additional gaps
+- Check if developer addressed
+- If not, note whether it's blocking or nice-to-have
+
+Step 8 — Test non-functional requirements from Section 2
+- Time the reading phase
+- Time each generation
+- Measure memory usage in dev tools
+- Check for console errors on any action
+- Verify keyboard navigation works
+
+AFTER JUDGING:
+
+Step 9 — Score honestly by section
+Create scorecard:
+| Section | Total | Working | Partial | Broken | Missing |
+|---|---|---|---|---|---|
+| Screen 1 features | 20 | 15 | 3 | 1 | 1 |
+| Screen 2 features | 10 | 10 | 0 | 0 | 0 |
+| ... | ... | ... | ... | ... | ... |
+| Gaps (35) | 35 | 5 | 10 | 5 | 15 |
+| Non-functional (7) | 7 | 3 | 2 | 1 | 1 |
+| Architecture | 8 | 6 | 2 | 0 | 0 |
+
+Step 10 — Write neutral report
+Format:
+- What works well
+- What partially works (needs fix)
+- What is broken (blocking)
+- What is missing (needs to be added)
+- Overall grade based on evidence, not developer's claim
+
+Step 11 — DO NOT accept developer's self-assessment
+- Ignore any "310/310" claim
+- Ignore any "A+" claim  
+- Ignore any "Excellent" claim
+- Base judgment only on YOUR manual testing
+
+Step 12 — Report to me (lead) with structured summary
+| Metric | Value |
+|---|---|
+| Developer | akshatpck |
+| Phase tested | Phase 2 |
+| Total features tested | 275 |
+| Fully working | 180 |
+| Partial | 45 |
+| Broken | 20 |
+| Missing | 30 |
+| Overall % | 65% |
+| Blocking issues | 3 (list them) |
+| Recommendation | Continue / Rebuild / Drop |
+
+═══════════════════════════════════════════════════════
+SECTION 6 — RULES FOR SUBLEAD DURING VERIFICATION
+═══════════════════════════════════════════════════════
+
+RULE 1: Never trust self-scoring
+Every developer will inflate their score. Assume all claims are 
+false until you verify manually.
+
+RULE 2: Manual test > developer explanation
+If developer says "it works" but you can't make it work, IT DOESN'T WORK.
+
+RULE 3: One stage at a time
+Do not audit multiple stages in one session. Focus fully on Stage N.
+Complete audit → sign off → move to Stage N+1.
+
+RULE 4: Ask "show me" not "tell me"
+- Don't accept: "yes it handles that edge case"
+- Do ask: "show me what happens when I do X"
+
+RULE 5: Trace one feature end-to-end
+Pick one feature per session and follow it through code:
+- HTML element → event handler → function → state update → 
+  localStorage → re-render → UI update
+If any link is missing, feature is fake.
+
+RULE 6: When in doubt, ask developer directly
+Do NOT assume anything. Do NOT guess.
+If unclear: "AkshatGemini, please explain [specific behavior]. 
+Show me the code path."
+
+RULE 7: Document everything
+Create a shared doc where you log:
+- Every test performed
+- Every bug found
+- Every question raised to developer
+- Every answer received
+- Every gap identified
+
+RULE 8: Prioritize blocking issues
+Not every gap is equal:
+- BLOCKING: Users can't complete the flow (must fix immediately)
+- MAJOR: Feature exists but broken (fix in next phase)
+- MINOR: Nice-to-have missing (fix eventually)
+- COSMETIC: Visual polish (fix at end)
+
+RULE 9: Don't rebuild — direct the developer
+Your job is verification and direction, not coding.
+When you find a bug: write a fix sheet, send it, verify fix.
+Do not write patches yourself.
+
+RULE 10: Escalate honestly
+If developer becomes uncooperative, defensive, or dishonest:
+- Document specific instances (quote their replies)
+- Report to me (lead) with evidence
+- Do not tolerate marketing responses
+
+═══════════════════════════════════════════════════════
+SECTION 7 — QUESTIONS TO ASK DEVELOPER DIRECTLY
+═══════════════════════════════════════════════════════
+
+When in doubt about implementation, ask these directly:
+
+ARCHITECTURE QUESTIONS:
+1. Draw your app's architecture on paper. Show me.
+2. How do you handle state across the 8 screens?
+3. Where does your event loop live?
+4. How do you prevent race conditions in async ops?
+5. What's your naming convention for functions?
+
+FEATURE QUESTIONS:
+1. For feature X, walk me through the code path
+2. If I click this button, which functions run in what order?
+3. What data is passed to which function?
+4. Where is the return value stored?
+5. What triggers the re-render?
+
+EDGE CASE QUESTIONS:
+1. What happens if user does X and Y simultaneously?
+2. What if localStorage is full?
+3. What if user's browser crashes mid-generation?
+4. What if the same user opens 3 tabs?
+5. What if user pastes 100,000 characters?
+
+QUALITY QUESTIONS:
+1. Which features are you most confident about?
+2. Which features are you least confident about?
+3. What would break if I add 10 more parts?
+4. What would break if I add 50 sub-topics?
+5. What's the largest file you tested?
+
+HONESTY QUESTIONS:
+1. What did you implement that wasn't asked?
+2. What did you skip because it was too hard?
+3. What did you fake with dummy data that should be real?
+4. Are there any placeholder functions that don't actually work?
+5. On a scale of 1-10, how production-ready is this?
+
+═══════════════════════════════════════════════════════
+SECTION 8 — SIGN-OFF CRITERIA FOR EACH STAGE
+═══════════════════════════════════════════════════════
+
+Before you (sublead) sign off any stage as complete, verify:
+
+☐ All features from doc are working
+☐ All gaps from Prompt A section 2 are addressed OR consciously deferred
+☐ All gaps from this doc (35 new) are addressed OR consciously deferred
+☐ All non-functional requirements checked (Section 2)
+☐ At least 10 edge cases tested per screen (Section 3)
+☐ Architecture check performed (Section 4)
+☐ Data flow traced end-to-end for at least 3 features
+☐ Prompt visibility verified for every AI operation
+☐ All 22 containers rendered at least once with real data
+☐ Feature bundle chain works from toggle → export
+☐ State persistence tested with 5+ refresh cycles
+☐ No console errors during full flow
+☐ Developer has provided honest declaration (PART 4)
+☐ Bug tracker updated with all findings
+☐ Fix sheet issued for any remaining issues
+☐ Manual re-test performed after fix
+☐ Sign-off document created and shared with lead
+
+Only when ALL boxes checked → move to next stage.
+
+═══════════════════════════════════════════════════════
+FINAL WORD
+═══════════════════════════════════════════════════════
+
+Your role is not to build. Your role is to VERIFY, DIRECT, and 
+PROTECT the product from lazy or dishonest work.
+
+Two developers already lied about 310/310. Assume every developer 
+will try. Your defense is: manual testing, direct questioning, 
+structured reporting, and never accepting self-scores.
+
+If you spend 4 hours per stage doing this properly, you save the 
+lead 40 hours of debugging later.
+
+If you don't understand something, ASK THE DEVELOPER DIRECTLY 
+before making any judgment. Never assume, never guess.
+
+Reply YES to confirm you have read and understood this entire 
+document. Then wait for me to send you Prompt B (stage audit 
+template) for Stage 1.

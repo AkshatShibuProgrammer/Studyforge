@@ -1,0 +1,808 @@
+Created At: 2026-07-18T22:21:15+05:30
+Completed At: 2026-07-18T22:21:16+05:30
+File Path: `file:///F:/Code%20by%20Akshat/testgemini/studyforge/antigravity%20analysis/master_analysis.txt`
+Total Lines: 29115
+Total Bytes: 498897
+Showing lines 1 to 800
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+1: 
+2: ============================================================
+3: --- START OF EXTRACTION: Architect Guideline ---
+4: --- SOURCE FILE: architect guideline.txt ---
+5: ============================================================
+6: 
+7: ```markdown
+8: # STUDYFORGE — COMPLETE SINGLE HTML FILE IMPLEMENTATION
+9: 
+10: ## YOUR ROLE
+11: 
+12: You are an autonomous AI agent. You will plan, design, and build
+13: the complete StudyForge web application as a single HTML file.
+14: 
+15: You will read all attached documents carefully before planning.
+16: You will plan every stage with clear inputs and outputs.
+17: Then you will build the complete implementation in one file.
+18: 
+19: You work independently. No mid-build guidance will be given.
+20: Plan everything first. Then build everything. Deliver one file.
+21: 
+22: ---
+23: 
+24: ## CRITICAL — AI INTEGRATION FUNCTIONS
+25: 
+26: You will NOT write your own API calls.
+27: You will NOT ask for API keys.
+28: You will NOT use fetch directly for AI features.
+29: 
+30: The following three functions are pre-built and ready to use.
+31: Copy them exactly into your code and call them wherever AI is needed.
+32: 
+33: ```javascript
+34: // ─── FUNCTION 1: Text Generation & Analysis ───────────────────
+35: async function geminiGenerateText(promptText) {
+36:     const apiKey = "";
+37:     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+38:     const response = await fetch(apiUrl, {
+39:         method: 'POST',
+40:         headers: { 'Content-Type': 'application/json' },
+41:         body: JSON.stringify({
+42:             contents: [{ parts: [{ text: promptText }] }]
+43:         })
+44:     });
+45:     if (!response.ok) throw new Error(`API Error: ${response.status}`);
+46:     const result = await response.json();
+47:     return result?.candidates?.[0]?.content?.parts?.[0]?.text || "No text generated.";
+48: }
+49: 
+50: // ─── FUNCTION 2: Live Web Search (Grounding) ──────────────────
+51: async function geminiSearchText(searchQuery) {
+52:     const apiKey = "";
+53:     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+54:     const response = await fetch(apiUrl, {
+55:         method: 'POST',
+56:         headers: { 'Content-Type': 'application/json' },
+57:         body: JSON.stringify({
+58:             contents: [{ parts: [{ text: `Search the web for: "${searchQuery}". Provide a concise summary.` }] }],
+59:             tools: [{ googleSearch: {} }]
+60:         })
+61:     });
+62:     if (!response.ok) throw new Error(`API Error: ${response.status}`);
+63:     const result = await response.json();
+64:     return result?.candidates?.[0]?.content?.parts?.[0]?.text || "No search results.";
+65: }
+66: 
+67: // ─── FUNCTION 3: Image Generation ─────────────────────────────
+68: async function geminiImageCreation(imagePrompt) {
+69:     const apiKey = "";
+70:     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${apiKey}`;
+71:     const response = await fetch(apiUrl, {
+72:         method: 'POST',
+73:         headers: { 'Content-Type': 'application/json' },
+74:         body: JSON.stringify({
+75:             instances: [{ prompt: imagePrompt }],
+76:             parameters: { sampleCount: 1, aspectRatio: "16:9" }
+77:         })
+78:     });
+79:     if (!response.ok) throw new Error(`API Error: ${response.status}`);
+80:     const result = await response.json();
+81:     const base64Encoded = result?.predictions?.[0]?.bytesBase64Encoded;
+82:     if (!base64Encoded) throw new Error("No image data returned.");
+83:     return `data:image/png;base64,${base64Encoded}`;
+84: }
+85: ```
+86: 
+87: ### How to use these functions
+88: 
+89: ```
+90: geminiGenerateText(prompt)
+91:   → Use for: material analysis, blueprint generation,
+92:              note writing, validation, AI chat responses,
+93:              auto-drafting text, prompt regeneration
+94:   → Always await and wrap in try/catch
+95:   → Output is a markdown string — render with your parser
+96: 
+97: geminiSearchText(query)
+98:   → Use for: current affairs search (national/state/international),
+99:              personality news lookups, location news,
+100:              any real-time information needed
+101:   → Always await and wrap in try/catch
+102:   → Output is a markdown string
+103: 
+104: geminiImageCreation(prompt)
+105:   → Use for: generating all study images, infographics,
+106:              diagrams, visualize-this feature
+107:   → Always await and wrap in try/catch
+108:   → Output is a base64 data URL — use directly in <img src="">
+109: ```
+110: 
+111: ---
+112: 
+113: ## ATTACHED DOCUMENTS — READ ALL BEFORE PLANNING
+114: 
+115: You have been given:
+116: 
+117: 1. The StudyForge product design document (18 pages)
+118: 2. The scratch plan PDF showing the original vision
+119: 3. This prompt with complete technical specification
+120: 4. The three AI functions above (pre-built — just call them)
+121: 
+122: Read all documents fully before writing any code.
+123: 
+124: ---
+125: 
+126: ## WHAT YOU ARE BUILDING
+127: 
+128: StudyForge transforms study material into structured notes using AI.
+129: 
+130: A user uploads a file, types a topic, or pastes text.
+131: The app then:
+132: 
+133: - Reads and understands the material
+134: - Detects which content features apply
+135: - Splits content into logical parts
+136: - Creates a teaching blueprint per part
+137: - Generates formatted study notes with visuals
+138: - Searches and integrates current affairs
+139: - Validates the generated content
+140: - Exports the final document
+141: 
+142: This is a real working application. All AI features use the
+143: three functions provided above. No mocks. No dummy data.
+144: Everything must work when opened in Gemini Canvas.
+145: 
+146: ---
+147: 
+148: ## TECH STACK — USE EXACTLY THIS
+149: 
+150: ```html
+151: <!-- Scripts to include in <head> -->
+152: <script src="https://cdn.tailwindcss.com"></script>
+153: <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+154: <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+155: <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+156: <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+157: ```
+158: 
+159: - React 18 with JSX via Babel
+160: - Tailwind CSS for layout and utility classes
+161: - Vanilla JavaScript for AI functions and utilities
+162: - localStorage for session persistence
+163: - No other libraries, no other CDNs
+164: - All code in one HTML file
+165: 
+166: ---
+167: 
+168: ## BEFORE CODING — WRITE YOUR PLAN FIRST
+169: 
+170: Before any code, output your complete plan:
+171: 
+172: ```
+173: === STUDYFORGE IMPLEMENTATION PLAN ===
+174: 
+175: STAGE 1: [Name]
+176:   Purpose: [what this stage does]
+177:   Input: [what data comes in]
+178:   AI Calls: [which function, what prompt, what output]
+179:   Output: [what state is produced]
+180:   UI: [what the user sees]
+181: 
+182: STAGE 2: [Name]
+183:   ...
+184: 
+185: [All 8 stages]
+186: 
+187: === STATE ARCHITECTURE ===
+188: [Full appState object]
+189: 
+190: === COMPONENT TREE ===
+191: [React component hierarchy]
+192: 
+193: === AI PROMPT DESIGNS ===
+194: [Each prompt with purpose and expected output format]
+195: 
+196: === DATA FLOW ===
+197: [Input → Analysis → Parts → Blueprint → Generation → Export]
+198: ```
+199: 
+200: ---
+201: 
+202: ## FILE STRUCTURE INSIDE THE HTML
+203: 
+204: Organize your script section like this:
+205: 
+206: ```html
+207: <!DOCTYPE html>
+208: <html lang="en">
+209: <head>
+210:   <!-- meta, CDN scripts, Google Fonts -->
+211:   <style>
+212:     /* Custom CSS: prose styles, containers, scrollbars,
+213:        animations, print styles */
+214:   </style>
+215: </head>
+216: <body>
+217:   <div id="root"></div>
+218: 
+219:   <script>
+220:     /* ═══════════════════════════════════════════
+221:        SECTION 1: AI INTEGRATION FUNCTIONS
+222:        (Copy the three functions exactly here)
+223:        ═══════════════════════════════════════════ */
+224: 
+225:     async function geminiGenerateText(promptText) { ... }
+226:     async function geminiSearchText(searchQuery) { ... }
+227:     async function geminiImageCreation(imagePrompt) { ... }
+228:   </script>
+229: 
+230:   <script type="text/babel">
+231:     /* ═══════════════════════════════════════════
+232:        SECTION 2: CONSTANTS & CONFIGURATION
+233:        ═══════════════════════════════════════════ */
+234:     // SCREEN_NAMES, VISUAL_STYLES, FEATURE_CATEGORIES,
+235:     // CONTAINER_TYPES, DEFAULT_PROMPTS
+236: 
+237:     /* ═══════════════════════════════════════════
+238:        SECTION 3: PROMPT BUILDER FUNCTIONS
+239:        ═══════════════════════════════════════════ */
+240:     // buildAnalysisPrompt(), buildPartsPrompt(),
+241:     // buildBlueprintPrompt(), buildGenerationPrompt(),
+242:     // buildImagePrompt(), buildCAPrompt(),
+243:     // buildValidationPrompt(), buildVisualizePrompt()
+244: 
+245:     /* ═══════════════════════════════════════════
+246:        SECTION 4: UTILITY FUNCTIONS
+247:        ═══════════════════════════════════════════ */
+248:     // sanitizeInput(), parseMarkdown(),
+249:     // buildExportHTML(), buildExportMarkdown(),
+250:     // downloadFile(), readFileAsText()
+251: 
+252:     /* ═══════════════════════════════════════════
+253:        SECTION 5: SHARED UI COMPONENTS
+254:        ═══════════════════════════════════════════ */
+255:     // Button, Modal, Toggle, Card, Badge,
+256:     // ProgressBar, MarkdownContent, SourceTag,
+257:     // ContainerRenderer, LoadingSpinner
+258: 
+259:     /* ═══════════════════════════════════════════
+260:        SECTION 6: SCREEN COMPONENTS
+261:        ═══════════════════════════════════════════ */
+262:     // Screen1Input, Screen2Reading, Screen3Understanding,
+263:     // Screen4Parts, Screen5Blueprints, Screen6BlueprintDetail,
+264:     // Screen7Generation, Screen8Export
+265: 
+266:     /* ═══════════════════════════════════════════
+267:        SECTION 7: OVERLAY COMPONENTS
+268:        ═══════════════════════════════════════════ */
+269:     // VisualizePopup, ValidationModal, ErrorModal,
+270:     // PromptCenter, TourOverlay, AddPartModal,
+271:     // EditPartModal, AIChat
+272: 
+273:     /* ═══════════════════════════════════════════
+274:        SECTION 8: GLOBAL LAYOUT COMPONENTS
+275:        ═══════════════════════════════════════════ */
+276:     // TopBar, StepIndicator, AutoSaveIndicator,
+277:     // GenerationSidebar
+278: 
+279:     /* ═══════════════════════════════════════════
+280:        SECTION 9: MAIN APP COMPONENT
+281:        ═══════════════════════════════════════════ */
+282:     const App = () => { ... };
+283: 
+284:     /* ═══════════════════════════════════════════
+285:        SECTION 10: RENDER
+286:        ═══════════════════════════════════════════ */
+287:     const root = ReactDOM.createRoot(document.getElementById('root'));
+288:     root.render(<App />);
+289:   </script>
+290: </body>
+291: </html>
+292: ```
+293: 
+294: ---
+295: 
+296: ## DESIGN SYSTEM
+297: 
+298: ### Colors
+299: 
+300: ```css
+301: --primary:        #2563EB;   /* blue-600 — buttons, links, accents */
+302: --primary-hover:  #1D4ED8;   /* blue-700 — button hover */
+303: --success:        #10B981;   /* green-500 — approved, success */
+304: --warning:        #F59E0B;   /* amber-500 — warnings, CA tags */
+305: --error:          #EF4444;   /* red-500 — errors */
+306: --bg:             #FFFFFF;   /* white — page background */
+307: --surface:        #F9FAFB;   /* gray-50 — card backgrounds */
+308: --border:         #E5E7EB;   /* gray-200 — borders */
+309: --text:           #111827;   /* gray-900 — primary text */
+310: --text-secondary: #6B7280;   /* gray-500 — secondary text */
+311: ```
+312: 
+313: ### Typography
+314: 
+315: ```css
+316: font-family: 'Inter', system-ui, sans-serif;
+317: /* Headings: font-weight 700 */
+318: /* Body: font-weight 400 */
+319: /* Small labels: 0.875rem */
+320: ```
+321: 
+322: ### Prose Content Class
+323: 
+324: ```css
+325: .prose-content {
+326:   max-width: 70ch;
+327:   line-height: 1.75;
+328: }
+329: .prose-content h1 { font-size: 1.75rem; font-weight: 700; margin: 2rem 0 1rem; }
+330: .prose-content h2 { font-size: 1.4rem; font-weight: 700; margin: 1.75rem 0 0.75rem; }
+331: .prose-content h3 { font-size: 1.15rem; font-weight: 600; margin: 1.5rem 0 0.5rem; }
+332: .prose-content p  { margin-bottom: 1rem; }
+333: .prose-content table { width: 100%; border-collapse: collapse; margin: 1.5rem 0; }
+334: .prose-content th { background: #F3F4F6; padding: 0.75rem; border: 1px solid #E5E7EB; font-weight: 600; }
+335: .prose-content td { padding: 0.75rem; border: 1px solid #E5E7EB; }
+336: .prose-content code { background: #F3F4F6; padding: 0.2em 0.4em; border-radius: 4px; font-size: 0.875em; }
+337: .prose-content pre { background: #1F2937; color: #F9FAFB; padding: 1rem; border-radius: 8px; overflow-x: auto; }
+338: .prose-content blockquote { border-left: 4px solid #2563EB; padding: 0.5rem 1rem; background: #EFF6FF; margin: 1rem 0; border-radius: 0 8px 8px 0; }
+339: .prose-content ul { list-style: disc; padding-left: 1.5rem; margin-bottom: 1rem; }
+340: .prose-content ol { list-style: decimal; padding-left: 1.5rem; margin-bottom: 1rem; }
+341: .prose-content li { margin-bottom: 0.25rem; }
+342: ```
+343: 
+344: ### Component Patterns
+345: 
+346: ```
+347: Cards:        bg-white rounded-lg shadow-sm border border-gray-200 p-6
+348:               hover: shadow-md transition-shadow duration-200
+349: 
+350: Buttons:
+351:   Primary:    bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md font-medium
+352:   Secondary:  bg-white border border-gray-300 hover:bg-gray-50 px-4 py-2 rounded-md
+353:   Text:       text-blue-600 hover:text-blue-700 font-medium
+354: 
+355: Inputs:       border border-gray-300 rounded-md px-3 py-2 w-full
+356:               focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none
+357: 
+358: Toggles:      Switch-style, blue when ON, gray when OFF
+359:               w-10 h-6 rounded-full relative cursor-pointer transition-colors
+360: 
+361: Progress:     h-2 bg-gray-200 rounded-full overflow-hidden
+362:               inner fill: bg-blue-600 h-full transition-all duration-300
+363: ```
+364: 
+365: ---
+366: 
+367: ## GLOBAL NAVIGATION SYSTEM
+368: 
+369: ```javascript
+370: // Navigation state
+371: const [currentScreen, setCurrentScreen] = useState(1);
+372: const [maxReachedScreen, setMaxReachedScreen] = useState(1);
+373: 
+374: // Forward navigation — only allowed to next unlocked screen
+375: const navigateForward = (targetScreen) => {
+376:   if (targetScreen <= maxReachedScreen + 1) {
+377:     setCurrentScreen(targetScreen);
+378:     if (targetScreen > maxReachedScreen) {
+379:       setMaxReachedScreen(targetScreen);
+380:     }
+381:     saveState();
+382:   }
+383: };
+384: 
+385: // Backward navigation — always allowed to any completed screen
+386: const navigateBack = (targetScreen) => {
+387:   if (targetScreen <= maxReachedScreen) {
+388:     setCurrentScreen(targetScreen);
+389:   }
+390: };
+391: ```
+392: 
+393: ### Top Navigation Bar (visible on every screen)
+394: 
+395: ```
+396: ┌──────────────────────────────────────────────────────────────────┐
+397: │ 📚 StudyForge  │  [Screen Name]  │  Step ①②③④⑤⑥⑦⑧  │  Controls │
+398: │                │                 │                   │           │
+399: │ Logo + Name    │ Current stage   │ Clickable steps   │ [Prompts] │
+400: │                │                 │ ✓ = done          │ [Help]    │
+401: │                │                 │ ● = current       │ [Reset]   │
+402: │                │                 │ ○ = locked        │ [Saved ✓] │
+403: └──────────────────────────────────────────────────────────────────┘
+404: ```
+405: 
+406: ```jsx
+407: const TopBar = ({ currentScreen, maxReachedScreen, navigateBack,
+408:                   onPromptCenter, onHelp, onReset, saveStatus }) => (
+409:   <div className="sticky top-0 z-50 bg-white border-b border-gray-200
+410:                   px-6 py-3 flex items-center justify-between shadow-sm">
+411: 
+412:     {/* Left: Logo */}
+413:     <div className="flex items-center gap-3">
+414:       <span className="text-xl font-bold text-blue-600">📚 StudyForge</span>
+415:       <span className="text-gray-300">|</span>
+416:       <span className="text-sm text-gray-600 font-medium">
+417:         {SCREEN_NAMES[currentScreen]}
+418:       </span>
+419:     </div>
+420: 
+421:     {/* Center: Step indicators */}
+422:     <div className="flex items-center gap-1">
+423:       {[1,2,3,4,5,6,7,8].map(n => (
+424:         <button
+425:           key={n}
+426:           onClick={() => n <= maxReachedScreen && navigateBack(n)}
+427:           title={SCREEN_NAMES[n]}
+428:           className={`w-8 h-8 rounded-full text-xs font-semibold transition-all
+429:             ${currentScreen === n
+430:               ? 'bg-blue-600 text-white ring-2 ring-blue-300'
+431:               : n < maxReachedScreen
+432:               ? 'bg-green-100 text-green-700 hover:bg-green-200 cursor-pointer'
+433:               : n === maxReachedScreen
+434:               ? 'bg-blue-100 text-blue-700 cursor-pointer'
+435:               : 'bg-gray-100 text-gray-400 cursor-not-allowed'}`}
+436:         >
+437:           {n < maxReachedScreen ? '✓' : n}
+438:         </button>
+439:       ))}
+440:     </div>
+441: 
+442:     {/* Right: Controls */}
+443:     <div className="flex items-center gap-3">
+444:       <AutoSaveIndicator status={saveStatus} />
+445:       <button onClick={onPromptCenter}
+446:         className="text-sm text-gray-600 hover:text-blue-600 px-2 py-1">
+447:         🔧 Prompts
+448:       </button>
+449:       <button onClick={onHelp}
+450:         className="text-sm text-gray-600 hover:text-blue-600 px-2 py-1">
+451:         ❓ Help
+452:       </button>
+453:       <button onClick={onReset}
+454:         className="text-sm text-red-500 hover:text-red-700 px-2 py-1">
+455:         🔄 Reset
+456:       </button>
+457:     </div>
+458:   </div>
+459: );
+460: ```
+461: 
+462: ---
+463: 
+464: ## AUTO-SAVE SYSTEM
+465: 
+466: ```javascript
+467: // Debounced auto-save — triggers 1 second after any state change
+468: const saveTimerRef = useRef(null);
+469: const [saveStatus, setSaveStatus] = useState('saved');
+470: 
+471: const triggerAutoSave = (stateSnapshot) => {
+472:   setSaveStatus('saving');
+473:   if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+474:   saveTimerRef.current = setTimeout(() => {
+475:     try {
+476:       // Strip large base64 image data before saving to avoid quota
+477:       const saveable = {
+478:         ...stateSnapshot,
+479:         generated: Object.fromEntries(
+480:           Object.entries(stateSnapshot.generated || {}).map(([k, v]) => [
+481:             k, { ...v, images: (v.images || []).map(img => ({
+482:               ...img, url: null  // Don't save base64 to localStorage
+483:             }))}
+484:           ])
+485:         )
+486:       };
+487:       localStorage.setItem('studyforge_session', JSON.stringify(saveable));
+488:       setSaveStatus('saved');
+489:     } catch (e) {
+490:       setSaveStatus('error');
+491:       console.warn('Save failed:', e.message);
+492:     }
+493:   }, 1000);
+494: };
+495: 
+496: // Auto-Save Indicator Component
+497: const AutoSaveIndicator = ({ status }) => (
+498:   <span className={`text-xs font-medium px-2 py-1 rounded-full
+499:     ${status === 'saving' ? 'bg-amber-100 text-amber-700' :
+500:       status === 'saved'  ? 'bg-green-100 text-green-700' :
+501:                             'bg-red-100 text-red-600'}`}>
+502:     {status === 'saving' ? '💾 Saving...' :
+503:      status === 'saved'  ? '✅ Saved' : '⚠️ Save failed'}
+504:   </span>
+505: );
+506: ```
+507: 
+508: ---
+509: 
+510: ## SESSION RESTORE (Gap #3 Fix)
+511: 
+512: ```javascript
+513: // On app mount — check for saved session
+514: useEffect(() => {
+515:   const saved = localStorage.getItem('studyforge_session');
+516:   if (saved) {
+517:     try {
+518:       const parsed = JSON.parse(saved);
+519:       // Set all state from saved session
+520:       setAppState(parsed);
+521:       setCurrentScreen(parsed.currentScreen || 1);
+522:       setMaxReachedScreen(parsed.maxReachedScreen || 1);
+523:       setShowResumePrompt(true); // Show resume banner
+524:     } catch (e) {
+525:       console.warn('Could not restore session');
+526:     }
+527:   }
+528: }, []);
+529: 
+530: // Resume Banner — shown at top of Screen 1 if session found
+531: const ResumeBanner = ({ savedState, onResume, onFresh }) => (
+532:   <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6
+533:                   flex items-center justify-between">
+534:     <div>
+535:       <p className="font-semibold text-blue-800">
+536:         📂 Saved session found: "{savedState.input?.topic || 'Previous session'}"
+537:       </p>
+538:       <p className="text-sm text-blue-600">
+539:         Last saved: {new Date(savedState.lastSaved).toLocaleString()}
+540:       </p>
+541:     </div>
+542:     <div className="flex gap-3">
+543:       <button onClick={onResume}
+544:         className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium
+545:                    hover:bg-blue-700">
+546:         Resume Session
+547:       </button>
+548:       <button onClick={onFresh}
+549:         className="bg-white border border-gray-300 text-gray-700 px-4 py-2
+550:                    rounded-md text-sm font-medium hover:bg-gray-50">
+551:         Start Fresh
+552:       </button>
+553:     </div>
+554:   </div>
+555: );
+556: 
+557: // When Resume is clicked:
+558: // Repopulate Screen 1 inputs, topic field, sub-topics array,
+559: // paste textarea, all optional settings, file name display
+560: // Navigate directly to the screen user was on
+561: ```
+562: 
+563: ---
+564: 
+565: ## SCREEN 1 — INPUT
+566: 
+567: ### Purpose
+568: Collect study material from the user via file, topic, or paste.
+569: 
+570: ### Full Layout
+571: 
+572: ```
+573: ┌─────────────────────────────────────────────────────────────┐
+574: │                    📚 StudyForge                             │
+575: │           Transform any material into study notes            │
+576: ├─────────────────────────────────────────────────────────────┤
+577: │                                                             │
+578: │  [Resume Banner — if saved session exists]                  │
+579: │                                                             │
+580: │  ┌─ SECTION A: Upload File ──────────────────────────────┐  │
+581: │  │  ┌ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─┐  │  │
+582: │  │  │   📁 Drop file here or click to browse          │  │  │
+583: │  │  │   PDF · TXT · DOC · DOCX · MD · HTML           │  │  │
+584: │  │  │           JPG · JPEG · PNG                      │  │  │
+585: │  │  └ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─┘  │  │
+586: │  │  [When file selected: name + size + type + Remove]   │  │
+587: │  └───────────────────────────────────────────────────────┘  │
+588: │                                                             │
+589: │                     — OR —                                  │
+590: │                                                             │
+591: │  ┌─ SECTION B: Type Topic ───────────────────────────────┐  │
+592: │  │  Main Topic: [_______________________________]        │  │
+593: │  │  Sub-topics: [_____________] [×]                      │  │
+594: │  │              [_____________] [×]                      │  │
+595: │  │              [_____________] [×]                      │  │
+596: │  │              [+ Add Sub-topic]    (up to 10)          │  │
+597: │  │  Specific focus: [___________________________]        │  │
+598: │  │  [✨ AI Draft Text] — appears when topic is entered   │  │
+599: │  └───────────────────────────────────────────────────────┘  │
+600: │                                                             │
+601: │                     — OR —                                  │
+602: │                                                             │
+603: │  ┌─ SECTION C: Paste Text ───────────────────────────────┐  │
+604: │  │  [Large textarea — 8 rows]                            │  │
+605: │  │  0 / 50,000 characters                               │  │
+606: │  └───────────────────────────────────────────────────────┘  │
+607: │                                                             │
+608: │  ▼ Optional Settings (collapsible, starts open)             │
+609: │  ┌─────────────────────────┬───────────────────────────┐   │
+610: │  │ Exam Type [dropdown]    │ Language [dropdown]        │   │
+611: │  │ Objective [dropdown]    │ Difficulty [dropdown]      │   │
+612: │  │ State Focus [text]      │ Notes Length [dropdown]    │   │
+613: │  │                         │ Include CA [toggle]        │   │
+614: │  └─────────────────────────┴───────────────────────────┘   │
+615: │                                                             │
+616: │              [Continue →] (primary blue button)             │
+617: └─────────────────────────────────────────────────────────────┘
+618: ```
+619: 
+620: ### Section A — File Upload
+621: 
+622: ```jsx
+623: const FileUploadSection = ({ onFileLoad }) => {
+624:   const [dragOver, setDragOver] = useState(false);
+625:   const [fileInfo, setFileInfo] = useState(null);
+626: 
+627:   const handleFile = (file) => {
+628:     const allowed = [
+629:       'application/pdf', 'text/plain', 'text/markdown',
+630:       'text/html', 'application/msword',
+631:       'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+632:       'image/jpeg', 'image/png'
+633:     ];
+634:     const ext = file.name.split('.').pop().toLowerCase();
+635:     const allowedExt = ['pdf','txt','doc','docx','md','html','jpg','jpeg','png'];
+636: 
+637:     if (!allowedExt.includes(ext)) {
+638:       alert('File type not supported. Use PDF, TXT, DOC, DOCX, MD, HTML, JPG, PNG');
+639:       return;
+640:     }
+641: 
+642:     setFileInfo({
+643:       name: file.name,
+644:       size: (file.size / 1024).toFixed(1) + ' KB',
+645:       type: ext.toUpperCase(),
+646:       rawFile: file
+647:     });
+648: 
+649:     // Read file content
+650:     const reader = new FileReader();
+651:     if (['jpg','jpeg','png'].includes(ext)) {
+652:       reader.readAsDataURL(file); // base64 for images
+653:     } else {
+654:       reader.readAsText(file);
+655:     }
+656:     reader.onload = (e) => {
+657:       onFileLoad({
+658:         name: file.name,
+659:         size: file.size,
+660:         type: ext,
+661:         content: e.target.result
+662:       });
+663:     };
+664:   };
+665: 
+666:   return (
+667:     <div
+668:       onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+669:       onDragLeave={() => setDragOver(false)}
+670:       onDrop={(e) => { e.preventDefault(); setDragOver(false);
+671:                        handleFile(e.dataTransfer.files[0]); }}
+672:       className={`border-2 border-dashed rounded-lg p-8 text-center
+673:                   transition-colors cursor-pointer
+674:                   ${dragOver ? 'border-blue-400 bg-blue-50'
+675:                              : 'border-gray-300 hover:border-gray-400'}`}
+676:       onClick={() => document.getElementById('file-input').click()}
+677:     >
+678:       <input id="file-input" type="file" className="hidden"
+679:         accept=".pdf,.txt,.doc,.docx,.md,.html,.jpg,.jpeg,.png"
+680:         onChange={(e) => handleFile(e.target.files[0])} />
+681: 
+682:       {fileInfo ? (
+683:         <div className="flex items-center justify-center gap-4">
+684:           <span className="text-3xl">📄</span>
+685:           <div className="text-left">
+686:             <p className="font-semibold text-gray-800">{fileInfo.name}</p>
+687:             <p className="text-sm text-gray-500">
+688:               {fileInfo.size} · {fileInfo.type}
+689:             </p>
+690:           </div>
+691:           <button onClick={(e) => { e.stopPropagation(); setFileInfo(null); }}
+692:             className="ml-4 text-red-500 hover:text-red-700 text-sm font-medium">
+693:             Remove
+694:           </button>
+695:         </div>
+696:       ) : (
+697:         <>
+698:           <span className="text-4xl mb-3 block">📁</span>
+699:           <p className="text-gray-700 font-medium">Drop file here or click to browse</p>
+700:           <p className="text-sm text-gray-500 mt-1">
+701:             PDF · TXT · DOC · DOCX · MD · HTML · JPG · PNG
+702:           </p>
+703:         </>
+704:       )}
+705:     </div>
+706:   );
+707: };
+708: ```
+709: 
+710: ### Section B — Topic Input (Gap #2 Fix — Dynamic Sub-topics)
+711: 
+712: ```jsx
+713: const TopicInputSection = ({ topicData, onChange, onAIDraft }) => {
+714:   const [subTopics, setSubTopics] = useState(topicData.subTopics || ['', '', '']);
+715:   const [isDrafting, setIsDrafting] = useState(false);
+716: 
+717:   const addSubTopic = () => {
+718:     if (subTopics.length < 10) {
+719:       const updated = [...subTopics, ''];
+720:       setSubTopics(updated);
+721:       onChange({ subTopics: updated });
+722:     }
+723:   };
+724: 
+725:   const removeSubTopic = (index) => {
+726:     const updated = subTopics.filter((_, i) => i !== index);
+727:     setSubTopics(updated);
+728:     onChange({ subTopics: updated });
+729:   };
+730: 
+731:   const updateSubTopic = (index, value) => {
+732:     const updated = [...subTopics];
+733:     updated[index] = value;
+734:     setSubTopics(updated);
+735:     onChange({ subTopics: updated });
+736:   };
+737: 
+738:   // AI Draft Text (Gap #4 Fix)
+739:   const handleAIDraft = async () => {
+740:     if (!topicData.topic.trim()) return;
+741:     setIsDrafting(true);
+742:     try {
+743:       const prompt = `Write comprehensive study material about: ${topicData.topic}.
+744:         Sub-topics to cover: ${subTopics.filter(Boolean).join(', ')}.
+745:         ${topicData.focus ? `Focus: ${topicData.focus}` : ''}
+746:         Write in clear, educational style. Include definitions, examples, and key facts.
+747:         Length: 400-600 words.`;
+748: 
+749:       const drafted = await geminiGenerateText(prompt);
+750:       onAIDraft(drafted); // Injects into Section C textarea
+751:     } catch (e) {
+752:       alert('Could not draft text. Please try again.');
+753:     } finally {
+754:       setIsDrafting(false);
+755:     }
+756:   };
+757: 
+758:   return (
+759:     <div className="space-y-4">
+760:       {/* Main Topic */}
+761:       <div>
+762:         <label className="block text-sm font-medium text-gray-700 mb-1">
+763:           Main Topic <span className="text-red-500">*</span>
+764:         </label>
+765:         <input type="text" value={topicData.topic}
+766:           onChange={(e) => onChange({ topic: e.target.value })}
+767:           placeholder="e.g., National Income Accounting"
+768:           className="w-full border border-gray-300 rounded-md px-3 py-2
+769:                      focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none" />
+770:       </div>
+771: 
+772:       {/* Dynamic Sub-topics */}
+773:       <div>
+774:         <label className="block text-sm font-medium text-gray-700 mb-1">
+775:           Sub-topics <span className="text-gray-400">(optional, up to 10)</span>
+776:         </label>
+777:         <div className="space-y-2">
+778:           {subTopics.map((st, i) => (
+779:             <div key={i} className="flex gap-2">
+780:               <input type="text" value={st}
+781:                 onChange={(e) => updateSubTopic(i, e.target.value)}
+782:                 placeholder={`Sub-topic ${i + 1}`}
+783:                 className="flex-1 border border-gray-300 rounded-md px-3 py-2
+784:                            focus:ring-2 focus:ring-blue-500 outline-none text-sm" />
+785:               <button onClick={() => removeSubTopic(i)}
+786:                 className="text-gray-400 hover:text-red-500 px-2 font-medium">
+787:                 ×
+788:               </button>
+789:             </div>
+790:           ))}
+791:         </div>
+792:         {subTopics.length < 10 && (
+793:           <button onClick={addSubTopic}
+794:             className="mt-2 text-sm text-blue-600 hover:text-blue-800 font-medium">
+795:             + Add Sub-topic
+796:           </button>
+797:         )}
+798:       </div>
+799: 
+800:       {/* Specific Focus */}
+The above content does NOT show the entire file contents. If you need to view any lines of the file which were not shown to complete your task, call this tool again to view those lines.

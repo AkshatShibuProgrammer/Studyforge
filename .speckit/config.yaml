@@ -1,0 +1,33 @@
+# Speckit Configuration for StudyForge
+version: '1.0'
+project_name: 'StudyForge'
+platform: 'Google Gemini Canvas'
+runtime: 'Single-File Monolithic HTML/CSS/Vanilla JS'
+branch: '0809Studyforge'
+phases_directory: '0809'
+spec_directory: 'specs'
+memory_directory: '.speckit/memory'
+
+speckit_workflow:
+  - command: '/speckit-constitution'
+    target: '.speckit/memory/constitution.md'
+    status: 'ACTIVE'
+  - command: '/speckit-specify'
+    target: 'specify.md'
+  - command: '/speckit-clarify'
+    target: 'clarifications.md'
+  - command: '/speckit-plan'
+    target: 'plan.md'
+  - command: '/speckit-tasks'
+    target: 'tasks.md'
+  - command: '/speckit-implement'
+    target: 'studyforgeImplementation/Mainapp19Jul/actual app/sindhuskeleton.html'
+
+quality_gates:
+  zero_external_backend: true
+  zero_api_key_prompt: true
+  max_localstorage_mb: 4.0
+  indexeddb_image_isolation: true
+  json_auto_repair_required: true
+  pyq_source_attribution: true
+  self_explanatory_visuals: true

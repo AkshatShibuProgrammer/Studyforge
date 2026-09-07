@@ -1,0 +1,82 @@
+﻿1963: const Step2 = {
+1964: init() {
+1965: document.getElementById('s2-detected-subject').textContent = appState.subject;
+1966: document.getElementById('s2-subject-select').value = appState.subject;
+1967: this.onSubjectChange();
+1968: },
+1969: onSubjectChange() {
+1970: const sub = document.getElementById('s2-subject-select').value;
+1971: appState.subject = sub;
+1972: document.getElementById('s2-detected-subject').textContent = sub;
+1973: appState.activeBlueprintPromptKey = SUBJECT_PROMPT_MAP[sub] || 'economicsBlueprintPrompt';
+1974: document.getElementById('s2-card-subject').textContent = sub;
+1975: document.getElementById('s2-card-prompt-name').textContent = appState.activeBlueprintPromptKey;
+1976: Session.save();
+1977: },
+1978: async generateBlueprint() {
+1979: document.getElementById('s2-progress-panel').classList.remove('hidden');
+1980: document.getElementById('s2-blueprint-output').classList.add('hidden');
+1981: const btn = document.getElementById('s2-gen-blueprint-btn');
+1982: Helper.setBtnLoading(btn, `<svg class="w-5 h-5 animate-spin-slow inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg> Generating Plan...`);
+1983: 
+1984: const c = document.getElementById('s2-phases');
+1985: c.innerHTML = [1,2,3,4,5].map(i => `<div id="bp-ph-${i}" class="text-xs text-slate-400">Phase ${i} Planning...</div>`).join('');
+1986: const streamBox = document.getElementById('s2-raw-stream');
+1987: streamBox.parentNode.classList.remove('hidden');
+1988: streamBox.textContent = "[SYSTEM: Engineering syllabus matrix blueprint... Please wait.]";
+1989: 
+1990: const finalPrompt = appState.prompts[appState.activeBlueprintPromptKey]
+1991: .replace(/\{STAGE_1_OUTPUT\}/g, appState.topicMap)
+1992: .replace(/\{EXTRACTED_TEXT\}/g, appState.pdfText.substring(0, 80000));
+1993: 
+1994: try {
+1995: const fullRes = await API.streamContent(finalPrompt, (chunk, accumulated) => {
+1996: streamBox.textContent = accumulated; streamBox.scrollTop = streamBox.scrollHeight;
+1997: document.getElementById('s2-token-count').textContent = `~${Math.round(accumulated.length / 4)} tokens`;
+1998: });
+1999: this.parseBlueprint(fullRes);
+2000: } catch(e) { Toaster.show('Blueprint generation failed', 'rose'); }
+2001: finally { Helper.setBtnLoading(btn, `ΓÜí Generate Blueprint`, false); }
+2002: },
+2003: parseBlueprint(text) {
+2004: appState.blueprint.rawContent = text;
+2005: const imgRegRegex = /\[IMAGE_ASSET_ID:\s*(IMAGE_\d+\.\d+)\]([\s\S]*?)(?=\[IMAGE_ASSET_ID:|SECTION 13|SECTION 14|SECTION 15|SECTION 11|SECTION 10|$)/gi;
+2006: appState.blueprint.imageRegistry = [];
+2007: let match;
+2008: while((match = imgRegRegex.exec(text)) !== null) {
+2009: const block = match[2];
+2010: appState.blueprint.imageRegistry.push({
+2011: id: match[1].trim(),
+2012: template: (block.match(/Template Type:\s*(.*)/i) || [])[1] || '',
+2013: topic: (block.match(/Topic:\s*(.*)/i) || [])[1] || '',
+2014: layout: (block.match(/Layout Description:\s*(.*)/i) || [])[1] || '',
+2015: labels: (block.match(/All Text Labels.*?:\s*(.*)/i) || [])[1] || '',
+2016: data: (block.match(/Data to Display:\s*(.*)/i) || [])[1] || '',
+2017: purpose: (block.match(/Pedagogical Purpose:\s*(.*)/i) || [])[1] || '',
+2018: colours: (block.match(/Colour Scheme:\s*(.*)/i) || 'Default'),
+2019: handDrawable: (block.match(/Hand-drawable.*?:\s*(.*)/i) || 'No')
+2020: });
+2021: }
+2022: document.getElementById('s2-progress-panel').classList.add('hidden');
+2023: document.getElementById('s2-blueprint-output').classList.remove('hidden');
+2024: this.renderBlueprintCards();
+2025: document.getElementById('s2-bp-stats').textContent = `${appState.blueprint.imageRegistry.length} Images Registered`;
+2026: Session.save();
+2027: },
+2028: renderBlueprintCards() {
+2029: const cardsDiv = document.getElementById('s2-bp-cards');
+2030: if(cardsDiv && appState.blueprint.rawContent) {
+2031: cardsDiv.innerHTML = marked.parse(appState.blueprint.rawContent);
+2032: }
+2033: },
+2034: approveBlueprint() {
+2035: appState.blueprint.isApproved = true;
+2036: document.getElementById('s2-app-gate-status').textContent = "Approved & Locked";
+2037: document.getElementById('s2-approve-btn').className = "w-full py-3 bg-slate-700 text-white font-bold rounded-xl cursor-not-allowed";
+2038: document.getElementById('s2-approve-btn').disabled = true;
+2039: this.isGeneratingBlueprint = false;
+2040: document.getElementById('s2-gen-blueprint-btn').classList.remove('pulse-active');
+2041: Session.save(); App.navigate(7);
+2042: }
+2043: };
+2044: 

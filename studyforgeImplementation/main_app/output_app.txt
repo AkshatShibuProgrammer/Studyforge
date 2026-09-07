@@ -1,0 +1,85 @@
+1910:     const App = {
+1911:       setApiKey(val) {
+1912:         apiKey = val;
+1913:         localStorage.setItem('studyforge_apikey', val);
+1914:         Toaster.show('Syllabus Engine Key Saved!', 'emerald');
+1915:       },
+1916:       goToStep(n) {
+1917:         if (n === 3 && appState.blueprint.parts.length === 0) { Toaster.show("Analyze Document first", "amber"); return; }
+1918:         if (n === 3 && !appState.blueprint.isApproved) { Toaster.show("Approve Blueprint first", "amber"); return; }
+1919:         appState.currentStep = n;
+1920:         [1,2,3,4].forEach(i => {
+1921:           const s = document.getElementById(`step-${i}`);
+1922:           const b = document.getElementById(`nav-btn-${i}`);
+1923:           if(i === n) { s.classList.remove('hidden'); setTimeout(()=>s.classList.remove('opacity-0'), 10); b.classList.add('active'); }
+1924:           else { s.classList.add('hidden', 'opacity-0'); b.classList.remove('active'); }
+1925:         });
+1926:         if(n===2) { Step2.init(); if(appState.blueprint.imageRegistry.length > 0) Step2.renderBlueprintCards(); }
+1927:         if(n===3) Step3.renderFeed();
+1928:         if(n===4) this.compileExport();
+1929:         document.getElementById('main-scroll').scrollTop = 0;
+1930:       },
+1931:       closeModals() { PromptRegistry.close(); document.getElementById('debug-modal').classList.add('hidden'); },
+1932:       compileExport() {
+1933:         const out = document.getElementById('export-content-area'); let html = '';
+1934:         appState.blueprint.parts.forEach(p => {
+1935:           if(!p.generatedTextRaw) return;
+1936:           let inner = p.generatedTextRaw;
+1937:           inner = inner.replace(/%%%(EMBEDDED|APPROVED)_IMAGE_(IMAGE_\d+\.\d+)%%%/g, (match, type, id) => {
+1938:             let img = p.images.find(i => i.assetId === id);
+1939:             return img && img.base64 ? `\n\n<img src="${img.base64}" alt="${id}" style="max-width:100%; margin:16px auto; border-radius:8px; display:block;">\n\n` : ``;
+1940:           });
+1941:           html += `<div>${marked.parse(inner)}</div><hr class="my-8">`;
+1942:         });
+1943:         out.innerHTML = html;
+1944:         
+1945:         // Render math elements compiled inside the final document exports
+1946:         if (typeof renderMathInElement !== 'undefined') {
+1947:           renderMathInElement(out, {
+1948:             delimiters: [
+1949:               {left: '$$', right: '$$', display: true},
+1950:               {left: '$', right: '$', display: false}
+1951:             ]
+1952:           });
+1953:         }
+1954:       }
+1955:     };
+1956: 
+1957:     const UI = {
+1958:       copyTextRaw(id) {
+1959:         const p = appState.blueprint.parts.find(x=>x.id===id); if(!p || !p.generatedTextRaw) return;
+1960:         const ta = document.createElement("textarea"); ta.value = p.generatedTextRaw; document.body.appendChild(ta);
+1961:         ta.select(); document.execCommand('copy'); document.body.removeChild(ta); Toaster.show('Copied raw Markdown', 'emerald');
+1962:       },
+1963:       copyText(id) {
+1964:         const el = document.getElementById(id); el.select(); document.execCommand('copy'); Toaster.show('Copied', 'emerald');
+1965:       },
+1966:       copyCompiledText() {
+1967:         const el = document.getElementById('export-content-area');
+1968:         const range = document.createRange(); range.selectNodeContents(el);
+1969:         const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(range);
+1970:         document.execCommand('copy'); sel.removeAllRanges(); Toaster.show('Rich text copied for MS Word', 'amber');
+1971:       }
+1972:     };
+1973: 
+1974:     window.onload = async () => { 
+1975:       try {
+1976:         await ImageDB.init();
+1977:         Logger.add('SUCCESS', 'SYSTEM', 'IndexedDB Initialized Successfully');
+1978:       } catch(e) {
+1979:         Logger.add('ERROR', 'SYSTEM', 'Failed to initialize IndexedDB: ' + e.message);
+1980:       }
+1981:       Session.check(); 
+1982:       Logger.add('INFO', 'SYSTEM', 'StudyForge initialized'); 
+1983:       if (typeof renderMathInElement !== 'undefined') {
+1984:         renderMathInElement(document.body, {
+1985:           delimiters: [
+1986:             {left: '$$', right: '$$', display: true},
+1987:             {left: '$', right: '$', display: false}
+1988:           ]
+1989:         });
+1990:       }
+1991:     };
+1992:   </script>
+1993: </body>
+1994: </html>

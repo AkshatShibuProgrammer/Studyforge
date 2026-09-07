@@ -1,0 +1,31 @@
+423: <button id="s3-btn-gen-all" onclick="Step3.generateEverything()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold rounded-lg shadow-sm transition flex items-center gap-2">▶ Generate Everything</button>
+424: <button id="s3-btn-pause" onclick="Step3.pauseEverything()" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-sm font-bold rounded-lg shadow-sm transition flex items-center gap-2 disabled:opacity-50" disabled>⏸ Pause</button>
+425: <button id="s3-btn-approve-all" onclick="Step3.approveAllParts()" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-bold rounded-lg shadow-sm transition flex items-center gap-2">✓ Approve All</button>
+426: <button onclick="Step3.regenerateAllPrompt()" class="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white text-sm font-bold rounded-lg shadow-sm transition flex items-center gap-2">↻ Regenerate All</button>
+2134: const Step3 = {
+2135: renderFeed() {
+2142: <button onclick="Step3.scrollToPart('${p.id}')" id="s3-nav-${p.id}" class="nav-pill px-4 py-1.5 rounded-full text-xs font-bold border border-slate-200 bg-white text-slate-600 flex items-center gap-2 whitespace-nowrap hover:bg-slate-50 transition">
+2209: <button id="s3-tabbtn-notes-${part.id}" class="s3-tabbtn-${part.id} flex-1 py-2 text-xs font-bold text-emerald-600 border-b-2 border-emerald-600" onclick="Step3.switchTab('${part.id}', 'notes')">📝 Notes</button>
+2210: <button id="s3-tabbtn-ca-${part.id}" class="s3-tabbtn-${part.id} flex-1 py-2 text-xs font-bold text-slate-500 border-b-2 border-transparent" onclick="Step3.switchTab('${part.id}', 'ca')">📰 Current Affairs</button>
+2211: <button id="s3-tabbtn-images-${part.id}" class="s3-tabbtn-${part.id} flex-1 py-2 text-xs font-bold text-slate-500 border-b-2 border-transparent" onclick="Step3.switchTab('${part.id}', 'images')">🖼 Images</button>
+2218: <button onclick="Step3.toggleManualEdit('${part.id}')" class="text-xs px-2 py-1 bg-white border rounded font-semibold">✏️ Edit</button>
+2219: <button id="btn-gen-notes-${part.id}" onclick="Step3.generatePartText('${part.id}')" class="text-xs px-2 py-1 bg-white border rounded font-semibold">↻ Regenerate</button>
+2225: <button id="btn-gen-notes-init-${part.id}" onclick="Step3.generatePartText('${part.id}')" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg text-xs transition">⚡ Generate Notes</button>
+2232: <button onclick="Step3.toggleManualEdit('${part.id}')" class="px-3 py-1 bg-slate-200 rounded text-xs">Cancel</button>
+2233: <button onclick="Step3.saveEdit('${part.id}')" class="px-3 py-1 bg-indigo-600 text-white rounded text-xs">Save</button>
+2239: <button id="btn-gen-ca-${part.id}" onclick="Step3.generateCA('${part.id}')" class="text-xs px-2 py-1 border rounded">↻ Regenerate CA</button>
+2241: `<button id="btn-merge-ca-${part.id}" onclick="Step3.mergeCA('${part.id}')" class="px-3 py-1 bg-emerald-600 text-white text-xs font-bold rounded">➕ Merge</button>` :
+2242: `<button id="btn-unmerge-ca-${part.id}" onclick="Step3.unmergeCA('${part.id}')" class="px-3 py-1 bg-rose-500 text-white text-xs font-bold rounded">➖ Unmerge</button>`}
+2247: <button id="btn-gen-ca-init-${part.id}" onclick="Step3.generateCA('${part.id}')" class="px-4 py-2 bg-sky-600 text-white font-bold rounded-lg text-xs">🔍 Search CA</button>
+2279: <button onclick="Step3.toggleRefineFoot('${part.id}')" class="px-3 py-1 bg-slate-700 text-white rounded text-xs">Refine</button>
+2280: ${!part.approved ? `<button onclick="Step3.cascadeApprovePart('${part.id}')" class="px-4 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded text-xs shadow-sm transition">✓ Cascade Approve</button>` : `<button disabled class="px-4 py-1.5 bg-slate-600 text-slate-400 font-bold rounded text-xs">✓ Approved</button>`}
+2285: <button onclick="Step3.submitRefine('${part.id}')" class="mt-2 px-3 py-1 bg-purple-600 text-white font-bold rounded-xs float-right">Apply Refinement</button>
+2302: <button onclick="Step3.genImageInline('${part.id}', '${spec.id}', false)" class="mt-2 w-full py-1 bg-indigo-600 text-white text-[10px] font-bold rounded">${img.base64 ? 'Regenerate' : 'Generate'}</button>
+2459: <button id="btn-redesign-${imgId}" onclick="Step3.aiRedesignImage('${partId}', '${imgId}')" class="mt-2 w-full px-4 py-2 bg-indigo-100 hover:bg-indigo-200 text-indigo-800 text-xs font-bold rounded-lg transition shadow-sm">🪄 Redesign Image with AI</button>
+2465: <button onclick="Step3.genImageInline('${partId}', '${imgId}', false)" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg shadow-sm">⚡ Generate Image</button>
+2466: <button onclick="Step3.editImgPromptFirst('${partId}', '${imgId}')" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg border">✏️ Edit Prompt First</button>`;
+2484: <button onclick="Step3.genImageInline('${partId}', '${imgId}', true)" class="mt-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg shadow-sm transition w-full">Generate with This Prompt</button>
+2607: const btnApprove = document.querySelector(`#s3-wrapper-${id} button[onclick="Step3.approvePart('${id}')"]`);
+2645: const btnApprove = wrapper.querySelector(`button[onclick^="Step3.cascadeApprovePart"]`);
+2809: Session.save(); this.renderFeed(); this.generateEverything();
+2924: if(n===7 && window.Step3) Step3.renderFeed();

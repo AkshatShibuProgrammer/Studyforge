@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StudyForge - Chunked Syllabus Engine</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'], mono: ['JetBrains Mono', 'monospace'] } } } }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; color: #0f172a; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
+        .app-shell { display: flex; flex-direction: row; flex: 1; overflow: hidden; height: 100vh; }
+        nav { height: 56px; flex-shrink: 0; z-index: 50; }
+        main { flex: 1; overflow-y: auto; position: relative; scroll-behavior: smooth; }
+        .step-view { padding-bottom: 150px; }
+        .hidden { display: none !important; }
+        .card-step-1 { background-color: #f8fafc; border-left: 4px solid #6366f1; box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.05); } 
+        .card-step-2 { background-color: #faf5ff; border-left: 4px solid #a855f7; box-shadow: 0 4px 6px -1px rgba(168, 85, 247, 0.05); } 
+        .card-step-3 { background-color: #f0fdf4; border-left: 4px solid #10b981; box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.05); } 
+        .card-step-4 { background-color: #fffbeb; border-left: 4px solid #f59e0b; box-shadow: 0 4px 6px -1px rgba(245, 158, 11, 0.05); } 
+        .markdown-body h1, .markdown-body h2, .markdown-body h3 { font-weight: 700; color: #0f172a; margin-top: 1.5em; margin-bottom: 0.5em; }
+        .markdown-body h1 { font-size: 1.6rem; border-bottom: 2px solid #e2e8f0; padding-bottom: 0.3rem; }
+        .markdown-body h2 { font-size: 1.35rem; }
+        .markdown-body h3 { font-size: 1.15rem; }
+        .markdown-body p { margin-bottom: 1rem; line-height: 1.7; color: #334155; }
+        .markdown-body ul { list-style-type: disc; padding-left: 1.5rem; margin-bottom: 1rem; color: #334155; }
+        .markdown-body table { width: 100%; border-collapse: collapse; margin-bottom: 1.5rem; }
+        .markdown-body th, .markdown-body td { border: 1px solid #cbd5e1; padding: 0.75rem; text-align: left; }
+        .markdown-body th { background-color: #f1f5f9; font-weight: 600; }
+        .markdown-body strong { color: #0f172a; font-weight: 700; }
+        @keyframes pulse-ring { 0% { transform: scale(0.8); box-shadow: 0 0 0 0 rgba(99,102,241,0.7); } 70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(99,102,241,0); } 100% { transform: scale(0.8); box-shadow: 0 0 0 0 rgba(99,102,241,0); } }
+        .pulse-active { animation: pulse-ring 2s infinite; }
+        @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .slide-up { animation: slideUp 0.3s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .animate-spin-slow { animation: spin 2s linear infinite; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .sidebar-btn.active { background-color: #e0e7ff; color: #4f46e5; border-right: 3px solid #4f46e5; }
+        .nav-pill.active { background-color: #e0e7ff; color: #4f46e5; border-color: #818cf8; }
+    </style>
+</head>
+<body>
+
+    <nav class="bg-white border-b border-slate-200 shadow-sm relative h-14 shrink-0 flex items-center justify-between px-4">
+        <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold font-mono shadow-sm">SF</div>
+            <span class="font-bold text-lg tracking-tight text-slate-800">StudyForge</span>
+        </div>
+        <div class="flex items-center gap-4">
+            <span id="save-indicator" class="text-xs font-bold text-emerald-600 opacity-0 transition-opacity">✔ Saved</span>
+            <button onclick="PromptRegistry.open()" class="text-slate-500 hover:text-purple-600 transition p-2 rounded-lg hover:bg-purple-50" title="Prompt Registry">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+            </button>
+        </div>
+    </nav>
+
+    <div id="session-banner" class="hidden bg-sky-50 border-b border-sky-100 px-4 py-2 shrink-0 z-30">
+        <div class="max-w-[1400px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-sm">
+            <div class="flex items-center gap-2 text-sky-800"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg><span id="session-banner-text" class="font-medium">Previous session found.</span></div>
+            <div class="flex gap-2">
+                <button onclick="Session.resume()" class="px-4 py-1 bg-sky-600 hover:bg-sky-700 text-white rounded-lg font-semibold transition shadow-sm">Resume Session</button>
+                <button onclick="Session.clear()" class="px-4 py-1 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-lg font-semibold transition">Start Fresh</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="app-shell w-full">
+        <aside class="w-16 sm:w-20 bg-white border-r border-slate-200 shrink-0 flex flex-col items-center py-6 gap-6">
+            <button id="nav-btn-1" onclick="App.goToStep(1)" class="sidebar-btn active w-12 h-12 rounded-xl flex flex-col items-center justify-center text-slate-400 hover:bg-slate-50 transition" title="Step 1: Extract"><svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg><span class="text-[10px] font-bold">EXT</span></button>
+            <button id="nav-btn-2" onclick="App.goToStep(2)" class="sidebar-btn w-12 h-12 rounded-xl flex flex-col items-center justify-center text-slate-400 hover:bg-slate-50 transition" title="Step 2: Plan"><svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg><span class="text-[10px] font-bold">PLAN</span></button>
+            <button id="nav-btn-3" onclick="App.goToStep(3)" class="sidebar-btn w-12 h-12 rounded-xl flex flex-col items-center justify-center text-slate-400 hover:bg-slate-50 transition" title="Step 3: Write"><svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg><span class="text-[10px] font-bold">WRITE</span></button>
+            <button id="nav-btn-4" onclick="App.goToStep(4)" class="sidebar-btn w-12 h-12 rounded-xl flex flex-col items-center justify-center text-slate-400 hover:bg-slate-50 transition" title="Step 4: Export"><svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg><span class="text-[10px] font-bold">EXP</span></button>
+        </aside>
+
+        <main id="main-scroll" class="w-full px-4 sm:px-8 max-w-5xl mx-auto">
+            <!-- STEP 1 -->
+            <section id="step-1" class="step-view card-step-1 p-6 md:p-8 rounded-2xl mb-8 mt-4">
+                <div class="flex items-center gap-3 mb-6"><div class="w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold">1</div><h2 class="text-2xl font-bold text-slate-800">Extract & Partition</h2></div>
+                
+                <div id="upload-container" class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                    <label class="block text-sm font-bold text-slate-700 mb-2">Upload Syllabus / Source PDF</label>
+                    <input type="file" id="pdf-upload" accept="application/pdf" class="block w-full text-sm text-slate-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer border border-slate-200 rounded-xl" onchange="Step1.handleUpload(event)">
+                </div>
+
+                <div id="s1-partition-settings" class="hidden mt-6 bg-white p-6 rounded-xl border border-indigo-200 shadow-md animate-fade-in">
+                    <h3 class="font-bold text-slate-800 text-base mb-3 flex items-center gap-2">⚙️ Step 1 Option: Partition Settings</h3>
+                    <p class="text-xs text-slate-500 mb-4">Choose how you want to divide the document content before running the analysis AI.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Target Part-Count</label>
+                            <select id="s1-opt-count" class="w-full text-sm border bg-slate-50 p-2.5 rounded-lg outline-none font-medium">
+                                <option value="Let AI Decide">Let AI Decide (Auto-optimised)</option>
+                                <option value="1 Part">1 Part (Dense Overview)</option>
+                                <option value="2 Parts">2 Parts</option>
+                                <option value="3 Parts">3 Parts</option>
+                                <option value="4 Parts">4 Parts</option>
+                                <option value="5 Parts">5 Parts</option>
+                                <option value="6 Parts">6 Parts</option>
+                                <option value="8 Parts">8 Parts</option>
+                                <option value="10 Parts">10 Parts (Ultra Granular)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Pedagogical Filter</label>
+                            <select id="s1-opt-filter" class="w-full text-sm border bg-slate-50 p-2.5 rounded-lg outline-none font-medium">
+                                <option value="Standard Comprehensive">Standard Comprehensive Notes</option>
+                                <option value="Highly Theoretical">Focus heavily on theory/mechanisms</option>
+                                <option value="Exam Lens">Focus on PYQs & Model Answers</option>
+                                <option value="Visual Rich">Optimize for rich diagram slots</option>
+                            </select>
+                        </div>
+                        <div class="flex items-end">
+                            <button id="s1-btn-launch" onclick="Step1.runPartitionAnalysis()" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg text-sm transition shadow-sm">🚀 Analyze & Segment PDF</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="s1-progress-panel" class="hidden mt-6 bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                    <h3 class="font-bold text-slate-800 mb-4 flex justify-between"><span>Analyzing Document...</span><span class="text-xs bg-slate-100 text-slate-600 px-2 py-1 rounded-md font-mono" id="stage1-token-counter">0 words</span></h3>
+                    <div class="space-y-3" id="s1-phases"></div>
+                    <div class="mt-6">
+                        <button onclick="toggle('stage1-live-output')" class="text-xs font-bold text-indigo-600 hover:text-indigo-800">Toggle Live AI Stream ▼</button>
+                        <div id="stage1-live-output" class="hidden mt-2 p-3 bg-slate-900 text-emerald-400 font-mono text-xs rounded-lg h-48 overflow-y-auto whitespace-pre-wrap shadow-inner"></div>
+                    </div>
+                </div>
+
+                <div id="s1-output-tabs" class="hidden mt-6">
+                    <div class="flex border-b border-slate-200 gap-4 mb-4 overflow-x-auto">
+                        <button class="s1-tab-btn active pb-2 border-b-2 border-indigo-600 font-bold text-indigo-600 text-sm whitespace-nowrap" onclick="Step1.switchTab('parts')">Detected Parts</button>
+                        <button class="s1-tab-btn pb-2 border-b-2 border-transparent font-medium text-slate-500 hover:text-slate-700 text-sm whitespace-nowrap" onclick="Step1.switchTab('analysis')">Analysis Report</button>
+                        <button class="s1-tab-btn pb-2 border-b-2 border-transparent font-medium text-slate-500 hover:text-slate-700 text-sm whitespace-nowrap" onclick="Step1.switchTab('raw')">Raw PDF Data</button>
+                    </div>
+                    <div id="s1-tab-parts" class="s1-tab-content flex flex-col gap-4"></div>
+                    <div id="s1-tab-analysis" class="s1-tab-content hidden space-y-4">
+                        <div class="bg-white p-4 rounded-xl border border-slate-200"><h4 class="font-bold text-xs uppercase text-slate-500 mb-2">Identity</h4><div id="s1-out-identity" class="text-sm markdown-body"></div></div>
+                        <div class="bg-white p-4 rounded-xl border border-slate-200"><h4 class="font-bold text-xs uppercase text-slate-500 mb-2">Topic Map</h4><div id="s1-out-topics" class="text-sm whitespace-pre-wrap font-mono"></div></div>
+                        <div class="bg-white p-4 rounded-xl border border-slate-200"><h4 class="font-bold text-xs uppercase text-slate-500 mb-2">Exam Analysis</h4><div id="s1-out-exam" class="text-sm markdown-body"></div></div>
+                    </div>
+                    <div id="s1-tab-raw" class="s1-tab-content hidden">
+                        <div class="flex justify-between items-center mb-2"><span class="text-xs font-bold text-slate-500" id="s1-raw-stats"></span><button onclick="UI.copyText('s1-raw-textarea')" class="text-xs bg-slate-200 px-3 py-1 rounded font-bold">Copy</button></div>
+                        <textarea id="s1-raw-textarea" class="w-full h-96 p-3 font-mono text-xs bg-slate-50 border rounded-lg" readonly></textarea>
+                    </div>
+                    <div class="mt-8 flex justify-between items-center">
+                        <button id="btn-debug-raw" onclick="Step1.showRawResponse()" class="hidden text-xs font-mono text-slate-400 underline">Debug: Raw Response</button>
+                        <button id="s1-next-btn" onclick="App.goToStep(2)" class="ml-auto px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-md flex items-center gap-2">Proceed to Step 2 ➔</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- STEP 2 -->
+            <section id="step-2" class="step-view card-step-2 p-6 md:p-8 rounded-2xl hidden opacity-0 transition-opacity mb-8 mt-4">
+                <div class="flex items-center gap-3 mb-6">
+                    <button onclick="App.goToStep(1)" class="text-slate-500 hover:text-purple-600 bg-white px-3 py-1.5 rounded-lg border text-sm font-bold shadow-sm">← Back</button>
+                    <div class="w-8 h-8 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center font-bold ml-2">2</div><h2 class="text-2xl font-bold text-slate-800">Blueprint Planning</h2>
+                </div>
+                <div class="bg-white p-6 rounded-xl border shadow-sm flex flex-col md:flex-row gap-6 mb-6">
+                    <div class="flex-1">
+                        <p class="text-sm text-slate-500 mb-1">Detected Subject:</p>
+                        <div class="flex items-center gap-3 mb-4"><span id="s2-detected-subject" class="text-xl font-bold text-purple-700 bg-purple-50 px-3 py-1 rounded-lg border border-purple-100">Unknown</span></div>
+                        <label class="text-xs font-bold text-slate-500 uppercase">Override Subject:</label>
+                        <select id="s2-subject-select" onchange="Step2.onSubjectChange()" class="mt-1 block w-full text-sm border-slate-300 rounded-lg bg-slate-50 p-2 border outline-none">
+                            <option value="Economics">Economics</option><option value="Polity">Polity & Governance</option><option value="History">History</option><option value="Geography">Geography</option><option value="Science & Technology">Science & Technology</option><option value="Environment">Environment</option><option value="Social Issues">Social Issues</option><option value="MP Specific">MP Specific</option><option value="Current Affairs">Current Affairs</option>
+                        </select>
+                    </div>
+                    <div class="flex-1 bg-slate-50 p-4 rounded-xl border text-sm flex flex-col justify-center">
+                        <h4 class="font-bold mb-2 border-b pb-2">Active Blueprint Prompt</h4>
+                        <div class="grid grid-cols-2 gap-2 mb-4 text-xs">
+                            <div class="text-slate-500">Prompt:</div><div id="s2-card-prompt-name" class="font-bold text-slate-800"></div>
+                            <div class="text-slate-500">Status:</div><div id="s2-card-status" class="font-bold text-emerald-600">● Ready</div>
+                        </div>
+                        <div class="flex gap-2 mb-4"><button onclick="PromptRegistry.open(); PromptRegistry.select(appState.activeBlueprintPromptKey)" class="text-xs bg-white border px-3 py-1.5 rounded shadow-sm">👁 View / Edit Prompt</button></div>
+                        <button id="s2-gen-blueprint-btn" onclick="Step2.generateBlueprint()" class="w-full px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl shadow-md flex items-center justify-center gap-2">⚡ Generate Blueprint</button>
+                    </div>
+                </div>
+                <div id="s2-progress-panel" class="hidden bg-white p-6 rounded-xl border shadow-sm mb-6">
+                    <h3 class="font-bold text-slate-800 mb-4 flex justify-between"><span>Designing Blueprint...</span><span class="text-xs bg-slate-100 px-2 py-1 rounded-md" id="s2-token-count"></span></h3>
+                    <div class="grid grid-cols-2 gap-3" id="s2-phases"></div>
+                    <div class="mt-4"><button onclick="toggle('s2-raw-stream')" class="text-xs font-bold text-purple-600">Toggle Stream ▼</button><div id="s2-raw-stream" class="hidden mt-2 p-3 bg-slate-900 text-emerald-400 font-mono text-xs rounded-lg h-48 overflow-y-auto"></div></div>
+                </div>
+                <div id="s2-blueprint-output" class="hidden animate-fade-in">
+                    <div class="mb-6 flex justify-between items-center bg-purple-600 text-white p-4 rounded-xl shadow-sm"><h3 class="font-bold text-lg">Finalized Blueprint</h3><span class="bg-purple-800 px-2 py-1 rounded text-xs font-mono" id="s2-bp-stats"></span></div>
+                    <div id="s2-bp-cards" class="mb-6"></div>
+                    <div class="flex flex-col bg-slate-50 p-6 rounded-2xl border-2 shadow-md">
+                        <div class="flex justify-between items-start mb-4">
+                            <div><h3 class="text-lg font-bold text-slate-800">Status: <span id="s2-app-gate-status" class="text-amber-600">Awaiting Approval</span></h3><div class="text-xs text-slate-500 mt-1" id="s2-bp-summary-metrics"></div></div>
+                        </div>
+                        <button id="s2-approve-btn" onclick="Step2.approveBlueprint()" class="w-full py-3 bg-emerald-600 text-white font-bold rounded-xl shadow-md">✓ Approve Blueprint & Build Unified Workspace</button>
+                    </div>
+                    <div id="s2-next-action" class="hidden mt-8 flex justify-end"><button onclick="App.goToStep(3)" class="px-6 py-3 bg-indigo-600 text-white font-bold rounded-xl shadow-md">Proceed to Step 3 ➔</button></div>
+                </div>
+            </section>
+
+            <!-- STEP 3 -->
+            <section id="step-3" class="step-view card-step-3 pb-8 rounded-2xl hidden opacity-0 transition-opacity mt-4">
+                <div class="sticky top-0 z-30 bg-white/95 backdrop-blur-sm border-b px-6 py-4 shadow-sm -mx-6 md:-mx-8 rounded-t-2xl">
+                    <div class="flex flex-col md:flex-row items-center justify-between gap-4 mb-4">
+                        <div class="flex items-center gap-3"><button onclick="App.goToStep(2)" class="text-slate-500 bg-white px-3 py-1.5 rounded-lg border text-sm font-bold shadow-sm">← Back</button><h2 class="text-xl font-bold text-slate-800">Unified Live Document</h2></div>
+                        <div class="flex gap-2">
+                            <button id="s3-btn-gen-all" onclick="Step3.generateEverything()" class="px-4 py-2 bg-emerald-600 text-white text-sm font-bold rounded-lg shadow-sm">▶ Auto-Generate All Parts</button>
+                            <button id="s3-btn-pause" onclick="Step3.pauseEverything()" class="px-4 py-2 bg-amber-500 text-white text-sm font-bold rounded-lg shadow-sm" disabled>⏸ Pause</button>
+                            <button onclick="Step3.regenerateAllPrompt()" class="px-4 py-2 bg-slate-800 text-white text-sm font-bold rounded-lg shadow-sm">↻ Reset Unapproved</button>
+                            <button onclick="App.goToStep(4)" class="px-4 py-2 bg-indigo-600 text-white text-sm font-bold rounded-lg shadow-sm ml-2">Export →</button>
+                        </div>
+                    </div>
+                    <div class="flex flex-col gap-2 w-full">
+                        <div class="flex justify-between items-center text-xs font-bold text-slate-500">
+                            <div class="flex gap-4 flex-wrap">
+                                <span id="s3-stat-tot">Total Parts: 0</span><span id="s3-stat-txt" class="text-emerald-600">Text Generated: 0</span>
+                                <span id="s3-stat-img" class="text-indigo-600">Images Approved: 0</span><span id="s3-stat-app" class="text-purple-600">Parts Approved: 0</span>
+                            </div>
+                            <span id="s3-progress-text">0% Complete</span>
+                        </div>
+                        <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden border"><div id="s3-progress-bar" class="bg-emerald-500 h-2 rounded-full transition-all duration-300" style="width:0%"></div></div>
+                    </div>
+                </div>
+                <div id="s3-sticky-nav" class="sticky top-[110px] z-20 bg-slate-50/90 backdrop-blur border-b py-2 px-6 -mx-6 md:-mx-8 mb-6 shadow-sm flex gap-2 overflow-x-auto"></div>
+                <div id="s3-feed" class="relative px-6"><div class="text-center py-12 text-slate-400 font-medium border-2 border-dashed rounded-xl mx-6" id="s3-empty-state">Generating workspace...</div></div>
+            </section>
+
+            <!-- STEP 4 -->
+            <section id="step-4" class="step-view card-step-4 p-6 md:p-8 rounded-2xl hidden opacity-0 transition-opacity mb-8 mt-4">
+                 <div class="flex items-center gap-3 mb-6"><button onclick="App.goToStep(3)" class="text-slate-500 bg-white px-3 py-1.5 rounded-lg border text-sm font-bold shadow-sm">← Back</button><div class="w-8 h-8 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center font-bold ml-2">4</div><h2 class="text-2xl font-bold text-slate-800">Final Master Document</h2></div>
+                <div class="bg-white p-4 rounded-xl border shadow-sm flex justify-between items-center mb-6 flex-wrap gap-4">
+                    <p class="text-sm font-medium text-slate-600">Document compiled successfully. Approved images embedded natively.</p>
+                    <button onclick="UI.copyCompiledText()" class="px-5 py-2.5 bg-amber-500 text-white font-bold rounded-lg shadow-sm">📋 Copy Rich Text for Word</button>
+                </div>
+                <div class="bg-white p-8 md:p-12 rounded-xl border shadow-sm"><div id="export-content" class="markdown-body max-w-none"></div></div>
+            </section>
+        </main>
+    </div>
+
+    <!-- MODALS -->
+    <div id="dev-logs-container" class="fixed z-50">
+        <button id="log-bubble" onclick="Logger.togglePopup()" class="fixed bottom-6 right-6 w-14 h-14 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 shadow-lg flex items-center justify-center text-white hover:scale-105 z-50">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M4 17l6-6-6-6M12 19h8"></path></svg>
+            <span id="log-badge" class="hidden absolute top-0 right-0 -mt-1 -mr-1 bg-rose-500 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full border-2 border-white">0</span>
+        </button>
+        <div id="log-popup" class="hidden fixed bottom-24 right-6 w-[400px] max-w-[calc(100vw-3rem)] bg-white rounded-2xl shadow-2xl border flex flex-col overflow-hidden slide-up z-50" style="height:500px;" onclick="event.stopPropagation()">
+            <div class="bg-slate-900 px-4 py-3 flex justify-between items-center"><h3 class="text-white font-bold text-sm">Dev Logs</h3><div class="flex gap-2"><button onclick="Logger.expandToTab()" class="text-slate-400 hover:text-white">↗</button><button onclick="Logger.togglePopup()" class="text-slate-400 hover:text-white">✕</button></div></div>
+            <div class="flex bg-slate-100 border-b text-xs font-bold overflow-x-auto"><button class="log-tab active px-3 py-2 text-indigo-600 border-b-2 border-indigo-600" onclick="Logger.setFilter('ALL', this)">All</button><button class="log-tab px-3 py-2 text-slate-500 border-b-2 border-transparent" onclick="Logger.setFilter('ERROR', this)">Errors</button></div>
+            <div id="log-content" class="flex-1 bg-[#0f172a] text-slate-300 font-mono text-[11px] p-3 overflow-y-auto space-y-1"></div>
+            <div class="bg-slate-50 border-t p-2 flex justify-between items-center text-xs"><span id="log-count" class="text-slate-500 font-medium">0 entries</span><button onclick="Logger.clear()" class="text-slate-500 hover:text-rose-600 font-bold">Clear</button></div>
+        </div>
+    </div>
+
+    <div id="debug-modal" class="hidden fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[150] flex items-center justify-center p-4" onclick="App.closeModals()">
+        <div class="bg-white w-full max-w-4xl h-[80vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden relative slide-up cursor-default" onclick="event.stopPropagation()">
+            <button onclick="App.closeModals()" class="absolute top-4 right-4 text-slate-400 hover:text-white p-2 z-50">✕</button>
+            <div class="p-4 bg-slate-900 text-white flex justify-between items-center"><h3 class="font-bold font-mono text-sm">Raw AI Response</h3></div>
+            <div class="p-4 bg-slate-100 border-b font-mono text-xs text-slate-700" id="debug-stats"></div>
+            <div class="flex-1 p-4 overflow-y-auto bg-slate-50"><textarea id="debug-textarea" class="w-full h-full p-4 font-mono text-xs text-slate-800 bg-white border rounded-lg outline-none" readonly></textarea></div>
+        </div>
+    </div>
+
+    <div id="prompt-modal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4" onclick="App.closeModals()">
+        <div class="bg-white w-full max-w-6xl h-[90vh] rounded-2xl shadow-2xl flex flex-col md:flex-row overflow-hidden relative slide-up cursor-default" onclick="event.stopPropagation()">
+            <button onclick="App.closeModals()" class="absolute top-4 right-4 text-slate-400 p-2 z-50">✕</button>
+            <div class="w-full md:w-1/3 bg-slate-50 border-r flex flex-col h-full"><div class="p-4 border-b"><h2 class="font-bold text-slate-800">Prompt Registry</h2></div><div class="flex-1 overflow-y-auto p-2 space-y-1" id="prompt-list"></div></div>
+            <div class="flex-1 flex flex-col h-full bg-white relative">
+                <div class="p-4 border-b bg-white pr-16"><div><h3 id="pr-active-title" class="font-bold text-lg">Select</h3><p id="pr-active-meta" class="text-xs text-slate-500">--</p></div></div>
+                <div class="flex-1 p-4 overflow-y-auto bg-slate-50/50"><textarea id="pr-editor" class="w-full h-full min-h-[300px] p-4 font-mono text-sm border rounded-xl outline-none" disabled></textarea></div>
+                <div class="p-4 border-t bg-slate-50 flex flex-wrap gap-3 items-center justify-between">
+                    <button onclick="PromptRegistry.restoreDefault()" class="text-sm font-bold text-slate-500">Restore Default</button>
+                    <div class="flex gap-2"><button onclick="App.closeModals()" class="px-4 py-2 bg-white border rounded-lg text-sm">Cancel</button><button onclick="PromptRegistry.saveManual()" class="px-5 py-2 bg-indigo-600 text-white font-bold text-sm rounded-lg shadow-sm">Save Changes</button></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Confirmation Dialog (Replaces unsafe window.confirm) -->
+    <div id="confirm-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[250] flex items-center justify-center p-4">
+        <div class="bg-white max-w-sm w-full rounded-2xl p-6 shadow-2xl border border-slate-200 slide-up">
+            <h3 class="font-bold text-slate-800 text-lg mb-2" id="confirm-title">Are you sure?</h3>
+            <p class="text-sm text-slate-500 mb-6" id="confirm-text">This action cannot be undone.</p>
+            <div class="flex gap-3 justify-end">
+                <button id="confirm-cancel" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-sm transition">Cancel</button>
+                <button id="confirm-ok" class="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl text-sm transition">Confirm</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="toasts" class="fixed top-4 right-4 z-[200] flex flex-col gap-2 pointer-events-none"></div>
+
+    <script>
+        // --- CLIENT-SIDE INDEXEDDB ENGINE (Solves the 5MB localStorage Storage Limit) ---
+        const DB = {
+            dbName: "StudyForgeIndexedDB",
+            dbVersion: 1,
+            init() {
+                return new Promise((resolve, reject) => {
+                    const req = indexedDB.open(this.dbName, this.dbVersion);
+                    req.onupgradeneeded = (e) => {
+                        const db = e.target.result;
+                        if (!db.objectStoreNames.contains("state")) {
+                            db.createObjectStore("state");
+                        }
+                    };
+                    req.onsuccess = (e) => resolve(e.target.result);
+                    req.onerror = (e) => reject(e.target.error);
+                });
+            },
+            async set(key, value) {
+                try {
+                    const db = await this.init();
+                    return new Promise((resolve, reject) => {
+                        const tx = db.transaction("state", "readwrite");
+                        const store = tx.objectStore("state");
+                        const req = store.put(value, key);
+                        req.onsuccess = () => resolve();
+                        req.onerror = () => reject(req.error);
+                    });
+                } catch(e) {
+                    console.error("IndexedDB write crashed", e);
+                }
+            },
+            async get(key) {
+                try {
+                    const db = await this.init();
+                    return new Promise((resolve, reject) => {
+                        const tx = db.transaction("state", "readonly");
+                        const store = tx.objectStore("state");
+                        const req = store.get(key);
+                        req.onsuccess = () => resolve(req.result);
+                        req.onerror = () => reject(req.error);
+                    });
+                } catch(e) {
+                    console.error("IndexedDB read crashed", e);
+                    return null;
+                }
+            },
+            async delete(key) {
+                try {
+                    const db = await this.init();
+                    return new Promise((resolve, reject) => {
+                        const tx = db.transaction("state", "readwrite");
+                        const store = tx.objectStore("state");
+                        const req = store.delete(key);
+                        req.onsuccess = () => resolve();
+                        req.onerror = () => reject(req.error);
+                    });
+                } catch(e) {
+                    console.error("IndexedDB delete crashed", e);
+                }
+            }
+        };
+
+        // --- Custom Safe Confirmation Wrapper ---
+        const CustomConfirm = {
+            show(title, text, onConfirm) {
+                setTxt('confirm-title', title);
+                setTxt('confirm-text', text);
+                show('confirm-modal');
+                
+                const cancelBtn = $('confirm-cancel');
+                const okBtn = $('confirm-ok');
+                
+                const cleanup = () => {
+                    hide('confirm-modal');
+                    cancelBtn.onclick = null;
+                    okBtn.onclick = null;
+                };
+                
+                cancelBtn.onclick = () => cleanup();
+                okBtn.onclick = () => {
+                    cleanup();
+                    onConfirm();
+                };
+            }
+        };
+
+        // --- DOM UTILITIES & ICONS ---
+        const $ = id => document.getElementById(id);
+        const setTxt = (id, txt) => { const e = $(id); if(e) e.textContent = txt; };
+        const setHTML = (id, html) => { const e = $(id); if(e) e.innerHTML = html; };
+        const show = id => { const e = $(id); if(e) e.classList.remove('hidden'); };
+        const hide = id => { const e = $(id); if(e) e.classList.add('hidden'); };
+        const toggle = id => { const e = $(id); if(e) e.classList.toggle('hidden'); };
+        const getPart = id => appState.blueprint.parts.find(p=>p.id===id);
+        const escapeRegExp = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+        const STYLES = {
+            "Process & Flow": ["Flowchart","Step-by-Step Sequence","Decision Tree","Sankey Diagram","Process Map","Timeline","Gantt Chart"],
+            "Structural & Hierarchical": ["Entity-Relationship Diagram","Hierarchical Tree","Network Diagram","Sequence Diagram","Use Case Diagram","State Machine Diagram","Mind Map"],
+            "Data & Quantitative": ["Bar Chart","Pie Chart","Line Graph","Scatter Plot","Heat Map","Radar Chart","Bubble Chart","Stacked Area Chart","Pictograph","Heat-Map Table","Icon Array"],
+            "Conceptual & Qualitative": ["Concept Map","Venn Diagram","Comparison Matrix","Comic Story","Infographic Illustration","3D Model Render","Geographic Map Overlay","Funnel Diagram","Storyboard","Table Diagram"]
+        };
+        const getStyleOpts = sel => Object.entries(STYLES).map(([g,opts])=>`<optgroup label="${g}">${opts.map(o=>`<option value="${o}" ${sel===o?'selected':''}>${o}</option>`).join('')}</optgroup>`).join('');
+
+        const apiKey = ""; 
+        const API_KEY = apiKey;
+        const TEXT_MODEL = "gemini-2.5-flash-preview-09-2025";
+        const IMG_MODEL = "imagen-4.0-generate-001";
+        
+        // --- PROMPTS ---
+        const UNIVERSAL_HEADER = `You are the ultimate Master Educational Content Engineer specializing in competitive civil service exams — UPSC, MPPSC, and all State PSCs.\nYour task is to analyze the input document and generate a comprehensive BLUEPRINT that will govern all note generation.\nDo NOT generate any study notes. Do NOT generate any lesson content. Write ONLY the strategic blueprint.\nWrap your entire response in <blueprint> </blueprint> tags.\nYou operate via a strict 3-phase execution structure within the blueprint:\nPHASE 1: Subject Routing and Cross-Topic Nexus Plan\nPHASE 2: Dynamic Visual Asset Registry\nPHASE 3: Current Affairs Matrix Mapping\nAfter the blueprint tag, output the STOP message and await the APPROVED signal.\nINPUT DATA:\nStage 1 Analysis: {STAGE_1_OUTPUT}\nRaw PDF Text: {EXTRACTED_TEXT}\nDetected Subject: {SUBJECT}\nDocument Sub-Area: {SUBAREA}\nPart titles from Stage 1: {PART_TITLES_LIST}`;
+        const DEFAULT_PROMPTS = {
+            extractionPrompt: `You are an elite MPPSC and UPSC document intelligence assistant.\nYour most important rule is this: EXTRACT EVERYTHING THAT IS IN THE PDF.\nDo not summarize, shorten, beautify, rewrite, or paraphrase the source content.\nYour job in this stage is to:\n- identify the document properly\n- map all topics and subtopics\n- preserve raw knowledge faithfully\n- divide the PDF into logical execution parts for later stages based on the target part settings\nDo not add any text before or after the required format.\nDo not wrap the response in code fences.\nReturn the response exactly in the structure below.\nSECTION 1 - PDF IDENTITY\n- Main subject:\n- Secondary subjects if any:\n- MPPSC paper and area it belongs to:\n- UPSC relevance (Prelims/Mains/GS paper, if applicable):\n- Nature of document: [class notes / lecture PDF / compiled notes / summary sheet / mixed]\n- Total pages (given or estimated): {TOTAL_PAGES}\nSECTION 2 - COMPLETE TOPIC MAP\nList every topic and subtopic found in the PDF.\nNumber them as: 1, 1.1, 1.2, 2, 2.1, 2.2 etc.\nRules:\n- include all major and minor headings\n- include side concepts, examples, formula areas, tables, and special notes if present\n- do not merge separate ideas into one broad heading\n- preserve the conceptual order of the PDF as much as possible\nSECTION 3 - EXAM VALUE ANALYSIS & MISSING DETAILS\nExplain how this PDF is useful for MPPSC preparation.\nThen identify what appears to be missing or underdeveloped in the PDF and may need enrichment later, such as:\n- missing theory\n- incomplete explanation\n- lack of examples\n- lack of diagrams\n- no current affairs linkage\n- no MP-specific angle\n- no answer-writing angle\n- no PYQ orientation\n- no comparative table where conceptually useful\nSECTION 4 - VISUAL CONTENT & IMAGE/DIAGRAM DESCRIPTION\nList every image, diagram, chart, flowchart, graph, table, infographic, or visual aid found in the PDF.\nFor each one, provide:\n- Visual ID:\n- Visual type:\n- Topic it belongs to:\n- What it shows:\n- Key labels/text visible:\n- Pedagogical use:\n- Should it be recreated later?: [Yes/No/Maybe]\nAlso list important topics that currently have no visual but clearly could benefit from one.\nFor those, provide:\n- Missing Visual Topic:\n- Why a visual may help:\nSECTION 5 - PAGE- AND TOPIC-AWARE PARTITION PLAN\nDivide the PDF into logical parts. Target {TARGET_PART_COUNT} parts based on the user's settings. Include {FILTER_SETTING} filters.\nFor each part, provide exactly this structure:\n[PART ID: PART_1]\n- Part Title:\n- Approximate Page Span:\n- Topics Covered:\n- Why these topics belong together:\n- Exact Raw PDF Data: (copy all exact sentences, definitions, figures, formulas, data points, and table text from the PDF that belong to this part. Do not summarize.)\n- Tables/Formulas/Data inside this part:\n- Likely useful later for current-affairs enrichment?: [Yes/No]\n- Likely useful later for MP-specific enrichment?: [Yes/No]\n- Likely needs a visual asset later?: [Yes/No]\nHere is the extracted PDF text:\n{EXTRACTED_TEXT}`,
+            universalBlueprintHeader: UNIVERSAL_HEADER,
+            economicsBlueprintPrompt: `Apply the METABOLIC PIPELINE STRATEGY.\nSECTION 1: Confirm Subject as Economics, Sub-Area, Density, Exam Frequency.\nSECTION 2 (MANDATORY): STORY STRATEGY. Plan a village-setting story running through all parts. Name 4 characters (e.g., Farmer/Supply, Trader/Demand, Official/Govt, Emigrant/NFIA). Include a Trap-Door Misconception scene.\nSECTION 3: CORE TOPIC ARCHITECTURE. 5-7 phases. Phase 0 is always Story Anchor. Final phase is Exam Integration.\nSECTION 4: CONCEPT COMPLETION GRID. Minimum 12 entries (Concept, Source Status, Gap, Weight).\nSECTION 5: MISSING FACTS INJECTION. Foundational facts, formulas, India-data, MP-specific facts (GSDP/PCI).\nSECTION 6: POLICY TRADE-OFF MATRIX. 4-6 specific policy tensions. Who gains vs who loses.\nSECTION 7: INTER-TOPIC NEXUS. 5+ connections linking Economics to Polity, Geography, etc.\nSECTION 8: INSTITUTION MAP. Include MoSPI, NSO, RBI, World Bank, State DES.\nSECTION 9: MISCONCEPTIONS. 5+ exam traps with story hooks.\nSECTION 10: INDICATOR & DATA PLAN. Numerical examples and comparisons.\nSECTION 11: CURRENT AFFAIRS MATRIX. Part A (National Major), Part B (National Recent), Part C (MP Major), Part D (MP Recent with specific figures).\nSECTION 12: IMAGE ASSET REGISTRY. Min 8 assets. Detail Layout, Labels, and Data for each.\nSECTION 13: FORMATTING DECISION MAP.\nSECTION 14: PYQ ANALYSIS PLAN.\nSECTION 15: PART-WISE EXECUTION PLAN. Map every Stage 1 part to execution goals, required images, missing info, and current affairs.\nSECTION 16: CHECKLIST.\nSTOP INSTRUCTION: BLUEPRINT COMPLETE.`,
+            polityBlueprintPrompt: `Apply the CASE CONFLICT AND INSTITUTIONAL FRICTION STRATEGY.\nSECTION 1: Confirm Subject as Polity/Governance.\nSECTION 2: HISTORICAL FRICTION NARRATIVE. Ground every topic in the real-world crisis or dispute that forced the law's creation.\nSECTION 3: LANDMARK CASE STUDY FRAMEWORK. Plan 5-Part Case Studies (Title, Trigger, Contentions Grid, Judgment, Doctrines).\nSECTION 4: INSTITUTIONAL ARCHITECTURE MAP. Map power flows, checks, balances, and separation of powers.\nSECTION 5: CONSTITUTIONAL AMENDMENT TRACKER. Context, Original Text, Amended Text, Impact.\nSECTION 6: CONCEPT COMPLETION GRID. Min 12 entries.\nSECTION 7: MISSING FACTS INJECTION. Articles, Case Laws, Committee Reports, MP-Specific Governance (Panchayati Raj, MP High Court).\nSECTION 8: CROSS-TOPIC NEXUS.\nSECTION 9: EXAM TRAPS. Mixing appointed vs elected, confusing statutory vs constitutional bodies.\nSECTION 10: VISUAL ASSET REGISTRY. Mandatory: ARCHITECTURAL_BLUEPRINT, STATUS_SUMMARY_CARD, BEFORE_AFTER_MATRIX, EVENT_DRIVEN_TIMELINE.\nSECTION 11: CURRENT AFFAIRS MATRIX. Supreme Court Judgments, Bills, MP legislature events.\nSECTION 12: PYQ ANALYSIS PLAN.\nSECTION 13: PART-WISE EXECUTION PLAN. Map historical frictions and case studies to Stage 1 parts.\nSTOP INSTRUCTION: BLUEPRINT COMPLETE.`,
+            historyBlueprintPrompt: `Apply the STRATIFIED CHRONOLOGY STRATEGY.\nSECTION 1: Confirm Subject as History.\nSECTION 2: NARRATIVE ANCHOR. Present historical transitions as continuous prose driven by systemic socio-economic catalysts, not dry dates. Include MP connection (1857 Revolt in MP, Tribal movements).\nSECTION 3: 4-PILLAR STRUCTURAL MATRIX. For every era analyze: 1. Living Conditions, 2. Important Figures, 3. Administrative Setup, 4. Revenue Systems.\nSECTION 4: CARTOGRAPHIC REQUIREMENT. GEOPOLITICAL_MAPs for empire borders vs counter-empires.\nSECTION 5: TIMELINE ARCHITECTURE. Nodes must follow: [Date] → [Catalyst] → [Event] → [Impact].\nSECTION 6: CULTURAL/ART LAYER. LAYERED_STRATIGRAPHY for monuments/styles.\nSECTION 7: CONCEPT GRID & MISSING FACTS.\nSECTION 8: CROSS-TOPIC NEXUS.\nSECTION 9: VISUAL ASSET REGISTRY. Mandatory: EVENT_DRIVEN_TIMELINE, GEOPOLITICAL_MAP, LAYERED_STRATIGRAPHY.\nSECTION 10: CURRENT AFFAIRS MATRIX. Archaeological finds, UNESCO listings, MP heritage projects.\nSECTION 11: PYQ ANALYSIS.\nSECTION 12: PART-WISE EXECUTION PLAN.\nSTOP INSTRUCTION: BLUEPRINT COMPLETE.`,
+            geographyBlueprintPrompt: `Apply the KINETIC TOPOGRAPHY STRATEGY.\nSECTION 1: Confirm Subject as Geography.\nSECTION 2: THREE-LAYER FRAMEWORK. Analyze via: 1. Physical Phenomenon, 2. Environmental Mechanics, 3. Human/Geopolitical Impact.\nSECTION 3: ANIMATED PROCESS REQUIREMENT. Plan PROCESS_FLOWCHARTs showing triggers, steps, feedbacks, and human impact.\nSECTION 4: CARTOGRAPHIC PLANNING. Boundary maps, resource zones (MP: Narmada basin, Malanjkhand), cross-sections.\nSECTION 5: CONCEPT GRID & MISSING FACTS. Precise measurements, MP agro-climatic zones.\nSECTION 6: CROSS-TOPIC NEXUS.\nSECTION 7: VISUAL ASSET REGISTRY. Mandatory: GEOPOLITICAL_MAP, ANATOMICAL_CROSS_SECTION, PROCESS_FLOWCHART.\nSECTION 8: CURRENT AFFAIRS MATRIX. Disasters, climate anomalies, river linking, MP water disputes.\nSECTION 9: PART-WISE EXECUTION PLAN.\nSTOP INSTRUCTION: BLUEPRINT COMPLETE.`,
+            scienceTechBlueprintPrompt: `Apply the THEORY-TO-TOOL STRATEGY.\nSECTION 1: Confirm Subject as Science & Technology.\nSECTION 2: THEORY-TO-TOOL BINARY. Explain the micro-mechanism (Theory) then map it to physical civil/defence utility (Tool).\nSECTION 3: ETHICAL BOUNDARY ANALYSIS. Limitations, environmental impact, moral dilemmas.\nSECTION 4: CLASSIFICATION SYSTEM. MIND_MAPs for technology branches.\nSECTION 5: EQUIPMENT MECHANISMS. ANATOMICAL_CROSS_SECTION for device internals.\nSECTION 6: INDIA ACHIEVEMENT TRACKER. ISRO, DRDO, MP-tech hubs.\nSECTION 7: CONCEPT GRID & MISSING FACTS.\nSECTION 8: VISUAL ASSET REGISTRY.\nSECTION 9: CURRENT AFFAIRS MATRIX. Global launches, ISRO missions, AI policies.\nSECTION 10: PYQ & PART-WISE EXECUTION.\nSTOP INSTRUCTION: BLUEPRINT COMPLETE.`,
+            environmentBlueprintPrompt: `Apply the TROPHIC CYCLE STRATEGY.\nSECTION 1: Confirm Subject as Environment.\nSECTION 2: ECOSYSTEM LOOP STRATEGY. Biome placement, Food Web cascades, Anthropogenic disruption.\nSECTION 3: INTERNATIONAL FRAMEWORK MAPPING. Conventions, NDCs, COP targets.\nSECTION 4: MP ENVIRONMENT PROFILE. Forest cover, tiger reserves, Narmada health, tribal rights.\nSECTION 5: VISUAL ASSET REGISTRY. Mandatory: CIRCULAR_FLOW_DIAGRAM, CONCEPTUAL_METAPHOR_INFOGRAPHIC.\nSECTION 6: CURRENT AFFAIRS MATRIX. COP28/29, IPCC data, MP Tiger census.\nSECTION 7: PART-WISE EXECUTION PLAN.\nSTOP INSTRUCTION: BLUEPRINT COMPLETE.`,
+            socialIssuesBlueprintPrompt: `Apply the SOCIAL ISSUES BLUEPRINT STRATEGY.\nDesign a structured blueprint focusing on societal dimensions, vulnerable sections, welfare schemes, demographics, and inclusive growth. Include relevant MP-specific socio-economic data.\nEnsure all sections are fully planned.\nSTOP INSTRUCTION: BLUEPRINT COMPLETE.`,
+            mpSpecificBlueprintPrompt: `Apply the MP SPECIFIC BLUEPRINT STRATEGY.\nDesign a structured blueprint focusing exclusively on Madhya Pradesh's geography, history, economy, polity, art, culture, and current affairs.\nEnsure all sections are fully planned and highly specific to MPPSC syllabus requirements.\nSTOP INSTRUCTION: BLUEPRINT COMPLETE.`,
+            currentAffairsBlueprintPrompt: `Apply the CURRENT AFFAIRS BLUEPRINT STRATEGY.\nDesign a structured blueprint focusing on analyzing major recent events across multiple sectors (National, International, MP Specific).\nEnsure all sections are fully planned.\nSTOP INSTRUCTION: BLUEPRINT COMPLETE.`,
+            blueprintPartRefinementPrompt: `You are an elite Educational Content Architect updating a specific Part Execution Plan within an existing Economics Blueprint based on user instructions.\nCURRENT PART PLAN: {CURRENT_PART_PLAN}\nUSER INSTRUCTION: {USER_INSTRUCTION}\nYOUR TASK: Rewrite the Part Plan to incorporate the user's request. If they ask for new images, add a new IMAGE_ASSET_ID to the "Required Images" list and specify what it should show. If they ask to cover new data, add it to the "Current Affairs Focus" or "Missing Info to Inject" fields. Keep the exact same structural keys (Phase Coverage, Topics Covered, Writing Goal, Missing Info to Inject, Cross-Topic Linkages, Current Affairs Focus, MP Content, Required Images, Tables Required, Formulas Required).\nOUTPUT: Return ONLY the updated plan for this specific part in plain text. Do not wrap in markdown code blocks.`,
+            partWriterPrompt: `You are an elite Study Notes Writer for UPSC, MPPSC, and State PSC exams.\nYou are generating FINAL NOTES for ONLY ONE approved part.\nYou must obey the approved blueprint exactly.\nINPUTS\nCURRENT PART ID: {PART_ID}\nCURRENT PART TITLE: {PART_TITLE}\nRAW PDF DATA FOR THIS PART:\n{RAW_PART_TEXT}\nSTORY STRATEGY TO USE:\n{STORY_STRATEGY}\nMISSING INFORMATION TO INJECT:\n{PART_MISSING_INFO}\nCROSS-TOPIC LINKAGES TO INCLUDE:\n{PART_LINKAGES}\nMP-SPECIFIC CONTEXT:\n{PART_MP_CONTEXT}\nPRIMARY OBJECTIVE\nWrite exhaustive, exam-oriented final notes for this one part. Integrate raw PDF content, fill missing conceptual gaps, include cross-topic linkages, stakeholder analysis, policy trade-offs, and MP-specific relevance.\nTHE UNIFIED WORKSPACE RULE - VISUAL TAGS\nYou must NOT write 'IMAGE_NEEDED'.\nWhenever you finish explaining a complex concept, process, mechanism, or comparison, you MUST insert a Dynamic Visual Tag exactly like this on its own line:\n[IMAGE_WORKSPACE | Concept: A very short 5-10 word description of what needs visualizing]\nYou should place these tags generously wherever a flowchart, comic, map, or diagram would help a student.\nAlways place a tag after explaining a 4-step process.\nAlways place a tag after a difficult theoretical definition.\nOUTPUT STYLE:\n- Short paragraphs 2-4 lines\n- Generous bullets\n- Clear subheadings\n- Tables where useful\n- Exam-focused tone\nOUTPUT: Only the final notes in Markdown. No meta commentary.`,
+            economicsPartWriterPrompt: `You are an elite Economics Study Notes Writer for UPSC and MPPSC exams. You write final exam-grade notes for ONE specific part. APPROVED BLUEPRINT: {APPROVED_BLUEPRINT} PART ID: {PART_ID} | PART TITLE: {PART_TITLE} RAW PDF DATA FOR THIS PART: {RAW_PART_TEXT} TOPIC MAP FOR THIS PART: {PART_TOPIC_MAP} STORY STRATEGY TO USE: {STORY_STRATEGY} MISSING INFORMATION TO INJECT: {PART_MISSING_INFO} CROSS-TOPIC LINKAGES: {PART_LINKAGES} VISUAL ASSETS PLANNED: {PART_ASSET_REGISTRY} MP-SPECIFIC CONTEXT: {PART_MP_CONTEXT} REFINEMENT INSTRUCTION: {OPTIONAL_REFINEMENT_NOTE}\nNON-NEGOTIABLE RULES:\nUse every single definition, formula, and data point from the raw PDF data. Do not summarize mechanically.\nEvery IMAGE_NEEDED placeholder must have a textual anchor before it and a data cross-check after it.\nThe village story must appear at the start of this part using the assigned characters.\nMaintain clean Markdown. Do not output blueprint or planning commentary.\nWRITING STRUCTURE: Start with: # {PART_TITLE} Add STORY ANCHOR (3-5 paragraph fictional story using the assigned characters, ending with a question the technical content answers). For each topic, sequence as: Definition → Why it matters → Mechanism/Process → Formula → Worked Example → Stakeholder Impact → Policy Trade-off → Cross-Topic Nexus → MP-Specific Relevance.\nTHE UNIFIED WORKSPACE RULE - VISUAL TAGS\nWhenever you finish explaining a complex concept, process, mechanism, or comparison, you MUST insert a Dynamic Visual Tag exactly like this on its own line:\n[IMAGE_WORKSPACE | Concept: A very short 5-10 word description of what needs visualizing]\nAt the end of the part, include a "Prelims Practice Lens" (3-5 MCQs) and a "Mains Answer-Writing Lens" (3, 5, and 11-marker angles). OUTPUT: Only the final notes in Markdown.`,
+            imagePromptBuilder: `You are an elite Graphic Design Prompt Engineer for AI Educational Images.\nThe student needs a high-quality educational visualization generated by an AI (Imagen-4).\nThey have requested the following concept to be visualized:\nCONCEPT: {CONCEPT}\nThey selected the following artistic/structural style:\nSTYLE TYPE: {TEMPLATE_TYPE}\nYOUR TASK:\nWrite the perfect, highly-detailed prompt to feed into the Image Generator to produce this diagram.\nRULES:\n- Clean minimalist infographic style.\n- Colors must prioritize deep navy blues, warm oranges, soft sage greens.\n- Background must be pure white or light cream.\n- Ensure the prompt explicitly tells the AI to use clear, highly legible dark charcoal sans-serif text.\n- If it is a flowchart, describe the box layout. If a comic, describe the characters and panels.\nOUTPUT FORMAT:\nReturn ONLY the raw prompt text string. No conversational filler. No markdown blocks.`,
+            currentAffairsPrompt: `You are a current affairs research specialist for UPSC and MPPSC exam preparation.\nUse Google Search to find accurate and recent information.\nDo not rely on training data for specific statistics.\nTOPIC: {PART_TITLE}\nCONCEPTS: {TOPICS_LIST}\nSUBJECT: {SUBJECT}\nGenerate current affairs in 4 mandatory parts.\nEvery entry must have a specific date, figure, or named policy. No vague statements allowed.\n### PART A — Major National/Global Events 2020-2023\nFocus area: {SUBJECT_FOCUS_A}\nMinimum 6 entries.\nFor each:\n**Event:** [specific name]\n**Date:** [month and year]\n**What:** [2-3 sentences with specific figures]\n**Key Data:** [one specific number or policy name]\n### PART B — Recent National/Global 2024 to Present\nFocus area: {SUBJECT_FOCUS_B}\nMinimum 6 entries with most recent data.\n### PART C — MP Specific Major 2020-2023\nFocus area: {SUBJECT_FOCUS_C}\nMinimum 4 entries.\n### PART D — MP Specific Recent 2024 to Present\nFocus area: {SUBJECT_FOCUS_D}\nMinimum 4 entries.\n### TIMELINE (if applicable)\nIf 3+ events form a sequence, create:\n[YEAR/MONTH] → [Event Name] → [Key Figure] → [Exam Significance]`,
+            refinementPrompt: `You are updating one approved part of study notes based on user instructions.\nCURRENT PART NOTES:\n{CURRENT_PART_NOTES}\nLOCKED IMAGE PLACEHOLDERS:\n{LOCKED_IMAGE_PLACEHOLDERS}\nUSER INSTRUCTION:\n{USER_INSTRUCTION}\nRules:\n- Preserve all locked image placeholders exactly as [IMAGE_WORKSPACE | Concept: X].\n- Improve only what the user asked for.\n- Output only the updated part notes in Markdown.`
+        };
+
+        const SUBJECT_PROMPT_MAP = {
+            'Economics':'economicsBlueprintPrompt', 'Polity':'polityBlueprintPrompt', 'History':'historyBlueprintPrompt', 'Geography':'geographyBlueprintPrompt', 'Science & Technology':'scienceTechBlueprintPrompt', 'Environment':'environmentBlueprintPrompt', 'Social Issues':'socialIssuesBlueprintPrompt', 'MP Specific':'mpSpecificBlueprintPrompt', 'Current Affairs':'currentAffairsBlueprintPrompt'
+        };
+
+        let appState = {
+            currentStep: 1, fileName: null, pdfText: null, pageCount: 0, subject: 'Unknown', category: 'Unknown', confidence: '', documentIdentity: '', topicMap: '', examAnalysis: '', visualsList: '', prompts: { ...DEFAULT_PROMPTS }, promptVersions: {}, activeBlueprintPromptKey: 'economicsBlueprintPrompt', blueprint: { rawContent: '', imageRegistry: [], sections: [], isApproved: false, parts: [] }, logs: []
+        };
+
+        const Session = {
+            async save() {
+                try {
+                    await DB.set('studyforge_state', appState);
+                    const ind = $('save-indicator');
+                    if(ind) { ind.style.opacity = '1'; setTimeout(() => ind.style.opacity = '0', 2000); }
+                } catch (e) {
+                    console.error("IndexedDB session save failed, offloading heavy elements to preserve local footprint", e);
+                    // Fallback to localStorage without bulky base64 data to completely secure memory against browser crashes
+                    try {
+                        const cloned = JSON.parse(JSON.stringify(appState));
+                        cloned.blueprint.parts.forEach(p => { p.images.forEach(img => { img.base64 = null; }); });
+                        localStorage.setItem('studyforge_state', JSON.stringify(cloned));
+                    } catch(err) {
+                        console.error("LocalStorage recovery state save crashed", err);
+                    }
+                }
+            },
+            async check() {
+                try {
+                    const s = await DB.get('studyforge_state');
+                    if(s) {
+                        show('session-banner');
+                        setTxt('session-banner-text', `Previous session found. Subject: ${s.subject || 'Unknown'}. Parts: ${s.blueprint?.parts?.length || 0}.`);
+                    } else {
+                        const fallback = localStorage.getItem('studyforge_state');
+                        if(fallback) {
+                            show('session-banner');
+                            setTxt('session-banner-text', `Previous text-only session recovered. Subject: ${JSON.parse(fallback).subject || 'Unknown'}.`);
+                        }
+                    }
+                } catch(e) {}
+            },
+            async resume() {
+                try {
+                    let s = await DB.get('studyforge_state');
+                    if(!s) {
+                        const fallback = localStorage.getItem('studyforge_state');
+                        if(fallback) s = JSON.parse(fallback);
+                    }
+                    if(s) {
+                        Object.assign(appState, s);
+                        hide('session-banner');
+                        Toaster.show('Session restored', 'sky');
+                        App.goToStep(appState.currentStep || 1);
+                        if(appState.currentStep===1) Step1.showExtractionOutput();
+                        if(appState.currentStep===2) {
+                            Step2.init();
+                            if(appState.blueprint.rawContent) {
+                                Step2.parseBlueprint(appState.blueprint.rawContent);
+                                if(appState.blueprint.isApproved) Step2.approveBlueprint();
+                            }
+                        }
+                        if(appState.currentStep===3) Step3.renderFeed();
+                        PromptRegistry.initList();
+                    }
+                } catch(e) {
+                    console.error("Session restoration crash", e);
+                }
+            },
+            async clear() {
+                CustomConfirm.show(
+                    "Start Fresh?", 
+                    "This will delete all saved parts, research states, and base64 imagery forever.", 
+                    async () => {
+                        try {
+                            await DB.delete('studyforge_state');
+                            localStorage.removeItem('studyforge_state');
+                        } catch(e){}
+                        location.reload();
+                    }
+                );
+            }
+        };
+
+        const Toaster = {
+            show(msg, type = 'info') {
+                const c = $('toasts'); const t = document.createElement('div');
+                const colors = { emerald: 'bg-emerald-50 text-emerald-800 border-emerald-200', rose: 'bg-rose-50 text-rose-800 border-rose-200', amber: 'bg-amber-50 text-amber-800 border-amber-200', sky: 'bg-sky-50 text-sky-800 border-sky-200', purple: 'bg-purple-50 text-purple-800 border-purple-200' };
+                t.className = `p-3 rounded-lg border shadow-md font-bold text-sm transform transition-all duration-300 translate-x-full ${colors[type] || colors.sky}`; t.textContent = msg; c.appendChild(t);
+                requestAnimationFrame(() => t.classList.remove('translate-x-full'));
+                setTimeout(() => { t.classList.add('translate-x-full', 'opacity-0'); setTimeout(() => t.remove(), 300); }, 3000);
+            }
+        };
+
+        const Logger = {
+            unreadErrors: 0,
+            add(level, stage, msg) { appState.logs.push({ time: new Date().toLocaleTimeString(), level, stage, msg }); if(appState.logs.length>2000) appState.logs.shift(); if(level==='ERROR'){ this.unreadErrors++; this.updateBadge(); } localStorage.setItem('studyforge_logs', JSON.stringify(appState.logs)); this.renderLine(appState.logs[appState.logs.length-1]); this.updateCount(); },
+            updateBadge() { const b = $('log-badge'), bub = $('log-bubble'); if(b && bub) { if(this.unreadErrors>0 && $('log-popup').classList.contains('hidden')){ b.textContent=this.unreadErrors; show('log-badge'); bub.classList.add('pulse-active'); } else { hide('log-badge'); bub.classList.remove('pulse-active'); } } },
+            togglePopup() { const p = $('log-popup'); if(p) { if(p.classList.contains('hidden')){ show('log-popup'); this.unreadErrors=0; this.updateBadge(); this.renderAll(); const dbg = $('btn-debug-raw'); if(dbg && !$('step-1').classList.contains('hidden') && !$('s1-output-tabs').classList.contains('hidden')) show('btn-debug-raw'); } else { hide('log-popup'); hide('btn-debug-raw'); } } },
+            renderAll(f='ALL') { const c = $('log-content'); if(c){ c.innerHTML=''; appState.logs.forEach(e => { if(f==='ALL' || (f==='ERROR' && e.level==='ERROR') || (f==='STAGE' && e.stage) || (f==='API' && e.msg.includes('API')) || (f==='SYSTEM' && e.stage==='SYSTEM')) this.renderLine(e,c); }); c.scrollTop = c.scrollHeight; } this.updateCount(); },
+            renderLine(e, c=$('log-content')) { if(c) { const cols = { INFO:'text-sky-400', SUCCESS:'text-emerald-400', WARN:'text-amber-400', ERROR:'text-rose-400', DEBUG:'text-slate-500' }; const d=document.createElement('div'); d.className='flex gap-2 border-b border-slate-800/50 pb-1 mb-1'; d.innerHTML=`<span class="text-slate-600 shrink-0">[${e.time}]</span> <span class="${cols[e.level]||'text-slate-400'} font-bold shrink-0">[${e.level}]</span> ${e.stage?`<span class="text-purple-400 shrink-0">[${e.stage}]</span>`:''} <span>${e.msg}</span>`; c.appendChild(d); c.scrollTop=c.scrollHeight; } },
+            setFilter(f, btn) { document.querySelectorAll('.log-tab').forEach(b => { b.classList.remove('active', 'text-indigo-600', 'border-indigo-600'); b.classList.add('text-slate-500', 'border-transparent'); }); if(btn){ btn.classList.remove('text-slate-500', 'border-transparent'); btn.classList.add('active', 'text-indigo-600', 'border-indigo-600'); } this.renderAll(f); },
+            updateCount() { setTxt('log-count', `${appState.logs.length} entries`); },
+            clear() { appState.logs = []; localStorage.setItem('studyforge_logs', '[]'); this.renderAll(); Logger.add('INFO', 'SYSTEM', 'Logs cleared'); },
+            expandToTab() { const w=window.open('','_blank'); w.document.write(`<!DOCTYPE html><html><head><title>StudyForge Logs</title><script src="https://cdn.tailwindcss.com"><\/script></head><body class="bg-slate-900 text-slate-300 font-mono text-sm p-4"><div class="flex justify-between items-center mb-4 border-b border-slate-700 pb-2"><h1 class="text-white font-bold">StudyForge Live Logs</h1><span class="text-emerald-400 animate-pulse">● Live</span></div><div id="c" class="space-y-1"></div><script>const c=document.getElementById('c');let l=0;setInterval(()=>{const v=JSON.parse(localStorage.getItem('studyforge_logs')||'[]');if(v.length!==l){c.innerHTML='';const cols={INFO:'text-sky-400',SUCCESS:'text-emerald-400',WARN:'text-amber-400',ERROR:'text-rose-400',DEBUG:'text-slate-500'};v.forEach(e=>{const d=document.createElement('div');d.className='flex gap-2';d.innerHTML=\`<span class="text-slate-500">[\${e.time}]</span> <span class="\${cols[e.level]||'text-slate-400'} font-bold">[\${e.level}]</span> \${e.stage?\`<span class="text-purple-400">[\${e.stage}]</span>\` : ''} <span>\${e.msg}</span>\`;c.appendChild(d);});window.scrollTo(0,document.body.scrollHeight);l=v.length;}},1000);<\/script></body></html>`); this.togglePopup(); }
+        };
+
+        const API = {
+            async streamContent(prompt, onChunk, opts={}) {
+                Logger.add('INFO', 'API', `Starting live SSE Stream Call`);
+                try {
+                    let tools = opts.useTools ? { tools: [{ "google_search": {} }] } : {};
+                    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${TEXT_MODEL}:streamGenerateContent?alt=sse&key=${apiKey}`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ contents:[{parts:[{text:prompt}]}], generationConfig:{temperature:opts.temp||0.3}, ...tools }) });
+                    if(!res.ok) throw new Error(`HTTP ${res.status}: ${await res.text()}`);
+                    const reader = res.body.getReader(); const decoder = new TextDecoder("utf-8");
+                    let acc="", buf=""; 
+                    while(true) {
+                        const {done, value} = await reader.read(); if(done) break;
+                        buf += decoder.decode(value, {stream:true}); const lines = buf.split('\n'); buf = lines.pop(); 
+                        for(const line of lines) {
+                            if(line.startsWith('data: ')) {
+                                const ds = line.substring(6).trim(); if(ds === '[DONE]') continue;
+                                try { const t = JSON.parse(ds).candidates?.[0]?.content?.parts?.[0]?.text||''; if(t) { acc+=t; onChunk(t, acc); } } catch(e) {}
+                            }
+                        }
+                    }
+                    Logger.add('SUCCESS', 'API', `Stream completed. Approx ${acc.split(/\s+/).length} words.`); return acc;
+                } catch(e) { Logger.add('ERROR', 'API', `Stream failed: ${e.message}`); throw e; }
+            },
+            async generateContent(prompt) {
+                Logger.add('INFO', 'API', `Standard Call started`);
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${TEXT_MODEL}:generateContent?key=${apiKey}`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ contents:[{parts:[{text:prompt}]}], generationConfig:{temperature:0.3} }) });
+                const data = await res.json(); if(data.error) throw new Error(data.error.message); return data.candidates[0].content.parts[0].text;
+            },
+            async generateImage(prompt, aspectRatio="16:9") {
+                Logger.add('INFO', 'API', `Image gen started with Imagen 4.0`);
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${IMG_MODEL}:predict?key=${apiKey}`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ instances:{prompt}, parameters:{sampleCount:1, aspectRatio} }) });
+                const data = await res.json(); if(data.error) throw new Error(data.error.message);
+                if(data.predictions && data.predictions[0]) { Logger.add('SUCCESS', 'API', `Image generated`); return `data:image/png;base64,${data.predictions[0].bytesBase64Encoded}`; }
+                throw new Error("No image data");
+            }
+        };
+
+        const Step1 = {
+            async handleUpload(e) {
+                const f = e.target.files[0]; if(!f) return;
+                Logger.add('INFO', 'S1_EXTRACT', `PDF selected: ${f.name} (${Math.round(f.size/1024)}kb)`); appState.fileName = f.name;
+                try {
+                    const pdf = await pdfjsLib.getDocument(await f.arrayBuffer()).promise;
+                    let text = ""; for(let i=1; i<=pdf.numPages; i++) { const p = await pdf.getPage(i); const tc = await p.getTextContent(); text += tc.items.map(it=>it.str).join(' ')+"\n"; }
+                    appState.pdfText = text; appState.pageCount = pdf.numPages;
+                    Logger.add('SUCCESS', 'S1_EXTRACT', `Extraction complete. Length: ${text.length}`);
+                    
+                    show('s1-partition-settings');
+                    Toaster.show('PDF parsed! Configure settings and launch analysis.', 'sky');
+                } catch(err) { Logger.add('ERROR', 'S1_EXTRACT', err.message); Toaster.show('Extraction failed', 'rose'); }
+            },
+            initPhases() { setHTML('s1-phases', [1,2,3,4,5].map(i => `<div id="s1-ph-${i}" class="flex items-center gap-3 p-2 rounded-lg border-l-2 border-transparent text-slate-400 transition-all"><div id="s1-ph-icon-${i}" class="phase-icon w-5 h-5 rounded-full border-2 border-current flex items-center justify-center text-[10px] font-bold">○</div><span class="text-sm font-medium">Phase ${i} — ${['PDF Parsing Complete', 'Syllabus Context Analysis', 'Grounded Topic Mapping', 'Pedagogical Evaluation', 'Strategy-Aligned Partitioning'][i-1]}</span></div>`).join('')); },
+            setPhaseStatus(n, st) {
+                const p = $(`s1-ph-${n}`), i = $(`s1-ph-icon-${n}`); if(!p||!i) return;
+                p.classList.remove('border-transparent','text-slate-400','border-indigo-500','bg-indigo-50','text-indigo-700','border-emerald-500','bg-emerald-50','text-emerald-700');
+                if(st==='pending') p.classList.add('border-transparent','text-slate-400'); else if(st==='active') p.classList.add('border-indigo-500','bg-indigo-50','text-indigo-700'); else if(st==='done') p.classList.add('border-emerald-500','bg-emerald-50','text-emerald-700');
+                if(st==='done'){ i.innerHTML='✔'; i.classList.remove('pulse-active'); } else if(st==='active'){ i.innerHTML='<div class="w-2 h-2 bg-current rounded-full"></div>'; i.classList.add('pulse-active'); } else { i.innerHTML='○'; i.classList.remove('pulse-active'); }
+            },
+            updateStage1Progress(txt, tc) {
+                setTxt('stage1-token-counter', `~${tc.toLocaleString()} tokens`);
+                if(txt.includes('SECTION 1')){ this.setPhaseStatus(1,'done'); this.setPhaseStatus(2,'active'); }
+                if(txt.includes('SECTION 2')){ this.setPhaseStatus(2,'done'); this.setPhaseStatus(3,'active'); }
+                if(txt.includes('SECTION 3')){ this.setPhaseStatus(3,'done'); this.setPhaseStatus(4,'active'); }
+                if(txt.includes('SECTION 4')){ this.setPhaseStatus(4,'done'); this.setPhaseStatus(5,'active'); }
+            },
+            async runPartitionAnalysis() {
+                const targetCount = $('s1-opt-count').value;
+                const filterSel = $('s1-opt-filter').value;
+                
+                hide('s1-partition-settings');
+                show('s1-progress-panel'); 
+                hide('s1-output-tabs'); 
+                
+                this.initPhases(); 
+                this.setPhaseStatus(1, 'active');
+                
+                Logger.add('INFO', 'STAGE_1', `Starting partition execution. Config: Count=${targetCount}, Mode=${filterSel}`);
+                
+                const pt = appState.prompts.extractionPrompt
+                    .replace('{EXTRACTED_TEXT}', appState.pdfText.substring(0, 100000))
+                    .replace('{TOTAL_PAGES}', appState.pageCount)
+                    .replace('{TARGET_PART_COUNT}', targetCount)
+                    .replace('{FILTER_SETTING}', filterSel);
+                    
+                try {
+                    const res = await API.streamContent(pt, (c, acc) => {
+                        this.updateStage1Progress(acc, acc.split(/\s+/).length);
+                        const out = $('stage1-live-output'); if(out){ out.textContent = acc; out.scrollTop = out.scrollHeight; }
+                    }, { temp: 0.1, useTools: false });
+                    this.setPhaseStatus(5, 'done'); 
+                    Logger.add('SUCCESS', 'STAGE_1', `Analysis complete.`); 
+                    this.parseExtractionResponse(res);
+                } catch (e) { 
+                    Logger.add('ERROR', 'STAGE_1', `Extraction failed: ${e.message}`); 
+                    Toaster.show('AI analysis failed. Check console.', 'rose'); 
+                    this.setPhaseStatus(1, 'pending'); 
+                    show('s1-partition-settings');
+                }
+            },
+            parseExtractionResponse(txt) {
+                appState.blueprint.rawContent = txt;
+                const m = (re) => (txt.match(re)||[])[0]||'Not found';
+                appState.documentIdentity = m(/SECTION 1[\s\S]*?(?=SECTION 2)/); appState.topicMap = m(/SECTION 2[\s\S]*?(?=SECTION 3)/);
+                appState.examAnalysis = m(/SECTION 3[\s\S]*?(?=SECTION 4)/); appState.visualsList = m(/SECTION 4[\s\S]*?(?=SECTION 5)/);
+                let st = (appState.documentIdentity.match(/(?:Main subject|Main Subject|Subject):\s*(.*)/i)||[])[1]?.replace(/[*_]/g,'').trim() || appState.documentIdentity;
+                let ds = 'Unknown', conf = 0, tt = st.toLowerCase();
+                if(/(economics|economic|macroeconomics|microeconomics|gdp|national income|fiscal|monetary|inflation|budget|finance|market|demand|supply|trade)/.test(tt)){ ds='Economics'; conf=(tt.match(/economics|economic/g)||[]).length; }
+                else if(/(polity|political science|constitution|parliament|governance|judiciary|legislature|executive|fundamental rights|dpsp|amendment|article)/.test(tt)){ ds='Polity'; conf=(tt.match(/polity|constitution/g)||[]).length; }
+                else if(/(history|historical|ancient|medieval|modern|freedom|independence|colonial|mughal|british|movement|revolution|dynasty)/.test(tt)){ ds='History'; conf=(tt.match(/history/g)||[]).length; }
+                else if(/(geography|physical|human|economic geography|climate|monsoon|river|mountain|soil|agriculture geography|location|region|topography)/.test(tt)){ ds='Geography'; conf=(tt.match(/geography/g)||[]).length; }
+                else if(/(science|technology|physics|chemistry|biology|nuclear|space|isro|digital|ai|artificial|biotechnology|nanotechnology|defence technology)/.test(tt)){ ds='Science & Technology'; conf=(tt.match(/science|technology/g)||[]).length; }
+                else if(/(environment|ecology|biodiversity|climate change|forest|wildlife|pollution|conservation|ecosystem|sustainability|green)/.test(tt)){ ds='Environment'; conf=(tt.match(/environment|ecology/g)||[]).length; }
+                else if(/(social|society|poverty|gender|caste|tribe|scheduled|minority|welfare|education|health|inequality|demographics|census)/.test(tt)){ ds='Social Issues'; conf=(tt.match(/social|society/g)||[]).length; }
+                else if(/(international|foreign policy|diplomacy|unsc|bilateral|multilateral|treaty|alliance|geopolitics|strategic|relations)/.test(tt)){ ds='International Relations'; conf=(tt.match(/international|relations/g)||[]).length; }
+                if(ds==='Unknown') { const ft=txt.toLowerCase(); if(/(economics|economic)/.test(ft)) ds='Economics'; else if(/(polity|constitution)/.test(ft)) ds='Polity'; else if(/(history)/.test(ft)) ds='History'; else if(/(geography)/.test(ft)) ds='Geography'; }
+                appState.subject = ds; appState.confidence = conf>3?'High Confidence':(conf>0?'Low Confidence':'Unknown');
+                appState.category = (appState.documentIdentity.match(/Category:\s*(.*)/i)||appState.documentIdentity.match(/MPPSC paper and area[^\n]*:\s*(.*)/i)||[])[1]?.trim()||'Unknown';
+                let pt = txt.indexOf('SECTION 5')!==-1 ? txt.substring(txt.indexOf('SECTION 5')) : txt;
+                let bk = pt.split(/(?=\[?PART ID:\s*PART_\d+\]?)/i).filter(b=>b.trim()&&/PART_\d+/i.test(b));
+                if(!bk.length) bk = pt.split(/(?=(?:\n|^)PART_\d+)/i).filter(b=>b.trim()&&/PART_\d+/i.test(b));
+                Logger.add('INFO', 'S1_PARSE', `Found ${bk.length} blocks.`);
+                appState.blueprint.parts = [];
+                const ex = (b, ptns) => { for(let p of ptns) { let m=b.match(p); if(m) return m[1].trim().replace(/^\*\*|\*\*$/g,'').trim(); } return ""; };
+                const exML = (b, ptns) => { for(let p of ptns) { let m=b.match(p); if(m){ let c=m[1], i=c.search(/\n\s*[-*]?\s*(?:Approximate Page|Topics Covered|Why these topics|Tables\/Formulas|Likely useful|Exact Raw|PART ID:|## Part)/i); if(i!==-1) c=c.substring(0,i); return c.trim(); } } return ""; };
+                bk.forEach((b, i) => {
+                    let id = `PART_${(b.match(/PART_(\d+)/i)||[])[1]||(i+1)}`;
+                    let tl = ex(b,[/-\s*Part Title:\s*(.*)/i,/Part Title:\s*(.*)/i,/Title:\s*(.*)/i,/\[PART ID.*?\]\s*\n(?!-)(.*)/i])||`Part ${i+1}`;
+                    let ps = ex(b,[/-\s*Approximate Page Span:\s*(.*)/i,/Approximate Page Span:\s*(.*)/i,/-\s*Page Span:\s*(.*)/i,/Pages:\s*(.*)/i]);
+                    let tc = exML(b,[/-\s*Topics Covered:\s*([\s\S]*)/i,/Topics Covered:\s*([\s\S]*)/i,/-\s*Topics:\s*([\s\S]*)/i,/Topics:\s*([\s\S]*)/i]).split(/,|\n/).map(t=>t.replace(/^[-*•\s]+/,'').trim()).filter(Boolean);
+                    let wt = exML(b,[/-\s*Why these topics belong together:\s*([\s\S]*)/i,/Why these topics belong together:\s*([\s\S]*)/i,/-\s*Why Together:\s*([\s\S]*)/i,/Why Together:\s*([\s\S]*)/i]);
+                    let rd = "", rdm = b.match(/-\s*Exact Raw PDF Data:?\s*/i)||b.match(/Exact Raw PDF Data:?\s*/i);
+                    if(rdm) { rd = b.substring(b.indexOf(rdm[0])+rdm[0].length).trim(); let ni = rd.search(/\n\s*\[?PART ID:/i); if(ni!==-1) rd = rd.substring(0,ni).trim(); }
+                    if(!rd) rd = (b.match(/Raw PDF Data:?\s*([\s\S]*)/i)||[])[1]?.trim()||'';
+                    let tf = exML(b,[/-\s*Tables\/Formulas\/Data.*?:\s*([\s\S]*)/i,/Tables\/Formulas\/Data.*?:\s*([\s\S]*)/i,/-\s*Formulas:\s*([\s\S]*)/i]);
+                    const cf = kws => kws.some(k => /yes/i.test((b.match(new RegExp(`${k}.*?:\\s*(.*)`,'i'))||[])[1]||''));
+                    appState.blueprint.parts.push({ id, partNumber: parseInt(id.split('_')[1]), title: tl, pageSpan: ps, topicsCovered: tc, whyTogether: wt, rawData: rd, tablesFormulas: tf, currentAffairsFlag: cf(["current-affairs enrichment","current affairs enrichment"]), mpSpecificFlag: cf(["MP-specific enrichment","MP specific enrichment"]), visualAssetFlag: cf(["visual asset"]), subject: appState.subject, category: appState.category, status: 'not_started', generatedText: '', generatedTextRaw: '', currentAffairsText: '', currentAffairsMerged: false, timelineData: [], images: [], versions: [], approved: false, approvedButEdited: false, promptUsed: { textPrompt:'', currentAffairsPrompt:'' } });
+                });
+                if(!appState.blueprint.parts.length) { Logger.add('WARN', 'S1_PARSE', 'Fallback part created.'); appState.blueprint.parts.push({ id:'PART_1', partNumber:1, title:'Full Document', topicsCovered:['All'], rawData:appState.pdfText.substring(0,20000), status:'not_started', generatedText:'', generatedTextRaw:'', currentAffairsText:'', currentAffairsMerged:false, timelineData:[], images:[], versions:[], approved:false, approvedButEdited:false, promptUsed:{textPrompt:'', currentAffairsPrompt:''} }); }
+                Logger.add('SUCCESS', 'S1_PARSE', `Parsed ${appState.blueprint.parts.length} parts.`); Session.save(); this.showExtractionOutput();
+            },
+            showExtractionOutput() {
+                hide('s1-progress-panel'); show('s1-output-tabs');
+                if(!$('log-popup')?.classList.contains('hidden')) show('btn-debug-raw');
+                const ta = $('s1-raw-textarea'); if(ta) ta.value = appState.pdfText;
+                setTxt('s1-raw-stats', `${appState.pageCount} Pages | ${appState.pdfText.length} Chars`);
+                setHTML('s1-out-identity', marked.parse(appState.documentIdentity.replace('SECTION 1 - PDF IDENTITY', '')));
+                setHTML('s1-out-topics', marked.parse(appState.topicMap.replace('SECTION 2 - COMPLETE TOPIC MAP', '').trim()));
+                setHTML('s1-out-exam', marked.parse(appState.examAnalysis.replace('SECTION 3 - EXAM VALUE ANALYSIS & MISSING DETAILS', '')));
+                setHTML('s1-tab-parts', appState.blueprint.parts.map(p => `<div class="bg-white rounded-xl border shadow-sm mb-4"><div class="p-4 bg-indigo-50/50 border-b flex flex-wrap gap-4 justify-between items-center cursor-pointer hover:bg-indigo-50" onclick="toggle('s1-pdet-${p.id}')"><div class="flex items-center gap-3 flex-1"><span class="text-xs font-bold text-white bg-indigo-600 px-2 py-0.5 rounded">${p.id}</span><span class="font-bold text-sm">${p.title}</span></div><div class="flex items-center gap-3 text-xs font-medium text-slate-600"><span class="bg-white px-2 py-1 rounded border">${p.pageSpan||'No pages'}</span><div class="flex gap-1"><span class="px-1.5 py-0.5 rounded ${p.currentAffairsFlag?'bg-emerald-100 text-emerald-700':'bg-slate-100 text-slate-400'}">CA</span><span class="px-1.5 py-0.5 rounded ${p.mpSpecificFlag?'bg-blue-100 text-blue-700':'bg-slate-100 text-slate-400'}">MP</span></div><span class="bg-indigo-100 text-indigo-700 px-2 py-1 rounded">${p.topicsCovered.length} Topics</span><span class="text-indigo-600 font-bold">Expand ▼</span></div></div><div id="s1-pdet-${p.id}" class="hidden"><div class="p-4 grid grid-cols-1 gap-4 text-sm"><div class="bg-slate-50 p-3 rounded-lg border"><h5 class="font-bold text-slate-400 text-[10px] mb-1 uppercase tracking-wider">Topics</h5><ul class="text-slate-700">${p.topicsCovered.length?p.topicsCovered.map(t=>`<li class="ml-4 list-disc">${t}</li>`).join(''):'<span class="text-amber-600">None detected</span>'}</ul></div></div><div class="p-4 bg-slate-50"><div class="flex justify-between items-center mb-2"><h5 class="font-bold text-slate-500 text-[10px] uppercase">Exact Raw PDF Data</h5><button onclick="UI.copyText('raw-ta-${p.id}')" class="text-[10px] bg-slate-200 px-3 py-1 rounded font-bold">Copy</button></div><textarea id="raw-ta-${p.id}" class="w-full h-64 p-3 font-mono text-xs ${p.rawData?'text-slate-600':'text-rose-600'} bg-white border rounded outline-none" readonly>${p.rawData||'No raw data extracted.'}</textarea></div></div></div>`).join(''));
+                const nBtn = $('s1-next-btn'); if(nBtn) nBtn.disabled = false; Toaster.show('Stage 1 Complete.', 'emerald');
+            },
+            switchTab(id) { document.querySelectorAll('.s1-tab-btn').forEach(b => { b.classList.remove('active', 'border-indigo-600', 'text-indigo-600'); b.classList.add('border-transparent', 'text-slate-500'); }); if(event&&event.target) { event.target.classList.add('active', 'border-indigo-600', 'text-indigo-600'); event.target.classList.remove('border-transparent', 'text-slate-500'); } document.querySelectorAll('.s1-tab-content').forEach(c => c.classList.add('hidden')); show(`s1-tab-${id}`); },
+            showRawResponse() { const ta = $('debug-textarea'), st = $('debug-stats'); if(ta) ta.value = appState.blueprint.rawContent || "No raw response saved."; if(st) st.innerHTML = `Characters: ${appState.blueprint.rawContent.length} | PART IDs: ${(appState.blueprint.rawContent.match(/\[?PART ID:/gi)||[]).length}`; show('debug-modal'); }
+        };
+
+        const Step2 = {
+            init() { setTxt('s2-detected-subject', appState.subject); const s=$('s2-subject-select'); if(s) s.value = Object.keys(SUBJECT_PROMPT_MAP).includes(appState.subject)?appState.subject:'Economics'; if(appState.confidence.includes('Low')) Toaster.show('Subject detected with low confidence.', 'amber'); this.onSubjectChange(); },
+            onSubjectChange() {
+                const sub = $('s2-subject-select')?.value||'Economics'; appState.subject = sub; Logger.add('INFO', 'S2_ROUTE', `Subject overridden to ${sub}`); setTxt('s2-detected-subject', sub); Toaster.show(`Subject set to ${sub}`, 'purple');
+                const pk = SUBJECT_PROMPT_MAP[sub]||'economicsBlueprintPrompt'; appState.activeBlueprintPromptKey = pk;
+                setTxt('s2-card-subject', sub); setTxt('s2-card-prompt-name', pk); setTxt('s2-card-version', appState.promptVersions[pk]||'v1 (Default)');
+                const st = $('s2-card-status'), btn = $('s2-gen-blueprint-btn'), sz = $('s2-card-size');
+                if(appState.prompts[pk]) { if(st){ st.innerHTML='● Loaded and Ready'; st.className='font-bold text-emerald-600'; } if(sz) sz.textContent=`${appState.prompts[pk].length} chars`; if(btn) btn.disabled=false; } else { if(st){ st.innerHTML='○ Coming Soon'; st.className='font-bold text-amber-600'; } if(sz) sz.textContent=`0 chars`; if(btn) btn.disabled=true; } Session.save();
+            },
+            async generateBlueprint() {
+                show('s2-progress-panel'); hide('s2-blueprint-output');
+                const btn = $('s2-gen-blueprint-btn'); if(btn) { btn.innerHTML = `<svg class="w-5 h-5 animate-spin-slow inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg> Generating...`; btn.disabled = true; }
+                setHTML('s2-phases', [1,2,3,4,5,6,7].map(i => `<div id="bp-ph-${i}" class="flex items-center gap-3 p-2 rounded-lg border-l-2 border-transparent text-slate-400"><div id="bp-icon-${i}" class="w-4 h-4 rounded-full border-2 border-current flex items-center justify-center text-[8px] font-bold">${i}</div><span class="text-xs font-bold">${['Routing', 'Narrative', 'Architecture', 'Concepts', 'Current Affairs', 'Images', 'Execution'][i-1]}</span></div>`).join(''));
+                const setPh = (n) => { for(let i=1; i<=7; i++){ const el=$(`bp-ph-${i}`), ic=$(`bp-icon-${i}`); if(el&&ic){ if(i<n){ el.className="flex items-center gap-3 p-2 rounded-lg border-l-2 border-emerald-500 bg-emerald-50 text-emerald-700"; ic.innerHTML='✔'; ic.classList.remove('pulse-active'); } else if(i===n){ el.className="flex items-center gap-3 p-2 rounded-lg border-l-2 border-purple-500 bg-purple-50 text-purple-700"; ic.innerHTML='<div class="w-1.5 h-1.5 bg-current rounded-full"></div>'; ic.classList.add('pulse-active'); } } } };
+                let pt = appState.prompts[appState.activeBlueprintPromptKey]; if(!pt.includes("PHASE 1:")) pt = DEFAULT_PROMPTS.universalBlueprintHeader + "\n\n" + pt;
+                const fp = pt.replace(/\{STAGE_1_OUTPUT\}/g, appState.topicMap+"\n"+appState.examAnalysis).replace(/\{EXTRACTED_TEXT\}/g, (appState.pdfText||'').substring(0,100000)).replace(/\{SUBJECT\}/g, appState.subject).replace(/\{SUBAREA\}/g, appState.category).replace(/\{TOTAL_PARTS\}/g, appState.blueprint.parts.length).replace(/\{PART_TITLES_LIST\}/g, appState.blueprint.parts.map(p=>p.title).join(', '));
+                try {
+                    const res = await API.streamContent(fp, (c, acc) => {
+                        const sb=$('s2-raw-stream'); if(sb){ sb.textContent=acc; sb.scrollTop=sb.scrollHeight; } setTxt('s2-token-count', `~${acc.split(/\s+/).length} tokens`);
+                        if(acc.includes('SECTION 1')) setPh(1); if(acc.includes('SECTION 2')) setPh(2); if(acc.includes('SECTION 3')) setPh(3); if(acc.match(/SECTION (4|5|6|7)/)) setPh(4); if(acc.match(/SECTION (10|11)/)) setPh(5); if(acc.match(/SECTION (9|10|12)/)) setPh(6); if(acc.match(/SECTION (12|13|15)/)) setPh(7);
+                    }, { temp: 0.4, useTools: false }); setPh(8); this.parseBlueprint(res);
+                } catch(e) { Logger.add('ERROR', 'STAGE_2', `Blueprint failed: ${e.message}`); Toaster.show('Blueprint generation failed', 'rose'); } finally { if(btn){ btn.innerHTML=`<svg class="w-5 h-5 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg> ⚡ Generate Blueprint`; btn.disabled=false; } }
+            },
+            parseBlueprint(txt) {
+                appState.blueprint.rawContent = txt; appState.blueprint.imageRegistry = [];
+                const imgRe = /\[IMAGE_ASSET_ID:\s*(IMAGE_\d+\.\d+)\]([\s\S]*?)(?=\[IMAGE_ASSET_ID:|SECTION 13|SECTION 14|SECTION 15|SECTION 11|SECTION 10|$)/gi; let m;
+                while((m = imgRe.exec(txt)) !== null) { const b=m[2]; appState.blueprint.imageRegistry.push({ id:m[1].trim(), template:(b.match(/Template Type:\s*(.*)/i)||[])[1]||'', topic:(b.match(/Topic:\s*(.*)/i)||[])[1]||'', layout:(b.match(/Layout Description:\s*(.*)/i)||[])[1]||'', labels:(b.match(/All Text Labels.*?:\s*(.*)/i)||[])[1]||'', data:(b.match(/Data to Display:\s*(.*)/i)||[])[1]||'', purpose:(b.match(/Pedagogical Purpose:\s*(.*)/i)||[])[1]||'', characters:(b.match(/Character Appearances.*?:\s*(.*)/i)||[])[1]||'None', colours:(b.match(/Colour Assignment:\s*(.*)/i)||b.match(/Colour Scheme:\s*(.*)/i)||[])[1]||'Default', handDrawable:(b.match(/Hand-drawable.*?:\s*(.*)/i)||b.match(/Hand-Drawable.*?:\s*(.*)/i)||[])[1]||'No' }); }
+                appState.blueprint.sections = []; const secRe = /(SECTION \d+.*?)(?=\nSECTION \d+|\nBLUEPRINT COMPLETE|$)/gs; let sm;
+                while((sm = secRe.exec(txt)) !== null) appState.blueprint.sections.push(sm[1]);
+                const s15m = txt.match(/SECTION 15[\s\S]*?(?=SECTION 16|BLUEPRINT COMPLETE|$)/i);
+                if(s15m) {
+                    s15m[0].split(/(?=PART_\d+:)/i).slice(1).forEach(b => {
+                        const idm = b.match(/PART_(\d+)/i); if(!idm) return; const pid = `PART_${idm[1]}`;
+                        const ex = rxs => { for(let r of rxs){ const xm=b.match(r); if(xm) return xm[1].replace(/^\*\*|\*\*$/g,'').trim(); } return ''; };
+                        const p = getPart(pid); if(p) { p.writingGoal=ex([/Writing Goal:\s*(.*)/i,/Goal:\s*(.*)/i]); const t=ex([/Topics Covered:\s*(.*)/i,/Topic List:\s*(.*)/i]); if(t&&p.topicsCovered.length<=1) p.topicsCovered=t.split(/,|\n/).map(x=>x.replace(/^[-*•\s]+/,'').trim()).filter(Boolean); p.missingInfo=ex([/Missing Info to Inject:\s*(.*)/i,/Missing Info:\s*(.*)/i]); p.linkages=ex([/Cross-Topic Linkages:\s*(.*)/i,/Linkages:\s*(.*)/i]); p.currentAffairsFocus=ex([/Current Affairs Focus:\s*(.*)/i,/Current Affairs:\s*(.*)/i]); p.mpContent=ex([/MP Content:\s*(.*)/i,/MP-Specific Content:\s*(.*)/i]); const imgs=ex([/Required Images:\s*(.*)/i,/Required Image Assets:\s*(.*)/i]).match(/IMAGE_\d+\.\d+/g)||[]; p.images = imgs.map(id => p.images.find(im=>im.assetId===id) || { assetId:id, base64:null, prompt:'', approved:false, placeholder:`IMAGE_NEEDED: ${id}`, status:'not_started' }); }
+                    });
+                }
+                hide('s2-progress-panel'); show('s2-blueprint-output'); this.renderBlueprintCards();
+                setTxt('s2-bp-summary-metrics', `Summary: Parts: ${appState.blueprint.parts.length} | Images Planned: ${appState.blueprint.imageRegistry.length}`);
+                Session.save(); Toaster.show('Blueprint generated', 'emerald');
+            },
+            renderBlueprintCards() {
+                let h = ''; appState.blueprint.sections.forEach((s, i) => { let l=s.split('\n'); let t=l[0].replace(/—/g,'-'); let b=l.slice(1).join('\n'); if(t.includes('SECTION 15')) return; h+=`<details class="mb-4 bg-slate-50 rounded-xl border overflow-hidden shadow-sm" open><summary class="font-bold p-4 bg-slate-100 cursor-pointer text-slate-800 flex justify-between border-b">${t} <span class="text-slate-400">▼</span></summary><div class="p-5 bg-white"><div id="bp-sec-content-${i}" class="markdown-body text-sm">${marked.parse(b)}</div><textarea id="bp-sec-edit-${i}" class="hidden w-full h-48 p-3 font-mono text-xs bg-slate-50 border rounded mt-3">${b}</textarea>${!appState.blueprint.isApproved?`<div id="bp-sec-actions-${i}" class="mt-4 flex gap-2 border-t pt-4"><button onclick="Step2.toggleEditSection(${i})" class="px-3 py-1.5 bg-slate-100 text-slate-700 text-xs font-bold rounded">✏️ Edit</button></div><div id="bp-sec-save-actions-${i}" class="hidden mt-4 flex gap-2 border-t pt-4"><button onclick="Step2.saveEditSection(${i})" class="px-4 py-1.5 bg-indigo-600 text-white text-xs font-bold rounded">Save</button><button onclick="Step2.toggleEditSection(${i})" class="px-4 py-1.5 bg-slate-200 text-slate-700 text-xs font-bold rounded">Cancel</button></div>`:''}</div></details>`; });
+                setHTML('s2-bp-cards', h + '<div id="special-sec15-container" class="mt-6 mb-6"></div>'); this.renderBlueprintPartPlans();
+            },
+            renderBlueprintPartPlans() {
+                let h = `<div class="mb-4 bg-indigo-600 text-white p-4 rounded-xl"><h3 class="font-bold text-lg">SECTION 15 — PART-WISE EXECUTION ARCHITECTURE</h3></div><div class="space-y-6">`;
+                appState.blueprint.parts.forEach(p => {
+                    let iPills = appState.blueprint.imageRegistry.filter(r=>r.id.startsWith(`IMAGE_${p.partNumber}.`)).map(i=>`<span class="bg-indigo-50 border text-indigo-700 text-[10px] font-bold px-2 py-0.5 rounded font-mono" title="${i.topic}">${i.id} [${i.template}]</span>`).join('')||'<span class="text-xs text-slate-400 italic">None</span>';
+                    h+=`<div class="bg-white border-2 border-indigo-100 rounded-xl p-5 shadow-sm"><div class="flex justify-between mb-3"><div class="flex items-center gap-3"><span class="bg-indigo-600 text-white text-xs font-bold px-2 py-0.5 rounded">${p.id}</span><h4 class="font-bold text-sm">${p.title}</h4></div><span class="text-xs font-medium text-slate-500 font-mono">${p.pageSpan||'No pages'}</span></div><div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs mt-3"><div class="bg-slate-50 p-3 rounded-lg border"><span class="font-bold text-slate-400 block mb-1 uppercase tracking-wider text-[9px]">🎯 Topics</span><ul class="list-disc pl-4">${p.topicsCovered.map(t=>`<li>${t}</li>`).join('')}</ul></div><div class="bg-emerald-50/40 p-3 rounded-lg border border-emerald-100"><span class="font-bold text-emerald-800 block mb-1 uppercase tracking-wider text-[10px]">MP Context</span><p class="text-emerald-900 font-medium">${p.mpContent||'None'}</p></div></div><div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3"><div class="bg-amber-50/50 p-3 rounded-lg border text-xs"><h5 class="font-bold text-amber-800 uppercase mb-2">🔍 Search Plan</h5><div class="space-y-1"><div><strong>Missing facts:</strong> ${p.missingInfo||'None'}</div><div class="pt-1 mt-1 border-t border-amber-200"><strong>CA:</strong> ${p.currentAffairsFocus||'None'}</div></div></div><div class="bg-purple-50/50 p-3 rounded-lg border"><h5 class="font-bold text-purple-800 uppercase mb-2">🖼️ Visuals</h5><div class="flex flex-wrap gap-2 text-[10px]">${iPills}</div></div></div>${!appState.blueprint.isApproved?`<div class="border-t pt-3 mt-4"><button onclick="toggle('bp-part-refine-panel-${p.id}')" class="px-3 py-1.5 bg-purple-100 text-purple-700 font-bold text-xs rounded-lg">🪄 Improve Plan with AI</button></div><div id="bp-part-refine-panel-${p.id}" class="hidden mt-3 p-4 bg-purple-50 rounded-xl border border-purple-100"><textarea id="bp-part-refine-input-${p.id}" class="w-full text-xs p-3 border rounded-lg outline-none" rows="2" placeholder="Specify tweaks..."></textarea><div class="flex justify-end gap-2 mt-3"><button onclick="toggle('bp-part-refine-panel-${p.id}')" class="px-3 py-1 bg-slate-200 text-xs rounded">Cancel</button><button id="bp-part-refine-btn-${p.id}" onclick="Step2.aiRefinePartPlan('${p.id}')" class="px-4 py-1 bg-purple-600 text-white font-bold text-xs rounded">Submit</button></div></div>`:''}</div>`;
+                }); setHTML('special-sec15-container', h+'</div>');
+            },
+            toggleEditSection(i) { toggle(`bp-sec-content-${i}`); toggle(`bp-sec-edit-${i}`); toggle(`bp-sec-actions-${i}`); toggle(`bp-sec-save-actions-${i}`); },
+            saveEditSection(i) { const b=appState.blueprint.sections; b[i]=b[i].split('\n')[0]+'\n'+$(`bp-sec-edit-${i}`).value; appState.blueprint.rawContent=b.join('\n\n'); this.renderBlueprintCards(); Session.save(); Toaster.show('Saved', 'emerald'); },
+            async aiRefinePartPlan(id) { const p=getPart(id), iEl=$(`bp-part-refine-input-${id}`), btn=$(`bp-part-refine-btn-${id}`); if(!p||!iEl||!iEl.value.trim()) return; if(btn){btn.innerHTML=`Sending...`; btn.disabled=true;} const cPt=`[PART ID: ${p.id}]\n- Part Title: ${p.title}\n- Topics Covered: ${p.topicsCovered.join(', ')}\n- Writing Goal: ${p.writingGoal}\n- Missing Info: ${p.missingInfo}\n- Linkages: ${p.linkages}\n- CA Focus: ${p.currentAffairsFocus}\n- MP Content: ${p.mpContent}`; const pr=appState.prompts.blueprintPartRefinementPrompt.replace('{CURRENT_PART_PLAN}',cPt).replace('{USER_INSTRUCTION}',iEl.value.trim()); try { const r=await API.generateContent(pr); const ex = rx => {for(let r of rx){const m=r.match(rx); if(m)return m[1].replace(/^\*\*|\*\*$/g,'').trim();}return'';}; const wg=ex([/Goal:\s*(.*)/i]); const tc=ex([/Topics:\s*(.*)/i]); const mi=ex([/Missing Info:\s*(.*)/i]); const ca=ex([/Current Affairs:\s*(.*)/i]); const mp=ex([/MP Content:\s*(.*)/i]); if(wg) p.writingGoal=wg; if(tc) p.topicsCovered=tc.split(',').map(x=>x.trim()); if(mi) p.missingInfo=mi; if(ca) p.currentAffairsFocus=ca; if(mp) p.mpContent=mp; Toaster.show('Plan adjusted', 'emerald'); this.renderBlueprintPartPlans(); Session.save(); } catch(e){Toaster.show('Failed','rose');} finally{if(btn){btn.disabled=false;btn.innerHTML=`Submit`;}} },
+            approveBlueprint() { appState.blueprint.isApproved=true; setTxt('s2-app-gate-status','Approved & Locked'); $('s2-app-gate-status').className="text-emerald-600"; const btn=$('s2-approve-btn'); if(btn){btn.innerHTML="✔ Blueprint Approved"; btn.className="w-full py-3 bg-slate-700 text-white font-bold rounded-xl cursor-not-allowed"; btn.disabled=true;} show('s2-next-action'); this.renderBlueprintCards(); Session.save(); Toaster.show('Blueprint Approved. Stage 3 Unlocked!', 'emerald'); setTimeout(()=>App.goToStep(3), 800); }
+        };
+
+        const Step3 = {
+            renderFeed() {
+                if(!appState.blueprint.parts.length) return; hide('s3-empty-state');
+                setHTML('s3-sticky-nav', appState.blueprint.parts.map(p => `<button onclick="Step3.scrollToPart('${p.id}')" id="s3-nav-${p.id}" class="nav-pill px-4 py-1.5 rounded-full text-xs font-bold border bg-white flex items-center gap-2 hover:bg-slate-50"><div id="s3-nav-dot-${p.id}" class="w-2 h-2 rounded-full ${p.approved?'bg-emerald-500':p.status.includes('done')||p.status.includes('merged')?'bg-blue-500':p.status.includes('generating')?'bg-amber-500 animate-pulse':'bg-slate-300'}"></div> Part ${p.partNumber}</button>`).join(''));
+                let h = `<div class="space-y-12 pb-24">`;
+                appState.blueprint.parts.forEach(p => {
+                    this.preparePrompts(p);
+                    h += `<section id="s3-sec-${p.id}" class="part-section scroll-mt-48 relative"><div class="flex items-center gap-4 mb-8"><div class="h-px bg-slate-300 flex-1"></div><h3 class="text-sm font-bold text-slate-400 uppercase">${p.title}</h3><div class="h-px bg-slate-300 flex-1"></div></div><div class="p-6 md:p-8 rounded-2xl border-2 ${p.approved?'border-emerald-500 bg-emerald-50/10':'border-slate-200 bg-white'} shadow-sm" id="s3-wrapper-${p.id}">${this.buildPartHeader(p)}${this.buildSourcePlanPanel(p)}${this.buildPromptPanel(p)}${this.buildUnifiedWorkspace(p)}${this.buildPartFooter(p)}</div></section>`;
+                });
+                setHTML('s3-feed', h+'</div>'); this.initScrollSpy(); this.updateStats();
+                appState.blueprint.parts.forEach(p => { if(p.generatedTextRaw) this.hydrateInteractiveImages(p.id); });
+            },
+            scrollToPart(id) { const el = $(`s3-sec-${id}`); if(el) { const y = el.getBoundingClientRect().top + window.scrollY - 180; window.scrollTo({top: y, behavior: 'smooth'}); } },
+            initScrollSpy() { const obs = new IntersectionObserver(ents => { ents.forEach(e => { if(e.isIntersecting) { const id = e.target.id.replace('s3-sec-', ''); document.querySelectorAll('.nav-pill').forEach(el => { el.classList.remove('active'); el.classList.add('bg-white'); }); const ap = $(`s3-nav-${id}`); if(ap) { ap.classList.add('active'); ap.classList.remove('bg-white'); ap.parentElement.scrollLeft = ap.offsetLeft - 50; } } }); }, { rootMargin: '-200px 0px -60% 0px', threshold: 0 }); document.querySelectorAll('.part-section').forEach(sec => obs.observe(sec)); },
+            preparePrompts(p) {
+                if(!p.promptUsed) p.promptUsed={}; const bp=appState.blueprint.rawContent;
+                const m=rx=>(bp.match(rx)||[])[0]?.trim()||"None";
+                p.promptUsed.textPrompt = (appState.subject==='Economics'?appState.prompts.economicsPartWriterPrompt:appState.prompts.partWriterPrompt).replace(/\{APPROVED_BLUEPRINT\}/g,bp).replace(/\{PART_ID\}/g,p.id).replace(/\{PART_TITLE\}/g,p.title).replace(/\{RAW_PART_TEXT\}/g,p.rawData).replace(/\{PART_TOPIC_MAP\}/g,p.topicsCovered.join(', ')).replace(/\{STORY_STRATEGY\}/g,m(/SECTION 2[\s\S]*?(?=SECTION 3|$)/i)).replace(/\{PART_MISSING_INFO\}/g,p.missingInfo||"None").replace(/\{PART_LINKAGES\}/g,p.linkages||"None").replace(/\{PART_MP_CONTEXT\}/g,p.mpContent||"None").replace(/\{OPTIONAL_REFINEMENT_NOTE\}/g,'');
+                p.promptUsed.currentAffairsPrompt = appState.prompts.currentAffairsPrompt.replace(/\{PART_TITLE\}/g,p.title).replace(/\{TOPICS_LIST\}/g,p.topicsCovered.join(', ')).replace(/\{SUBJECT\}/g,appState.subject).replace(/\{SUBJECT_FOCUS_A\}/g,"Major events").replace(/\{SUBJECT_FOCUS_B\}/g,"Recent events").replace(/\{SUBJECT_FOCUS_C\}/g,"State major").replace(/\{SUBJECT_FOCUS_D\}/g,"State recent");
+            },
+            buildPartHeader(p) { let bC='bg-slate-100 text-slate-500', txt='NOT STARTED'; if(p.approved){bC='bg-emerald-100 text-emerald-700';txt='APPROVED';}else if(p.approvedButEdited){bC='bg-emerald-50 text-emerald-600';txt='APPROVED — EDITED';}else if(p.status.includes('generating')){bC='bg-amber-100 text-amber-700 animate-pulse';txt='WORKING...';}else if(p.status.includes('done')||p.status.includes('merged')){bC='bg-blue-100 text-blue-700';txt='DRAFTED';} return `<div class="mb-6 flex justify-between items-start gap-4"><div><span class="bg-slate-800 text-white text-xs px-2 py-1 rounded font-mono">${p.id}</span><h2 class="text-2xl font-bold text-slate-800 mt-2">${p.title}</h2><div class="flex gap-4 mt-2 text-xs font-medium text-slate-500"><span>Topics: ${p.topicsCovered.length}</span><span>Pages: ${p.pageSpan||'N/A'}</span><span class="${p.currentAffairsFlag?'text-amber-600':''}">CA: ${p.currentAffairsFlag?'Required':'Optional'}</span></div></div><span id="s3-stat-${p.id}" class="text-[10px] font-bold px-3 py-1.5 rounded uppercase ${bC}">${txt}</span></div>`; },
+            buildSourcePlanPanel(p) { return `<details class="mb-4 bg-slate-50 border rounded-xl overflow-hidden group"><summary class="p-4 cursor-pointer font-bold text-slate-700 hover:bg-slate-100 flex justify-between"><span>📄 View Source Data & Execution Plan</span><span class="text-slate-400 group-open:rotate-180">▼</span></summary><div class="p-6 space-y-6 bg-white border-t text-sm"><div><h4 class="font-bold text-[10px] uppercase mb-2">Raw PDF Data</h4><div class="font-mono text-xs bg-slate-50 p-3 rounded border max-h-[200px] overflow-y-auto whitespace-pre-wrap">${p.rawData}</div></div><div><h4 class="font-bold text-[10px] uppercase mb-2">Blueprint Execution Plan</h4><div class="bg-emerald-50/50 p-3 rounded border border-emerald-100"><strong>Goal:</strong> ${p.writingGoal||'Establish foundation'}<br><strong>Missing:</strong> ${p.missingInfo||'None'}<br><strong>Linkages:</strong> ${p.linkages||'None'}<br><strong>MP details:</strong> ${p.mpContent||'None'}</div></div></div></details>`; },
+            buildPromptPanel(p) { return `<details class="mb-6 bg-indigo-50/30 border border-indigo-100 rounded-xl overflow-hidden group"><summary class="p-4 cursor-pointer font-bold text-indigo-800 hover:bg-indigo-50 flex justify-between"><span>🔍 Preview AI Prompts</span><span class="text-indigo-400 group-open:rotate-180">▼</span></summary><div class="bg-white border-t p-4 space-y-4"><div><h4 class="font-bold text-[10px] uppercase text-indigo-600 mb-1">Core Theory Prompt</h4><textarea id="prompt-txt-edit-${p.id}" class="w-full h-32 p-3 font-mono text-[10px] bg-slate-50 border rounded outline-none">${p.promptUsed.textPrompt}</textarea></div><div><h4 class="font-bold text-[10px] uppercase text-sky-600 mb-1">CA Prompt</h4><textarea id="prompt-ca-edit-${p.id}" class="w-full h-32 p-3 font-mono text-[10px] bg-slate-50 border rounded outline-none">${p.promptUsed.currentAffairsPrompt}</textarea></div></div></details>`; },
+            buildUnifiedWorkspace(p) { const is0 = !p.generatedTextRaw; return `<div class="border rounded-xl bg-white shadow-sm overflow-hidden mb-4"><div class="bg-slate-50 p-4 border-b flex justify-between flex-wrap gap-3 sticky top-0 z-10"><div class="flex gap-2"><button id="btn-gen-notes-${p.id}" onclick="Step3.generatePartText('${p.id}')" class="px-4 py-2 bg-emerald-600 text-white text-sm font-bold rounded shadow-sm">${is0?'Generate Notes':'Regenerate Theory'}</button><button id="btn-gen-ca-${p.id}" onclick="Step3.generateCA('${p.id}')" class="px-4 py-2 bg-sky-600 text-white text-sm font-bold rounded shadow-sm">Fetch CA Data</button></div><div class="flex gap-2"><button onclick="toggle('s3-editbox-notes-${p.id}')" class="text-xs px-3 py-1.5 border bg-white rounded font-bold">✏️ Raw Edit</button><button onclick="UI.copyTextRaw('${p.id}')" class="text-xs px-3 py-1.5 border bg-white rounded font-bold">📋 Copy</button></div></div><div class="p-6 md:p-10 min-h-[300px]"><div id="s3-render-notes-${p.id}" class="markdown-body">${is0?`<div class="text-center py-16" id="s3-init-notes-${p.id}"><p class="text-slate-500 font-medium">Workspace ready. Generate notes to begin.</p></div>`:this.renderUnifiedDocument(p)}</div><div id="s3-editbox-notes-${p.id}" class="hidden mt-6 p-4 bg-slate-50 rounded-xl border shadow-inner"><div class="flex justify-between mb-2"><span class="text-xs font-bold uppercase">Editor</span><span class="text-xs text-slate-400">Do not delete [IMAGE_WORKSPACE] tags</span></div><textarea id="s3-edit-in-${p.id}" class="w-full h-[500px] p-4 font-mono text-sm bg-white border rounded-lg outline-none">${p.generatedTextRaw||''}</textarea><div class="mt-3 flex justify-end gap-2"><button onclick="toggle('s3-editbox-notes-${p.id}')" class="px-4 py-2 bg-slate-200 rounded text-sm font-bold">Cancel</button><button onclick="Step3.saveEdit('${p.id}')" class="px-4 py-2 bg-indigo-600 text-white rounded text-sm font-bold">Save Edits</button></div></div></div></div>`; },
+            buildPartFooter(p) { return `<div class="p-4 bg-slate-800 rounded-xl flex justify-between flex-wrap gap-4 shadow-md mt-4"><div class="text-sm font-bold text-slate-300">Part ${p.partNumber} Status: <span class="text-white ml-2">${p.generatedTextRaw?'Theory ✔':'Theory ✕'} · ${p.currentAffairsText?'CA ✔':'CA ✕'} · ${p.images.filter(i=>i.approved).length}/${p.images.length} Images</span></div><div class="flex gap-2"><button onclick="toggle('s3-refinefoot-${p.id}')" class="px-4 py-2 bg-slate-700 text-white text-sm font-bold rounded-lg">🤖 Refine Notes</button><button id="btn-approve-${p.id}" onclick="Step3.approvePart('${p.id}')" class="px-5 py-2 bg-emerald-500 text-white text-sm font-bold rounded-lg" ${p.approved?'disabled':''}>${p.approved?'✓ Approved':'✓ Approve Part'}</button></div></div><div id="s3-refinefoot-${p.id}" class="hidden mt-2 p-5 bg-purple-50 border border-purple-100 rounded-xl shadow-inner slide-up"><label class="block text-sm font-bold text-purple-900 mb-2">Instruct the AI what to change:</label><textarea id="s3-refinefoot-in-${p.id}" class="w-full p-3 font-mono text-sm border rounded-lg" rows="3"></textarea><div class="flex justify-end mt-3"><button onclick="Step3.submitRefine('${p.id}', event)" class="px-5 py-2 bg-purple-600 text-white text-sm font-bold rounded-lg">Submit</button></div></div>`; },
+            renderUnifiedDocument(p) { let h = marked.parse(p.generatedTextRaw).replace(/\[IMAGE_WORKSPACE\s*\|\s*Concept:\s*(.*?)\]/gi, (m, c) => { c=c.trim(); let i=p.images.find(x=>x.concept===c); if(!i){ i={id:`IMG_${p.partNumber}_${Math.random().toString(36).substr(2,5)}`, concept:c, status:'planning', base64:null, prompt:'', approved:false, selectedStyle:'Flowchart'}; p.images.push(i); } return this.buildInteractiveImageBlock(p.id, i); }); if(p.currentAffairsText) h += `\n\n<hr class="my-10"><h2 class="text-2xl font-bold text-sky-800 mb-4">📰 Current Affairs Supplement</h2>\n`+marked.parse(p.currentAffairsText); return h; },
+            buildInteractiveImageBlock(pid, i) { if(i.approved&&i.base64) return `<div class="my-8 p-4 bg-emerald-50/50 rounded-2xl border-2 border-emerald-100 text-center relative group"><div class="absolute top-4 left-4 text-xs font-bold text-emerald-800 bg-emerald-100 px-2 py-1 rounded opacity-0 group-hover:opacity-100">${i.selectedStyle}</div><img src="${i.base64}" class="max-w-3xl w-full rounded-xl shadow-md mx-auto"><div class="absolute top-4 right-4 opacity-0 group-hover:opacity-100 flex gap-2"><button onclick="Step3.rejectImage('${pid}', '${i.id}')" class="bg-white text-rose-600 border px-3 py-1.5 rounded text-xs font-bold shadow-md">✕ Redraft</button><span class="bg-emerald-600 text-white text-xs font-bold px-3 py-1.5 rounded shadow-md">✔ Approved</span></div></div>`; let st=''; if(i.status==='planning'||i.status==='rejected'){ st=`<div class="flex flex-col md:flex-row gap-4 justify-between mb-4"><div class="flex-1"><label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Visual Representation Style</label><select id="style-sel-${i.id}" class="w-full text-sm border rounded-lg bg-slate-50 p-2.5 outline-none font-medium" onchange="Step3.updateImgStyle('${pid}','${i.id}',this.value)">${getStyleOpts(i.selectedStyle)}</select></div><div class="flex gap-2 mt-4 md:mt-0 items-end"><button onclick="Step3.draftImagePrompt('${pid}','${i.id}')" class="px-5 py-2.5 bg-indigo-600 text-white text-sm font-bold rounded-lg shadow-sm">Draft AI Prompt</button><label class="px-4 py-2.5 bg-white border text-slate-700 text-sm font-bold rounded-lg cursor-pointer">Upload/Paste File<input type="file" accept="image/*" class="hidden" onchange="Step3.handleCustomImageUpload(event,'${pid}','${i.id}')"></label></div></div>`; }else if(i.status==='prompt_drafted'||i.status==='error'){ st=`<div class="mb-4"><div class="flex justify-between mb-1"><label class="block text-[10px] font-bold text-slate-500 uppercase">Artistic Infographic Prompt</label><span class="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">${i.selectedStyle}</span></div><textarea id="img-prompt-in-${i.id}" class="w-full h-32 p-3 font-mono text-xs border rounded-lg outline-none resize-y">${i.prompt}</textarea></div><div class="flex gap-2"><button onclick="Step3.executeImageGen('${pid}','${i.id}')" class="flex-1 px-5 py-3 bg-indigo-600 text-white text-sm font-bold rounded-xl shadow-md">Generate Graphic</button><button onclick="Step3.rejectImage('${pid}','${i.id}')" class="px-4 py-3 bg-white border text-slate-600 text-sm font-bold rounded-xl">Cancel</button></div>`; }else if(i.status==='generating_prompt'){ st=`<div class="py-8 flex flex-col items-center text-indigo-600"><div class="w-6 h-6 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin mb-3"></div><div class="text-sm font-bold">Drafting specialized artistic instructions...</div></div>`; }else if(i.status==='generating_image'){ st=`<div class="py-12 flex flex-col items-center text-indigo-600"><div class="w-8 h-8 border-3 border-indigo-600 border-t-transparent rounded-full animate-spin mb-3"></div><div class="text-sm font-bold">Generating Bespoke Infographic via Imagen-4...</div></div>`; }else if(i.status==='generated'&&i.base64){ st=`<div class="mb-4 bg-slate-100 p-2 rounded-xl"><img src="${i.base64}" class="w-full max-w-3xl mx-auto rounded-lg shadow-sm bg-white"></div><div class="flex gap-2"><button onclick="Step3.approveImage('${pid}','${i.id}')" class="flex-1 px-5 py-3 bg-emerald-600 text-white text-sm font-bold rounded-xl">✔ Confirm & Embed</button><button onclick="Step3.executeImageGen('${pid}','${i.id}')" class="px-4 py-3 bg-white border text-slate-700 text-sm font-bold rounded-xl">↻ Regenerate</button><button onclick="Step3.rejectImage('${pid}','${i.id}')" class="px-4 py-3 bg-rose-50 text-rose-700 text-sm font-bold rounded-xl">✕ Change Style</button></div>`; } return `<div class="director-console my-8 p-6 bg-slate-50 border-2 border-dashed border-indigo-300 rounded-2xl max-w-4xl mx-auto"><div class="flex items-start gap-3 mb-4 border-b pb-4"><div class="w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-lg shrink-0">🎨</div><div><h4 class="font-bold text-base truncate">${i.concept}</h4><p class="text-xs text-slate-500 mt-1 uppercase">Visual Director's Console</p></div></div>${st}</div>`; },
+            updateImgStyle(p, i, s) { const x=getPart(p)?.images.find(y=>y.id===i); if(x) { x.selectedStyle=s; Session.save(); } },
+            handleCustomImageUpload(e, p, i) { const f=e.target.files[0]; if(!f)return; const r=new FileReader(); r.onload=async(ev)=>{ const x=getPart(p)?.images.find(y=>y.id===i); if(x){ x.base64=ev.target.result; x.approved=true; x.status='done'; await Session.save(); this.hydrateInteractiveImages(p); Toaster.show("Custom visual uploaded successfully!", "emerald"); } }; r.readAsDataURL(f); },
+            async draftImagePrompt(pid, iid) { const i=getPart(pid)?.images.find(x=>x.id===iid); if(!i)return; i.status='generating_prompt'; this.hydrateInteractiveImages(pid); try { i.prompt = await API.generateContent(appState.prompts.imagePromptBuilder.replace(/\{CONCEPT\}/g,i.concept).replace(/\{TEMPLATE_TYPE\}/g,i.selectedStyle)); i.status='prompt_drafted'; } catch(e){ i.status='error'; Toaster.show(`Failed`, 'rose'); } await Session.save(); this.hydrateInteractiveImages(pid); },
+            async executeImageGen(pid, iid) { const i=getPart(pid)?.images.find(x=>x.id===iid); if(!i)return; const ta=$(`img-prompt-in-${iid}`); if(ta) i.prompt=ta.value; i.status='generating_image'; this.hydrateInteractiveImages(pid); try { i.base64 = await API.generateImage(i.prompt, i.selectedStyle.includes("Card")||i.selectedStyle.includes("Pie")||i.selectedStyle.includes("Map")?"1:1":"16:9"); i.status='generated'; } catch(e){ i.status='error'; Toaster.show(`Failed`, 'rose'); } await Session.save(); this.hydrateInteractiveImages(pid); },
+            approveImage(pid, iid) { const i=getPart(pid)?.images.find(x=>x.id===iid); if(i) { i.approved=true; Session.save(); this.hydrateInteractiveImages(pid); this.updateStats(); Toaster.show('Approved', 'emerald'); } },
+            rejectImage(pid, iid) { const i=getPart(pid)?.images.find(x=>x.id===iid); if(i) { i.approved=false; i.base64=null; i.status='planning'; Session.save(); this.hydrateInteractiveImages(pid); this.updateStats(); } },
+            hydrateInteractiveImages(id) { const p=getPart(id); if(p&&p.generatedTextRaw) setHTML(`s3-render-notes-${id}`, this.renderUnifiedDocument(p)); },
+            async generatePartText(id) { const p=getPart(id), btn=$(`btn-gen-notes-${id}`); if(!p)return; if(btn){btn.innerHTML=`Generating...`; btn.disabled=true;} p.status='text_generating'; this.updatePartHeaderUI(id); const pt=$(`prompt-txt-edit-${id}`)?.value||p.promptUsed.textPrompt; p.generatedTextRaw=""; try { await API.streamContent(pt, (c,acc)=>{ p.generatedTextRaw=acc; setHTML(`s3-render-notes-${id}`, this.renderUnifiedDocument(p)); this.hydrateInteractiveImages(id); }, {temp:0.5}); p.status='text_done'; await Session.save(); } catch(e){ p.status='not_started'; Toaster.show('Error', 'rose'); } finally { this.updatePartUI(id); } },
+            async generateCA(id) { const p=getPart(id), btn=$(`btn-gen-ca-${id}`); if(!p)return; if(btn){btn.innerHTML=`Fetching...`; btn.disabled=true;} p.status='ca_generating'; this.updatePartHeaderUI(id); const pt=$(`prompt-ca-edit-${id}`)?.value||p.promptUsed.currentAffairsPrompt; try { await API.streamContent(pt, (c,acc)=>{ p.currentAffairsText=acc; setHTML(`s3-render-notes-${id}`, this.renderUnifiedDocument(p)); }, {temp:0.4, useTools:true}); p.status='ca_done'; await Session.save(); } catch(e){ p.status='text_done'; Toaster.show('CA Failed', 'rose'); } finally { this.updatePartUI(id); } },
+            approvePart(id) { const p=getPart(id); if(p){ p.approved=true; p.status='approved'; Session.save(); this.updatePartUI(id); Toaster.show(`Approved`, 'emerald'); } },
+            toggleRefineFoot(id) { toggle(`s3-refinefoot-${id}`); },
+            toggleManualEdit(id) { toggle(`s3-editbox-notes-${id}`); },
+            async saveEdit(id) { const p=getPart(id), ed=$(`s3-edit-in-${id}`); if(p&&ed){ const nw=ed.value; if((nw.match(/\[IMAGE_WORKSPACE/g)||[]).length < (p.generatedTextRaw.match(/\[IMAGE_WORKSPACE/g)||[]).length) {
+                let confirmed = false;
+                await new Promise((resolve) => {
+                    CustomConfirm.show("Visual Tag Removed", "You have deleted an inline visual tag. This will permanently remove its Interactive Console block from your document workspace notes. Continue?", () => { confirmed = true; resolve(); });
+                });
+                if(!confirmed) return;
+            } p.generatedTextRaw=nw; if(p.approved) p.approvedButEdited=true; p.versions.push({v:p.versions.length+1, t:new Date().toISOString(), type:'manual', c:nw}); this.toggleManualEdit(id); await Session.save(); this.updatePartUI(id); Toaster.show('Saved', 'indigo'); } },
+            async submitRefine(id, ev) { const p=getPart(id), inp=$(`s3-refinefoot-in-${id}`); if(!p||!inp||!inp.value)return; const btn=ev?.target; if(btn){btn.innerHTML=`Sending...`; btn.disabled=true;} try { const lids = p.images.filter(i=>i.approved).map(i=>`[IMAGE_WORKSPACE | Concept: ${i.concept}]`).join(', '); const pt = appState.prompts.refinementPrompt.replace('{CURRENT_PART_NOTES}', p.generatedTextRaw).replace('{LOCKED_IMAGE_PLACEHOLDERS}', lids).replace('{USER_INSTRUCTION}', inp.value); await API.streamContent(pt, (c,acc)=>{ p.generatedTextRaw=acc; setHTML(`s3-render-notes-${id}`, this.renderUnifiedDocument(p)); this.hydrateInteractiveImages(id); }, {temp:0.4}); if(p.approved) p.approvedButEdited=true; p.versions.push({v:p.versions.length+1, t:new Date().toISOString(), type:'ai_refine', c:p.generatedTextRaw}); this.toggleRefineFoot(id); inp.value=''; await Session.save(); Toaster.show('Refined', 'purple'); } catch(e){ Toaster.show('Failed', 'rose'); } finally { this.updatePartUI(id); } },
+            updatePartUI(id) { const p=getPart(id); if(!p)return; setHTML(`s3-render-notes-${id}`, this.renderUnifiedDocument(p)); const bt=$(`btn-gen-notes-${id}`); if(bt){bt.disabled=false; bt.innerHTML=p.generatedTextRaw?'Regenerate Theory':'Generate Notes';} const bc=$(`btn-gen-ca-${id}`); if(bc){bc.disabled=false; bc.innerHTML='Fetch CA Data';} this.hydrateInteractiveImages(id); this.updatePartHeaderUI(id); this.updateStats(); },
+            updatePartHeaderUI(id) { const p=getPart(id), bd=$(`s3-stat-${id}`), pd=$(`s3-nav-dot-${id}`); if(!bd||!pd)return; let bc='bg-slate-100 text-slate-500', t=p.status.toUpperCase(), dc='bg-slate-300'; if(p.approved){bc='bg-emerald-100 text-emerald-700'; t='APPROVED'; dc='bg-emerald-500';}else if(p.status.includes('generating')){bc='bg-amber-100 text-amber-700 animate-pulse'; t='WORKING...'; dc='bg-amber-500 animate-pulse';}else if(p.status.includes('done')||p.status.includes('merged')){bc='bg-blue-100 text-blue-700'; t='DRAFTED'; dc='bg-blue-500';} bd.className=`text-[10px] font-bold px-3 py-1.5 rounded uppercase ${bc}`; bd.textContent=t; pd.className=`w-2 h-2 rounded-full ${dc}`; },
+            updateStats() { let t=appState.blueprint.parts, txt=0, ca=0, appP=0, appImg=0, totImg=0; t.forEach(p=>{if(p.generatedTextRaw)txt++; if(p.currentAffairsText)ca++; if(p.approved)appP++; appImg+=p.images.filter(i=>i.approved).length; totImg+=p.images.length;}); let pt=t.length; setTxt('s3-stat-tot', `Total Parts: ${pt}`); setTxt('s3-stat-txt', `Text Generated: ${txt}`); setTxt('s3-stat-img', `Images Approved: ${appImg}/${totImg}`); setTxt('s3-stat-app', `Parts Approved: ${appP}`); let pct = pt===0?0:Math.min(100, Math.round(((txt*.5)+(ca*.2)+((appImg/Math.max(totImg,1))*.2)+(appP*.1))/pt*100)); const b=$('s3-progress-bar'); if(b) b.style.width=`${pct}%`; setTxt('s3-progress-text', `${pct}% Complete`); },
+            async generateEverything() { if(this.isGenAll)return; this.isGenAll=true; const btn=$('s3-btn-gen-all'); if(btn) btn.innerHTML='Auto-Running...'; const p=$('s3-btn-pause'); if(p) p.disabled=false; for(let i=0; i<appState.blueprint.parts.length; i++) { if(!this.isGenAll)break; const pt=appState.blueprint.parts[i]; if(pt.approved) continue; this.scrollToPart(pt.id); if(!pt.generatedTextRaw) await this.generatePartText(pt.id); if(!this.isGenAll)break; if(!pt.currentAffairsText && pt.currentAffairsFlag) await this.generateCA(pt.id); if(!this.isGenAll)break; for(let j=0; j<pt.images.length; j++){ let img=pt.images[j]; if(!this.isGenAll)break; if(img.status==='planning'){ await this.draftImagePrompt(pt.id, img.id); if(this.isGenAll) await this.executeImageGen(pt.id, img.id); } else if(img.status==='prompt_drafted'){ await this.executeImageGen(pt.id, img.id); } } } this.isGenAll=false; if(btn) btn.innerHTML='▶ Auto-Generate All'; if(p) p.disabled=true; this.updateStats(); },
+            pauseEverything() { this.isGenAll=false; const btn=$('s3-btn-gen-all'); if(btn) btn.innerHTML='▶ Resume'; const p=$('s3-btn-pause'); if(p) p.disabled=true; Toaster.show('Paused.', 'amber'); },
+            regenerateAllPrompt() {
+                CustomConfirm.show(
+                    "Reset Unapproved Parts?",
+                    "This will discard all unapproved text and current affairs. Approved images and approved parts will be kept.",
+                    async () => {
+                        appState.blueprint.parts.forEach(p=>{if(!p.approved){p.generatedTextRaw=""; p.currentAffairsText=""; p.status='not_started'; p.images=p.images.filter(i=>i.approved);}}); 
+                        await Session.save(); 
+                        this.renderFeed(); 
+                        this.generateEverything();
+                    }
+                );
+            }
+        };
+
+        const App = {
+            goToStep(n) {
+                if(n===3 && !appState.blueprint.parts.length){ Toaster.show("Analyze Document first","amber"); return; }
+                if(n===3 && !appState.blueprint.isApproved){ Toaster.show("Approve Blueprint first","amber"); return; }
+                appState.currentStep = n;
+                [1,2,3,4].forEach(i => { const s=$(`step-${i}`), b=$(`nav-btn-${i}`); if(s&&b){ if(i===n){ show(`step-${i}`); setTimeout(()=>s.classList.remove('opacity-0'),10); b.classList.add('active'); b.classList.remove('text-slate-400'); } else { s.classList.add('hidden','opacity-0'); b.classList.remove('active'); b.classList.add('text-slate-400'); } } });
+                if(n===2){ Step2.init(); if(appState.blueprint.sections.length) Step2.renderBlueprintCards(); }
+                if(n===3) Step3.renderFeed();
+                if(n===4) this.compileExport();
+                const scr=$('main-scroll'); if(scr) scr.scrollTop=0;
+            },
+            closeModals() { PromptRegistry.close(); hide('debug-modal'); hide('log-popup'); },
+            compileExport() { const out=$('export-content'); if(!out)return; let h=''; appState.blueprint.parts.forEach(p => { if(!p.generatedTextRaw)return; let inr=p.generatedTextRaw; p.images.forEach(i=>{ let rep = `<div style="padding:16px; background-color:#f1f5f9; border:1px dashed #cbd5e1; border-radius:8px; text-align:center; color:#64748b; font-size:12px; font-weight:bold;">[Placeholder: ${i.concept} — Not Approved]</div>\n\n`; if(i.approved&&i.base64) rep=`\n\n<img src="${i.base64}" alt="${i.concept}" style="max-width:100%; margin:16px auto; border-radius:8px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.1); display:block;">\n\n`; inr=inr.replace(new RegExp(`\\[IMAGE_WORKSPACE\\s*\\|\\s*Concept:\\s*${escapeRegExp(i.concept)}\\]`,'gi'), rep); }); let ptH = marked.parse(inr); if(p.currentAffairsText) ptH += `<br><br><h2>Current Affairs Supplement</h2>`+marked.parse(p.currentAffairsText); h+=`<div>${ptH}</div><hr style="margin:40px 0; border:1px solid #cbd5e1;">`; }); out.innerHTML=h; }
+        };
+
+        window.addEventListener('keydown', e => { if(e.altKey&&e.key==='ArrowLeft'){ if(appState.currentStep>1) App.goToStep(appState.currentStep-1); } if(e.altKey&&e.key==='ArrowRight'){ if(appState.currentStep<4) App.goToStep(appState.currentStep+1); } if(e.key==='Escape') App.closeModals(); });
+
+        const UI = {
+            copyTextRaw(id) { const p=getPart(id); if(!p||!p.generatedTextRaw)return; const ta=document.createElement("textarea"); ta.value=p.generatedTextRaw+(p.currentAffairsText?"\n\nCA:\n"+p.currentAffairsText:""); document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); Toaster.show('Copied', 'emerald'); },
+            copyText(id) { const el=$(id); if(el){ el.select(); document.execCommand('copy'); Toaster.show('Copied', 'emerald'); } },
+            copyCompiledText() { const el=$('export-content'); if(el){ const r=document.createRange(); r.selectNodeContents(el); const s=window.getSelection(); s.removeAllRanges(); s.addRange(r); document.execCommand('copy'); s.removeAllRanges(); Toaster.show('Copied for Word', 'amber'); } }
+        }
+
+        const PromptRegistry = {
+            activeKey: null,
+            open() { show('prompt-modal'); this.initList(); },
+            close() { hide('prompt-modal'); },
+            initList() { const l=$('prompt-list'); if(!l)return; l.innerHTML=Object.keys(appState.prompts).map(k=>`<button onclick="PromptRegistry.select('${k}')" class="w-full text-left p-3 rounded-lg hover:bg-white border-l-2 border-transparent hover:border-purple-500 hover:shadow-sm transition ${this.activeKey===k?'bg-white border-purple-500 shadow-sm':''}"><div class="font-bold text-sm text-slate-800">${k}</div><div class="flex items-center gap-2 text-[10px] font-mono text-slate-500 mt-1"><span class="w-2 h-2 rounded-full ${appState.prompts[k].length>30?'bg-emerald-400':'bg-slate-300'}"></span>${appState.promptVersions[k]||'v1'} • ${appState.prompts[k].length} chars</div></button>`).join(''); if(!this.activeKey) this.select(Object.keys(appState.prompts)[0]); },
+            select(k) { this.activeKey=k; setTxt('pr-active-title', k); setTxt('pr-active-meta', `${appState.promptVersions[k]||'v1'} • Editable`); const ed=$('pr-editor'); if(ed){ ed.value=appState.prompts[k]; ed.disabled=false; } ['pr-btn-default','pr-btn-ai','pr-btn-save'].forEach(id=>{ const b=$(id); if(b) b.disabled=false; }); this.initList(); },
+            saveManual() { const ed=$('pr-editor'); if(ed){ appState.prompts[this.activeKey]=ed.value; const m=(appState.promptVersions[this.activeKey]||'v1').match(/v(\d+)/); appState.promptVersions[this.activeKey]=`v${m?parseInt(m[1])+1:2} (Manual)`; Session.save(); this.initList(); this.select(this.activeKey); Toaster.show('Saved', 'emerald'); } },
+            restoreDefault() { if(confirm('Restore default?')) { appState.prompts[this.activeKey]=DEFAULT_PROMPTS[this.activeKey]; appState.promptVersions[this.activeKey]='v1 (Default)'; Session.save(); this.select(this.activeKey); Toaster.show('Restored', 'sky'); } },
+            openAIEdit() { show('pr-ai-overlay'); },
+            async generateAIEdit() { const el=$('pr-ai-instruction'); if(!el||!el.value)return; const b=$('pr-ai-generate-btn'); if(b){b.textContent='Generating...'; b.disabled=true;} try { const r=await API.generateContent(`Modify based on instruction. Return ONLY prompt.\n\nORIGINAL:\n${appState.prompts[this.activeKey]}\n\nINSTRUCTION:\n${el.value}`); const f=$('pr-ai-result'); if(f) f.value=r; show('pr-ai-result-area'); } catch(e){ Toaster.show('Failed', 'rose'); } if(b){b.textContent='Generate Modified Prompt'; b.disabled=false;} },
+            acceptAIEdit() { const f=$('pr-ai-result'); if(f){ appState.prompts[this.activeKey]=f.value; const m=(appState.promptVersions[this.activeKey]||'v1').match(/v(\d+)/); appState.promptVersions[this.activeKey]=`v${m?parseInt(m[1])+1:2} (AI)`; Session.save(); this.select(this.activeKey); hide('pr-ai-overlay'); hide('pr-ai-result-area'); const el=$('pr-ai-instruction'); if(el) el.value=''; Toaster.show('Applied', 'purple'); } }
+        };
+
+        window.onload = async () => {
+            await Session.check(); 
+            Logger.add('INFO', 'SYSTEM', 'StudyForge initialized successfully with IndexedDB Storage Support.');
+            const ot = Logger.togglePopup.bind(Logger); Logger.togglePopup = () => { ot(); const p=$('log-popup'), d=$('btn-debug-raw'); if(d&&!$('step-1').classList.contains('hidden')){ if(p&&!p.classList.contains('hidden')) d.classList.remove('hidden'); else d.classList.add('hidden'); } };
+        };
+    </script>
+</body>
+</html>

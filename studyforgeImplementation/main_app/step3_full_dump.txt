@@ -1,0 +1,680 @@
+const Step3 = {
+      renderFeed() {
+        const container = document.getElementById('s3-feed');
+        const navContainer = document.getElementById('s3-sticky-nav');
+        if(appState.blueprint.parts.length === 0) return;
+        document.getElementById('s3-empty-state').classList.add('hidden');
+        
+        navContainer.innerHTML = appState.blueprint.parts.map(p => `
+          <button onclick="Step3.scrollToPart('${p.id}')" id="s3-nav-${p.id}" class="nav-pill px-4 py-1.5 rounded-full text-xs font-bold border border-slate-200 bg-white text-slate-600 flex items-center gap-2 whitespace-nowrap hover:bg-slate-50 transition">
+            <div id="s3-nav-dot-${p.id}" class="w-2 h-2 rounded-full bg-slate-300"></div> Part ${p.partNumber}
+          </button>`).join('');
+        
+        container.innerHTML = appState.blueprint.parts.map(p => {
+          this.preparePrompts(p);
+          return `
+          <section id="s3-sec-${p.id}" class="part-section scroll-mt-48 mb-12 animate-fade-in">
+            <div class="p-6 bg-white rounded-2xl border border-slate-200 shadow-sm" id="s3-wrapper-${p.id}">
+              ${this.buildPartHeader(p)}
+              ${this.buildSourcePlanPanel(p)}
+              ${this.buildPromptPanel(p)}
+              ${this.buildContentTabs(p)}
+              ${this.buildTimelinePanel(p)}
+              ${this.buildPartFooter(p)}
+            </div>
+          </section>`;
+        }).join('');
+        
+        this.initScrollSpy(); this.updateStats();
+        appState.blueprint.parts.forEach(p => { if(p.generatedTextRaw) this.hydrateInlineImages(p.id); });
+      },
+      preparePrompts(part) {
+        if(!part.promptUsed) part.promptUsed = {};
+        if(!part.promptUsed.textPrompt) {
+          let template = appState.prompts.economicsPartWriterPrompt;
+          part.promptUsed.textPrompt = template.replace(/\{RAW_PART_TEXT\}/g, part.rawData).replace(/\{PART_TITLE\}/g, part.title).replace(/\{PART_ID\}/g, part.id);
+        }
+        if(!part.promptUsed.currentAffairsPrompt) {
+          part.promptUsed.currentAffairsPrompt = appState.prompts.currentAffairsPrompt.replace(/\{PART_TITLE\}/g, part.title);
+        }
+      },
+      buildPartHeader(part) {
+        return `
+        <div class="mb-4 flex justify-between items-start">
+          <div>
+            <span class="text-xs bg-slate-800 text-white px-2 py-1 rounded font-mono">${part.id}</span>
+            <span class="font-bold text-slate-800 text-sm ml-2">${part.title}</span>
+          </div>
+          <span id="s3-stat-${part.id}" class="text-xs font-bold px-3 py-1 rounded bg-slate-100 text-slate-600">PENDING</span>
+        </div>`;
+      },
+      buildSourcePlanPanel(part) {
+        return `
+        <details class="mb-4 bg-slate-50 border border-slate-200 rounded-xl overflow-hidden">
+          <summary class="p-3 cursor-pointer text-sm font-bold text-slate-700">📄 Source Data & Targets</summary>
+          <div class="p-4 bg-white text-xs border-t border-slate-200 space-y-2 max-h-48 overflow-y-auto">
+            <div class="font-mono whitespace-pre-wrap">${part.rawData}</div>
+          </div>
+        </details>`;
+      },
+      buildPromptPanel(part) {
+        return `
+        <details class="mb-4 bg-slate-50 border border-slate-200 rounded-xl overflow-hidden">
+          <summary class="p-3 cursor-pointer text-sm font-bold text-slate-700">🔍 Prompt Settings</summary>
+          <div class="p-4 bg-white border-t border-slate-200 space-y-2">
+            <textarea id="prompt-txt-edit-${part.id}" class="w-full h-32 p-2 font-mono text-[10px] bg-slate-50 border rounded">${part.promptUsed.textPrompt}</textarea>
+            <textarea id="prompt-ca-edit-${part.id}" class="w-full h-24 p-2 font-mono text-[10px] bg-slate-50 border rounded hidden">${part.promptUsed.currentAffairsPrompt}</textarea>
+          </div>
+        </details>`;
+      },
+      buildContentTabs(part) {
+        let notesInitialState = !part.generatedTextRaw;
+        let caInitialState = !part.currentAffairsText && !part.currentAffairsMerged;
+        return `
+        <div class="border border-slate-200 rounded-xl bg-white overflow-hidden mb-4">
+          <div class="flex border-b border-slate-200 bg-slate-50">
+            <button id="s3-tabbtn-notes-${part.id}" class="s3-tabbtn-${part.id} flex-1 py-2 text-xs font-bold text-emerald-600 border-b-2 border-emerald-600" onclick="Step3.switchTab('${part.id}', 'notes')">📝 Notes</button>
+            <button id="s3-tabbtn-ca-${part.id}" class="s3-tabbtn-${part.id} flex-1 py-2 text-xs font-bold text-slate-500 border-b-2 border-transparent" onclick="Step3.switchTab('${part.id}', 'ca')">📰 Current Affairs</button>
+            <button id="s3-tabbtn-images-${part.id}" class="s3-tabbtn-${part.id} flex-1 py-2 text-xs font-bold text-slate-500 border-b-2 border-transparent" onclick="Step3.switchTab('${part.id}', 'images')">🖼 Images</button>
+          </div>
+          <div class="p-4 min-h-[150px]">
+            <div id="s3-tab-notes-${part.id}" class="s3-tabcontent-${part.id}">
+              <div id="s3-notes-controls-${part.id}" class="flex justify-between items-center mb-3 bg-slate-50 p-2 border rounded ${notesInitialState ? 'hidden' : ''}">
+                <span class="text-xs text-slate-500 font-bold"><span id="s3-word-count-${part.id}">0</span> words</span>
+                <div class="flex gap-2">
+                  <button onclick="Step3.toggleManualEdit('${part.id}')" class="text-xs px-2 py-1 bg-white border rounded font-semibold">✏️ Edit</button>
+                  <button id="btn-gen-notes-${part.id}" onclick="Step3.generatePartText('${part.id}')" class="text-xs px-2 py-1 bg-white border rounded font-semibold">↻ Regenerate</button>
+                </div>
+              </div>
+              <div id="s3-render-notes-${part.id}" class="markdown-body">
+                ${notesInitialState ? 
+                  `<div class="text-center py-6" id="s3-init-notes-${part.id}">
+                    <button id="btn-gen-notes-init-${part.id}" onclick="Step3.generatePartText('${part.id}')" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg text-xs transition">⚡ Generate Notes</button>
+                  </div>` : this.renderInlineContentHTML(part)
+                }
+              </div>
+              <div id="s3-editbox-notes-${part.id}" class="hidden mt-2">
+                <textarea id="s3-edit-in-${part.id}" class="w-full h-96 p-2 font-mono text-xs bg-slate-50 border rounded">${part.generatedTextRaw}</textarea>
+                <div class="mt-2 flex gap-2 justify-end">
+                  <button onclick="Step3.toggleManualEdit('${part.id}')" class="px-3 py-1 bg-slate-200 rounded text-xs">Cancel</button>
+                  <button onclick="Step3.saveEdit('${part.id}')" class="px-3 py-1 bg-indigo-600 text-white rounded text-xs">Save</button>
+                </div>
+              </div>
+            </div>
+            <div id="s3-tab-ca-${part.id}" class="s3-tabcontent-${part.id} hidden">
+              <div id="s3-ca-controls-${part.id}" class="flex justify-between items-center mb-3 ${caInitialState ? 'hidden' : ''}">
+                <button id="btn-gen-ca-${part.id}" onclick="Step3.generateCA('${part.id}')" class="text-xs px-2 py-1 border rounded">↻ Regenerate CA</button>
+                ${!part.currentAffairsMerged ? 
+                  `<button id="btn-merge-ca-${part.id}" onclick="Step3.mergeCA('${part.id}')" class="px-3 py-1 bg-emerald-600 text-white text-xs font-bold rounded">➕ Merge</button>` : 
+                  `<button id="btn-unmerge-ca-${part.id}" onclick="Step3.unmergeCA('${part.id}')" class="px-3 py-1 bg-rose-500 text-white text-xs font-bold rounded">➖ Unmerge</button>`}
+              </div>
+              <div id="s3-render-ca-${part.id}" class="markdown-body">
+                ${caInitialState ?
+                  `<div class="text-center py-6" id="s3-init-ca-${part.id}">
+                    <button id="btn-gen-ca-init-${part.id}" onclick="Step3.generateCA('${part.id}')" class="px-4 py-2 bg-sky-600 text-white font-bold rounded-lg text-xs">🔍 Search CA</button>
+                  </div>` : (part.currentAffairsText ? marked.parse(part.currentAffairsText) : '')
+                }
+              </div>
+            </div>
+            <div id="s3-tab-images-${part.id}" class="s3-tabcontent-${part.id} hidden">
+              <div id="s3-img-grid-${part.id}" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                ${this.buildImagesTabGrid(part)}
+              </div>
+            </div>
+          </div>
+        </div>`;
+      },
+      buildTimelinePanel(part) {
+        if (!part.timelineData || part.timelineData.length === 0) return '';
+        return `
+        <div class="mb-4 bg-sky-50 border rounded-xl p-4">
+          <div class="timeline-container hide-scrollbar">
+            ${part.timelineData.map(node => `
+              <div class="timeline-node">
+                <div class="timeline-dot mb-1">${node.date.substring(0,4)}</div>
+                <h5 class="font-bold text-slate-800 text-xs">${node.event}</h5>
+                <p class="text-[10px] text-sky-600">${node.data || node.catalyst}</p>
+              </div>`).join('')}
+          </div>
+        </div>`;
+      },
+      buildPartFooter(part) {
+        return `
+        <div class="p-3 bg-slate-800 rounded-xl flex justify-between items-center flex-wrap gap-2 mt-4">
+          <div class="text-xs font-bold text-slate-300">Status: <span class="text-white">${part.generatedTextRaw ? 'Notes Done' : 'Pending'}</span></div>
+          <div class="flex gap-2">
+            <button onclick="Step3.toggleRefineFoot('${part.id}')" class="px-3 py-1 bg-slate-700 text-white rounded text-xs">Refine</button>
+            ${!part.approved ? `<button onclick="Step3.cascadeApprovePart('${part.id}')" class="px-4 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded text-xs shadow-sm transition">✓ Cascade Approve</button>` : `<button disabled class="px-4 py-1.5 bg-slate-600 text-slate-400 font-bold rounded text-xs">✓ Approved</button>`}
+          </div>
+        </div>
+        <div id="s3-refinefoot-${part.id}" class="hidden mt-2 p-3 bg-purple-50 border rounded-xl shadow-inner">
+          <textarea id="s3-refinefoot-in-${part.id}" class="w-full p-2 text-xs border rounded-lg outline-none" rows="2" placeholder="e.g. 'Add a table comparing Demand-Pull and Cost-Push inflation'"></textarea>
+          <button onclick="Step3.submitRefine('${part.id}')" class="mt-2 px-3 py-1 bg-purple-600 text-white font-bold rounded-xs float-right">Apply Refinement</button>
+          <div class="clear-both"></div>
+        </div>`;
+      },
+      buildImagesTabGrid(part) {
+        let imgSpecs = appState.blueprint.imageRegistry.filter(r => r.id.includes(part.partNumber + '.'));
+        if(imgSpecs.length === 0) return '<div class="text-xs text-slate-400">No images registered.</div>';
+        return imgSpecs.map(spec => {
+          let img = part.images.find(i => i.assetId === spec.id) || { status: 'not_started', base64: null };
+          return `
+          <div class="bg-slate-50 border rounded-lg p-3 flex flex-col justify-between">
+            <div class="flex justify-between items-center mb-1">
+              <span class="font-mono text-xs font-bold bg-slate-800 text-white px-2 py-0.5 rounded">${spec.id}</span>
+              <span class="text-[10px] font-bold ${img.base64 ? 'text-emerald-600':'text-slate-400'}">${img.base64 ? 'Embedded':'Pending'}</span>
+            </div>
+            <div class="text-[10px] text-slate-600 line-clamp-1">${spec.topic}</div>
+            ${img.base64 ? `<img src="${img.base64}" class="w-full h-24 object-contain rounded mt-2 border bg-white">` : `<div class="h-24 bg-slate-100 flex items-center justify-center text-xs text-slate-400 border rounded mt-2">Placeholder</div>`}
+            <button onclick="Step3.genImageInline('${part.id}', '${spec.id}', false)" class="mt-2 w-full py-1 bg-indigo-600 text-white text-[10px] font-bold rounded">${img.base64 ? 'Regenerate' : 'Generate'}</button>
+          </div>`;
+        }).join('');
+      },
+      scrollToPart(id) {
+        const el = document.getElementById(`s3-sec-${id}`);
+        if(el) { window.scrollTo({top: el.getBoundingClientRect().top + window.scrollY - 180, behavior: 'smooth'}); }
+      },
+      initScrollSpy() {
+        const observer = new IntersectionObserver(entries => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              const id = entry.target.id.replace('s3-sec-', '');
+              document.querySelectorAll('.nav-pill').forEach(el => { el.classList.remove('active'); el.classList.add('bg-white'); });
+              const activePill = document.getElementById(`s3-nav-${id}`);
+              if(activePill) {
+                activePill.classList.add('active'); activePill.classList.remove('bg-white');
+                activePill.parentElement.scrollLeft = activePill.offsetLeft - 50;
+              }
+            }
+          });
+        }, { rootMargin: '-200px 0px -60% 0px', threshold: 0 });
+        document.querySelectorAll('.part-section').forEach(sec => observer.observe(sec));
+      },
+      switchTab(partId, tabId) { Helper.switchTabs(`s3-tabbtn-${partId}`, `s3-tabcontent-${partId}`, document.getElementById(`s3-tabbtn-${tabId}-${partId}`), `s3-tab-${tabId}-${partId}`); },
+
+      // --- RESTORED CORE SECTORS FOR INTERACTION ---
+      async generatePartText(partId) {
+        const part = appState.blueprint.parts.find(p => p.id === partId);
+        const btn = document.getElementById(`btn-gen-notes-${partId}`);
+        const initBtn = document.getElementById(`btn-gen-notes-init-${partId}`);
+        
+        Helper.setBtnLoading(btn, `Generating...`);
+        Helper.setBtnLoading(initBtn, `Generating...`);
+        if (!this.isGeneratingAll) this.switchTab(partId, 'notes');
+        
+        const initEl = document.getElementById(`s3-init-notes-${partId}`); if (initEl) initEl.classList.add('hidden');
+        const ctrlEl = document.getElementById(`s3-notes-controls-${partId}`); if (ctrlEl) ctrlEl.classList.remove('hidden');
+        const contentEl = document.getElementById(`s3-render-notes-${partId}`); if (!contentEl) return;
+        
+        part.status = 'text_generating'; this.updatePartHeaderUI(partId);
+        const finalPrompt = document.getElementById(`prompt-txt-edit-${partId}`)?.value || part.promptUsed.textPrompt;
+        
+        contentEl.innerHTML = `<div class="p-6 bg-slate-50 border rounded-lg text-slate-500 font-mono text-xs animate-pulse">Contacting Gemini Core. Generating structural notes... Please wait.</div>`;
+
+        part.generatedTextRaw = ""; part.generatedText = "";
+        try {
+          await API.streamContent(finalPrompt, (chunk, acc) => {
+            part.generatedTextRaw = acc; part.generatedText = this.renderInlineContentHTML(part);
+            if (contentEl) contentEl.innerHTML = part.generatedText;
+            const wc = document.getElementById(`s3-word-count-${partId}`); if(wc) wc.textContent = acc.split(/\s+/).length;
+            this.hydrateInlineImages(partId);
+          }, { temp: 0.5, useTools: false });
+          part.status = 'text_done'; Session.save();
+        } catch(e) { part.status = 'not_started'; Toaster.show(`Failed: ${part.id}`, 'rose'); }
+        finally { 
+          Helper.setBtnLoading(btn, `↻ Regenerate`, false); 
+          if(initBtn) Helper.setBtnLoading(initBtn, `⚡ Generate Notes`, false); 
+          
+          if (typeof renderMathInElement !== 'undefined') {
+            renderMathInElement(contentEl, {
+              delimiters: [
+                {left: '$$', right: '$$', display: true},
+                {left: '$', right: '$', display: false}
+              ]
+            });
+          }
+        }
+        this.updatePartUI(partId); 
+      },
+
+      async generateCA(partId) {
+        const part = appState.blueprint.parts.find(p => p.id === partId);
+        const btn = document.getElementById(`btn-gen-ca-${partId}`);
+        const initBtn = document.getElementById(`btn-gen-ca-init-${partId}`);
+        
+        Helper.setBtnLoading(btn, `Searching...`);
+        Helper.setBtnLoading(initBtn, `Searching...`);
+        if (!this.isGeneratingAll) this.switchTab(partId, 'ca');
+        
+        const initEl = document.getElementById(`s3-init-ca-${partId}`); if (initEl) initEl.classList.add('hidden');
+        const ctrlEl = document.getElementById(`s3-ca-controls-${partId}`); if (ctrlEl) ctrlEl.classList.remove('hidden');
+        const contentEl = document.getElementById(`s3-render-ca-${partId}`);
+        
+        part.status = 'ca_generating'; this.updatePartHeaderUI(partId);
+        const prompt = document.getElementById(`prompt-ca-edit-${partId}`)?.value || part.promptUsed.currentAffairsPrompt;
+        
+        if (contentEl) contentEl.innerHTML = `<div class="p-6 bg-slate-50 border rounded-lg text-slate-500 font-mono text-xs animate-pulse">Scanning live search indices for MP specific economic surveys & current affairs...</div>`;
+
+        let rawRes = "";
+        try {
+          await API.streamContent(prompt, (chunk, acc) => {
+            rawRes = acc; if(contentEl) contentEl.innerHTML = marked.parse(acc);
+          }, { temp: 0.4, useTools: true });
+          
+          part.currentAffairsText = rawRes; part.status = 'ca_done'; Session.save();
+          this.mergeCA(partId, true);
+        } catch(e) { part.status = 'text_done'; Toaster.show(`Failed CA`, 'rose'); }
+        finally { Helper.setBtnLoading(btn, `↻ Regenerate CA`, false); if(initBtn) Helper.setBtnLoading(initBtn, `🔍 Search CA`, false); }
+        this.updatePartUI(partId);
+      },
+
+      mergeCA(partId, isAuto = false) {
+        const p = appState.blueprint.parts.find(x=>x.id===partId);
+        if(!p.currentAffairsText || p.currentAffairsMerged) return;
+        p.generatedTextRaw += `\n\n## 📰 Current Affairs Supplement\n\n${p.currentAffairsText}`;
+        p.generatedText = this.renderInlineContentHTML(p);
+        p.currentAffairsMerged = true; p.status = 'ca_merged'; Session.save();
+        this.updatePartUI(partId);
+        if (!this.isGeneratingAll && !isAuto) this.switchTab(partId, 'notes');
+        Toaster.show(isAuto ? `Current affairs auto-merged` : `Merged`, 'emerald');
+      },
+
+      unmergeCA(partId) {
+        const p = appState.blueprint.parts.find(x=>x.id===partId); if(!p.currentAffairsMerged) return;
+        const div = `\n\n## 📰 Current Affairs Supplement\n\n`;
+        const idx = p.generatedTextRaw.indexOf(div);
+        if(idx !== -1) { p.generatedTextRaw = p.generatedTextRaw.slice(0, idx); p.generatedText = this.renderInlineContentHTML(p); }
+        p.currentAffairsMerged = false; p.status = 'ca_done'; Session.save();
+        this.updatePartUI(partId); Toaster.show(`CA unmerged`, 'sky');
+      },
+
+      renderInlineContentHTML(part) {
+        let html = marked.parse(part.generatedTextRaw);
+        html = html.replace(/<p>IMAGE_NEEDED:\s*(IMAGE_\d+\.\d+)<\/p>/g, (m, id) => this.mountHtml(part.id, id));
+        html = html.replace(/IMAGE_NEEDED:\s*(IMAGE_\d+\.\d+)/g, (m, id) => this.mountHtml(part.id, id));
+        html = html.replace(/<p>%%%EMBEDDED_IMAGE_(IMAGE_\d+\.\d+)%%%<\/p>/g, (m, id) => this.mountHtml(part.id, id));
+        html = html.replace(/%%%EMBEDDED_IMAGE_(IMAGE_\d+\.\d+)%%%/g, (m, id) => this.mountHtml(part.id, id));
+        return html;
+      },
+
+      mountHtml(partId, id) {
+        id = id.trim();
+        let p = appState.blueprint.parts.find(x=>x.id===partId);
+        let existing = p.images.find(i => i.assetId === id);
+        if(!existing) p.images.push({ assetId: id, prompt: '', status: 'not_started', base64: null, approved: false });
+        return `<div class="inline-img-mount my-6" data-part="${partId}" data-id="${id}"></div>`;
+      },
+
+      hydrateInlineImages(partId) {
+        const part = appState.blueprint.parts.find(p => p.id === partId);
+        const section = document.getElementById(`s3-sec-${partId}`); if(!section) return;
+        
+        section.querySelectorAll('.inline-img-mount').forEach(mount => {
+          const imgId = mount.getAttribute('data-id');
+          const img = part.images.find(i => i.assetId === imgId);
+          const spec = appState.blueprint.imageRegistry.find(r => r.id === imgId) || {};
+          if(!img) return;
+          
+          let isGenerating = img.status === 'generating_prompt' || img.status === 'generating_image';
+          let loadingUi = isGenerating ? `<div class="w-full h-32 bg-indigo-50 rounded-lg flex flex-col items-center justify-center text-indigo-500 text-xs font-bold mb-3 border border-indigo-200"><div class="w-5 h-5 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin-slow mb-2"></div>Generating image...</div>` : `<div class="w-full h-32 bg-slate-100 rounded-lg flex items-center justify-center text-slate-400 text-xs font-bold mb-3 border border-slate-200 shadow-inner">Placeholder: ${spec.topic || 'Awaiting Generation'}</div>`;
+          let preview = img.base64 ? `<img src="${img.base64}" class="w-full rounded-lg mb-3 border border-slate-200 shadow-sm">` : loadingUi;
+          let redesignUi = '';
+          if (img.base64 && !isGenerating && img.status !== 'redesigning_prompt') {
+            redesignUi = `
+              <div class="mt-4 pt-4 border-t border-slate-100">
+                <textarea id="img-redesign-in-${imgId}" class="w-full text-xs p-3 bg-slate-50 border rounded-lg font-mono text-slate-700 shadow-inner" rows="2" placeholder="Ask AI to change this image (e.g., 'Make it a timeline instead of a flowchart')..."></textarea>
+                <button id="btn-redesign-${imgId}" onclick="Step3.aiRedesignImage('${partId}', '${imgId}')" class="mt-2 w-full px-4 py-2 bg-indigo-100 hover:bg-indigo-200 text-indigo-800 text-xs font-bold rounded-lg transition shadow-sm">🪄 Redesign Image with AI</button>
+              </div>`;
+          }
+          let ctrls = '';
+          if (!img.base64 && !isGenerating && img.status !== 'redesigning_prompt') {
+            ctrls = `
+              <button onclick="Step3.genImageInline('${partId}', '${imgId}', false)" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg shadow-sm">⚡ Generate Image</button>
+              <button onclick="Step3.editImgPromptFirst('${partId}', '${imgId}')" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg border">✏️ Edit Prompt First</button>`;
+          } else if (img.base64) { ctrls = `<span class="bg-emerald-100 text-emerald-700 px-3 py-1.5 rounded-lg text-xs font-bold border">✓ Embedded</span>`; }
+          
+          mount.innerHTML = `
+          <div class="p-5 bg-white border-2 border-dashed ${isGenerating || img.status === 'redesigning_prompt' ? 'border-indigo-400' : (img.base64 ? 'border-emerald-300' : 'border-slate-300')} rounded-xl max-w-3xl mx-auto my-6 relative overflow-hidden transition-all">
+            <div class="flex justify-between items-center mb-3">
+              <div class="flex items-center gap-2">
+                <span class="text-xl">🖼️</span>
+                <div>
+                  <div class="font-bold text-slate-800 text-sm">${spec.topic || 'Visual Asset'} <span class="font-mono text-[10px] bg-slate-800 text-white px-2 py-0.5 rounded ml-1">${imgId}</span></div>
+                  <div class="text-[10px] font-bold text-slate-500 mt-0.5">Template: ${spec.template || 'Unknown'}</div>
+                </div>
+              </div>
+            </div>
+            ${preview}
+            <div class="flex flex-wrap gap-2 mt-4" id="img-ctrls-${imgId}">${ctrls}</div>
+            <div id="img-editbox-${imgId}" class="hidden mt-4 pt-4 border-t border-slate-100">
+              <textarea id="img-prompt-in-${imgId}" class="w-full p-3 font-mono text-[10px] text-slate-700 bg-slate-50 border rounded-lg h-32 outline-none focus:border-indigo-500 shadow-inner"></textarea>
+              <button onclick="Step3.genImageInline('${partId}', '${imgId}', true)" class="mt-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg shadow-sm transition w-full">Generate with This Prompt</button>
+            </div>
+            ${redesignUi}
+          </div>`;
+        });
+        
+        const imgGrid = document.getElementById(`s3-img-grid-${partId}`);
+        if(imgGrid && part.images.length > 0) {
+          imgGrid.innerHTML = part.images.map(img => `
+            <div class="p-4 bg-white border rounded-xl shadow-sm animate-fade-in">
+              <div class="flex justify-between items-center mb-2">
+                <span class="font-mono text-xs font-bold bg-slate-800 text-white px-2 py-1 rounded">${img.assetId}</span>
+                <span class="text-xs font-bold ${img.base64 ? 'text-emerald-600':'text-slate-400'}">${img.base64 ? 'Embedded':img.status}</span>
+              </div>
+              ${img.base64 ? `<img src="${img.base64}" class="w-full rounded-lg border">` : `<div class="h-24 bg-slate-100 flex items-center justify-center text-xs text-slate-400 border rounded-lg">No image generated</div>`}
+            </div>`).join('');
+        }
+      },
+      // --- END RESTORED HELPER PIPELINE SECTORS ---
+
+      async genImageInline(partId, imgId, useExistingPrompt = false) {
+        const part = appState.blueprint.parts.find(p=>p.id===partId);
+        const img = part.images.find(i=>i.assetId===imgId);
+        const spec = appState.blueprint.imageRegistry.find(r=>r.id===imgId) || {};
+        if(!useExistingPrompt) {
+          img.status = 'generating_prompt'; this.hydrateInlineImages(partId);
+          try {
+            let styleRouterGuideline = "";
+            const templateType = (spec.template || '').toUpperCase();
+            
+            if (templateType.includes("STORY") || templateType.includes("COMIC") || templateType.includes("STRIP")) {
+              styleRouterGuideline = "Warm, highly readable educational comic book style, clean friendly cartoon illustration, defined dark ink outlines, bright flat comic-strip colors, expressive faces showing high emotion and comprehension, clean sequential panel borders, optimized for educational visual storytelling. Self-explanatory action, zero corporate text charts.";
+            } else if (templateType.includes("FORMULA") || templateType.includes("EQUATION") || templateType.includes("MATH")) {
+              styleRouterGuideline = "Sleek, premium modern educational chalkboard index card. The mathematical equation is prominently centered in large, bold, clean lettering. Surrounding variables are clearly boxed with simple arrows pointing to their definitions. The bottom 15% contains a dedicated high-contrast colored banner labeled 'PSC FACT BOX' containing GSDP or relevant exam facts.";
+            } else if (templateType.includes("CONCEPT") || templateType.includes("FLOW") || templateType.includes("MAP") || templateType.includes("TIMELINE")) {
+              styleRouterGuideline = "Structured graphical flowchart layout. Divide the visual into clear segments or numbered paths (1, 2, 3) to show sequential flow. Use clean high-contrast labels placed in white callout panels. Ensure a bold, central visual metaphor that makes the concept instantly understandable without complex reading. White clean background.";
+            } else {
+              styleRouterGuideline = "Premium flat minimalist educational vector infographic, high legibility, professional visual structure, clean white background, clear color coding.";
+            }
+
+            let builderPrompt = appState.prompts.economicsImagePromptBuilderPrompt
+              .replace(/\{TEMPLATE_TYPE\}/g, spec.template||'')
+              .replace(/\{TOPIC\}/g, spec.topic||'')
+              .replace(/\{LAYOUT_DESCRIPTION\}/g, `${spec.layout || ''}. Style direction: ${styleRouterGuideline}`)
+              .replace(/\{CHARACTER_APPEARANCES\}/g, spec.characters||'Farmer, Trader, Official')
+              .replace(/\{DATA_TO_DISPLAY\}/g, spec.data||'')
+              .replace(/\{TEXT_LABELS\}/g, spec.labels||'')
+              .replace(/\{HAND_DRAWABLE\}/g, spec.handDrawable === 'Yes' ? 'Design must be simple enough for a student to sketch by hand in 45 seconds during an exam. Use only basic geometric shapes. No complex curves or detailed illustrations.' : '');
+            const detailedPrompt = await API.generateContent(builderPrompt);
+            img.prompt = detailedPrompt.replace(/^\[.*?\]\s*/gm, '').replace(/\[ASSET SUMMARY\]/gi, '').trim(); 
+          } catch(e) { img.status = 'error'; Toaster.show(`Prompt build failed for ${imgId}`, 'rose'); this.hydrateInlineImages(partId); return; }
+        } else { img.prompt = document.getElementById(`img-prompt-in-${imgId}`).value; }
+        
+        img.status = 'generating_image'; this.hydrateInlineImages(partId);
+        try {
+          let aspect = spec.template && spec.template.includes("FORMULA_CARD") ? "1:1" : "16:9";
+          img.base64 = await API.generateImage(img.prompt, aspect);
+          img.status = 'embedded'; img.approved = true; 
+          part.generatedTextRaw = part.generatedTextRaw.replace(new RegExp(`IMAGE_NEEDED:\\s*${imgId}`, 'g'), `%%%EMBEDDED_IMAGE_${imgId}%%%`);
+          part.generatedText = this.renderInlineContentHTML(part);
+        } catch(e) { img.status = 'error'; Toaster.show('Image gen failed', 'rose'); }
+        Session.save(); this.updatePartUI(partId);
+      },
+      async editImgPromptFirst(partId, imgId) {
+        const part = appState.blueprint.parts.find(p=>p.id===partId);
+        const img = part.images.find(i=>i.assetId===imgId);
+        const spec = appState.blueprint.imageRegistry.find(r=>r.id===imgId) || {};
+        img.status = 'generating_prompt'; this.hydrateInlineImages(partId);
+        try {
+          let styleRouterGuideline = "";
+          const templateType = (spec.template || '').toUpperCase();
+          if (templateType.includes("STORY") || templateType.includes("COMIC") || templateType.includes("STRIP")) {
+            styleRouterGuideline = "Warm, highly readable educational comic book style, clean friendly cartoon illustration, defined dark ink outlines, bright flat comic-strip colors, expressive faces showing high emotion and comprehension, clean sequential panel borders, optimized for educational visual storytelling. Self-explanatory action, zero corporate text charts.";
+          } else if (templateType.includes("FORMULA") || templateType.includes("EQUATION") || templateType.includes("MATH")) {
+            styleRouterGuideline = "Sleek, premium modern educational chalkboard index card. The mathematical equation is prominently centered in large, bold, clean lettering. Surrounding variables are clearly boxed with simple arrows pointing to their definitions. The bottom 15% contains a dedicated high-contrast colored banner labeled 'PSC FACT BOX' containing GSDP or relevant exam facts.";
+          } else if (templateType.includes("CONCEPT") || templateType.includes("FLOW") || templateType.includes("MAP") || templateType.includes("TIMELINE")) {
+            styleRouterGuideline = "Structured graphical flowchart layout. Divide the visual into clear segments or numbered paths (1, 2, 3) to show sequential flow. Use clean high-contrast labels placed in white callout panels. Ensure a bold, central visual metaphor that makes the concept instantly understandable without complex reading. White clean background.";
+          } else {
+            styleRouterGuideline = "Premium flat minimalist educational vector infographic, high legibility, professional visual structure, clean white background, clear color coding.";
+          }
+
+          let builderPrompt = appState.prompts.economicsImagePromptBuilderPrompt
+            .replace(/\{TEMPLATE_TYPE\}/g, spec.template||'')
+            .replace(/\{TOPIC\}/g, spec.topic||'')
+            .replace(/\{LAYOUT_DESCRIPTION\}/g, `${spec.layout || ''}. Style direction: ${styleRouterGuideline}`)
+            .replace(/\{CHARACTER_APPEARANCES\}/g, spec.characters||'Farmer, Trader, Official')
+            .replace(/\{DATA_TO_DISPLAY\}/g, spec.data||'')
+            .replace(/\{TEXT_LABELS\}/g, spec.labels||'')
+            .replace(/\{HAND_DRAWABLE\}/g, spec.handDrawable === 'Yes' ? 'Design must be simple enough for a student to sketch by hand in 45 seconds.' : '');
+          const detailedPrompt = await API.generateContent(builderPrompt);
+          img.prompt = detailedPrompt.replace(/^\[IMAGE_PROMPT\]\s*/i, '').trim();
+          img.status = 'prompt_ready'; this.hydrateInlineImages(partId);
+          document.getElementById(`img-editbox-${imgId}`).classList.remove('hidden');
+          document.getElementById(`img-ctrls-${imgId}`).classList.add('hidden');
+          document.getElementById(`img-prompt-in-${imgId}`).value = img.prompt;
+        } catch(e) { img.status = 'error'; this.hydrateInlineImages(partId); }
+      },
+      async aiRedesignImage(partId, imgId) {
+        const part = appState.blueprint.parts.find(p=>p.id===partId);
+        const img = part.images.find(i=>i.assetId===imgId);
+        const inputEl = document.getElementById(`img-redesign-in-${imgId}`);
+        if(!inputEl || !inputEl.value.trim()) return;
+
+        const btn = document.getElementById(`btn-redesign-${imgId}`);
+        if(btn) { btn.innerHTML = `Redesigning...`; btn.disabled = true; }
+        img.status = 'redesigning_prompt'; this.hydrateInlineImages(partId);
+        try {
+          const redesignPrompt = appState.prompts.imageRedesignPrompt.replace('{CURRENT_IMAGE_PROMPT}', img.prompt).replace('{USER_INSTRUCTION}', inputEl.value.trim());
+          const newPrompt = await API.generateContent(redesignPrompt);
+          img.prompt = newPrompt.replace(/^\[IMAGE_PROMPT\]\s*/i, '').trim();
+          img.status = 'generating_image'; this.hydrateInlineImages(partId);
+          const spec = appState.blueprint.imageRegistry.find(r=>r.id===imgId) || {};
+          let aspect = spec.template && spec.template.includes("FORMULA_CARD") ? "1:1" : "16:9";
+          img.base64 = await API.generateImage(img.prompt, aspect);
+          img.status = 'embedded'; img.approved = true;
+          Session.save(); Toaster.show(`Image ${imgId} redesigned!`, 'emerald');
+        } catch (e) { img.status = 'embedded'; }
+        finally { this.updatePartUI(partId); }
+      },
+      approvePart(id) {
+        const p = appState.blueprint.parts.find(x=>x.id===id);
+        p.approved = true; p.status = 'approved'; Session.save();
+        this.updatePartHeaderUI(id); this.updateStats();
+        const btnApprove = document.querySelector(`#s3-wrapper-${id} button[onclick="Step3.approvePart('${id}')"]`);
+        if(btnApprove) btnApprove.outerHTML = `<button disabled class="px-5 py-2 bg-slate-600 text-slate-400 font-bold text-sm rounded-lg cursor-not-allowed">✓ Approved</button>`;
+        Toaster.show(`Part ${p.partNumber} Approved`, 'emerald');
+      },
+      toggleRefineFoot(id) { document.getElementById(`s3-refinefoot-${id}`).classList.toggle('hidden'); },
+      toggleManualEdit(id) { document.getElementById(`s3-editbox-notes-${id}`).classList.toggle('hidden'); },
+      
+      async cascadeApprovePart(partId) {
+        const p = appState.blueprint.parts.find(x => x.id === partId);
+        if (!p) return;
+        
+        // 1. Text Note Approval status update
+        p.status = 'text_done';
+        
+        // 2. CA auto-merge check
+        if (p.currentAffairsText && !p.currentAffairsMerged) {
+          this.mergeCA(p.id, true);
+        }
+        
+        // 3. Image Lock action
+        if (p.images) {
+          p.images.forEach(img => {
+            if (img.base64) {
+              img.approved = true;
+              img.status = 'embedded';
+            }
+          });
+        }
+        
+        // 4. Update core approved state
+        p.approved = true;
+        p.status = 'approved';
+        
+        Session.save();
+        this.updatePartUI(partId);
+        
+        const wrapper = document.getElementById(`s3-wrapper-${partId}`);
+        if (wrapper) {
+          const btnApprove = wrapper.querySelector(`button[onclick^="Step3.cascadeApprovePart"]`);
+          if (btnApprove) {
+            btnApprove.outerHTML = `<button disabled class="px-4 py-1.5 bg-slate-600 text-slate-400 font-bold rounded text-xs cursor-not-allowed">✓ Approved</button>`;
+          }
+        }
+        Toaster.show(`Part ${p.partNumber} cascading approval applied!`, 'emerald');
+      },
+
+      approveAllParts() {
+        Modal.showConfirm(
+          'Approve All Workspace Components?',
+          'This will execute cascading approvals for all parts. All completed texts notes will be approved, current affairs will be merged, and generated images will be locked.',
+          async () => {
+            for (let p of appState.blueprint.parts) {
+              await this.cascadeApprovePart(p.id);
+            }
+            Toaster.show('All blueprint parts approved successfully!', 'emerald');
+          }
+        );
+      },
+
+      saveEdit(id) {
+        const p = appState.blueprint.parts.find(x=>x.id===id);
+        const newRaw = document.getElementById(`s3-edit-in-${id}`).value;
+        p.generatedTextRaw = newRaw; p.generatedText = this.renderInlineContentHTML(p);
+        if(p.approved) p.approvedButEdited = true;
+        if(!p.versions) p.versions = [];
+        p.versions.push({ versionNumber: p.versions.length+1, timestamp: new Date().toISOString(), type: 'manual', content: p.generatedTextRaw });
+        Session.save(); this.updatePartUI(id); Toaster.show('Saved', 'indigo');
+      },
+      async submitRefine(id) {
+        const p = appState.blueprint.parts.find(x=>x.id===id);
+        const inst = document.getElementById(`s3-refinefoot-in-${id}`).value; if(!inst) return;
+        document.getElementById(`s3-stat-${id}`).textContent = 'REFINING';
+        try {
+          let lockedIds = p.images.filter(i=>i.base64).map(i=> `%%%EMBEDDED_IMAGE_${i.assetId}%%%`).join(', ');
+          let lockedPlaceholders = p.images.filter(i=>!i.base64).map(i=> `IMAGE_NEEDED: ${i.assetId}`).join(', ');
+          const prompt = appState.prompts.economicsRefinementPrompt.replace('{CURRENT_PART_NOTES}', p.generatedTextRaw).replace('{LOCKED_IMAGE_PLACEHOLDERS}', `Embedded: ${lockedIds} | Placeholders: ${lockedPlaceholders}`).replace('{APPROVED_IMAGE_IDS}', lockedIds).replace('{USER_INSTRUCTION}', inst);
+          
+          p.generatedTextRaw = await API.streamContent(prompt, (c, acc) => {
+            p.generatedTextRaw = acc;
+            const notesTab = document.getElementById(`s3-tab-notes-${id}`);
+            if(notesTab) {
+              const renderEl = document.getElementById(`s3-render-notes-${id}`);
+              if(renderEl) renderEl.innerHTML = this.renderInlineContentHTML(p);
+            }
+          }, {temp:0.4});
+          p.generatedText = this.renderInlineContentHTML(p);
+          if(p.approved) p.approvedButEdited = true;
+          if(!p.versions) p.versions = [];
+          p.versions.push({ versionNumber: p.versions.length+1, timestamp: new Date().toISOString(), type: 'ai_refine', content: p.generatedTextRaw, instruction: inst });
+          document.getElementById(`s3-refinefoot-${id}`).classList.add('hidden');
+          Session.save(); this.updatePartUI(id); Toaster.show('Refinement applied', 'purple');
+        } catch(e) { Toaster.show('Refine failed', 'rose'); this.updatePartUI(id); }
+      },
+      updatePartUI(id) {
+        const p = appState.blueprint.parts.find(x=>x.id===id); if(!p) return;
+        const notesTab = document.getElementById(`s3-tab-notes-${id}`);
+        const caTab = document.getElementById(`s3-tab-ca-${id}`);
+        const imgTabGrid = document.getElementById(`s3-img-grid-${id}`);
+        
+        if (notesTab && p.generatedTextRaw) {
+          const controls = document.getElementById(`s3-notes-controls-${id}`);
+          const initEl = document.getElementById(`s3-init-notes-${id}`);
+          const renderEl = document.getElementById(`s3-render-notes-${id}`);
+          const wc = document.getElementById(`s3-word-count-${id}`);
+          if (controls) controls.classList.remove('hidden');
+          if (initEl) initEl.classList.add('hidden');
+          if (wc) wc.textContent = p.generatedTextRaw.split(/\s+/).length;
+          if (renderEl) renderEl.innerHTML = this.renderInlineContentHTML(p);
+        }
+        if (caTab && p.currentAffairsText) {
+          const initCaEl = document.getElementById(`s3-init-ca-${id}`); if(initCaEl) initCaEl.classList.add('hidden');
+          const ctrlCaEl = document.getElementById(`s3-ca-controls-${id}`); if(ctrlCaEl) ctrlCaEl.classList.remove('hidden');
+          const caRender = document.getElementById(`s3-render-ca-${id}`); if (caRender) caRender.innerHTML = marked.parse(p.currentAffairsText);
+        }
+        if (imgTabGrid) imgTabGrid.innerHTML = this.buildImagesTabGrid(p);
+        this.hydrateInlineImages(id); this.updatePartHeaderUI(id); this.updateStats();
+      },
+      updatePartHeaderUI(id) {
+        const p = appState.blueprint.parts.find(x=>x.id===id);
+        const badge = document.getElementById(`s3-stat-${id}`);
+        const pillDot = document.getElementById(`s3-nav-dot-${id}`); if(!badge || !pillDot) return;
+        let bClass = 'bg-slate-100 text-slate-500'; let txt = p.status.toUpperCase();
+        let dClass = 'bg-slate-300';
+        if(p.approved) { bClass = 'bg-emerald-100 text-emerald-700'; txt = 'APPROVED'; dClass = 'bg-emerald-500'; }
+        else if(p.status.includes('generating')) { bClass = 'bg-amber-100 text-amber-700 animate-pulse'; txt = p.status.replace('_',' ').toUpperCase(); dClass = 'bg-amber-500 animate-pulse'; }
+        else if(p.status.includes('done') || p.status.includes('merged')) { bClass = 'bg-blue-100 text-blue-700'; txt = p.status.replace('_',' ').toUpperCase(); dClass = 'bg-blue-500'; }
+        badge.className = `text-[10px] font-bold px-3 py-1.5 rounded uppercase ${bClass}`;
+        badge.textContent = txt; pillDot.className = `w-2 h-2 rounded-full ${dClass}`;
+      },
+      updateStats() {
+        const parts = appState.blueprint.parts; const tot = parts.length;
+        const txt = parts.filter(p => p.generatedTextRaw).length;
+        const ca = parts.filter(p => p.currentAffairsMerged).length;
+        const appP = parts.filter(p => p.approved).length;
+        let appImg = 0; let totImg = 0;
+        parts.forEach(p => { 
+          appImg += p.images.filter(i=>i.base64).length; 
+          totImg += appState.blueprint.imageRegistry.filter(r=>r.id.includes(p.partNumber + '.')).length;
+        });
+        document.getElementById('s3-stat-tot').textContent = `Total Parts: ${tot}`;
+        document.getElementById('s3-stat-txt').textContent = `Text Generated: ${txt}`;
+        document.getElementById('s3-stat-ca').textContent = `CA Merged: ${ca}`;
+        document.getElementById('s3-stat-img').textContent = `Images Embedded: ${appImg}/${totImg}`;
+        document.getElementById('s3-stat-app').textContent = `Parts Approved: ${appP}`;
+        let score = (txt*0.4) + (ca*0.2) + ((appImg/Math.max(totImg,1))*0.2) + (appP*0.2);
+        let pct = tot === 0 ? 0 : Math.min(100, Math.round((score / tot) * 100));
+        document.getElementById('s3-progress-bar').style.width = `${pct}%`;
+        document.getElementById('s3-progress-text').textContent = `${pct}% Complete`;
+      },
+      async generateEverything() {
+        if(this.isGeneratingAll) return;
+        this.isGeneratingAll = true;
+        const btn = document.getElementById('s3-btn-gen-all');
+        if(btn) btn.innerHTML = `Generating Sequence...`;
+        const btnPause = document.getElementById('s3-btn-pause'); if(btnPause) btnPause.disabled = false;
+        
+        for(let i=0; i<appState.blueprint.parts.length; i++) {
+          if(!this.isGeneratingAll) break;
+          const part = appState.blueprint.parts[i]; if(part.approved) continue;
+          if(!part.generatedTextRaw) { this.scrollToPart(part.id); await this.generatePartText(part.id); }
+          if(!this.isGeneratingAll) break;
+          if(!part.currentAffairsText && !part.currentAffairsMerged && part.currentAffairsFlag) { await this.generateCA(part.id); }
+          if(!this.isGeneratingAll) break;
+          if(part.currentAffairsText && !part.currentAffairsMerged) { this.mergeCA(part.id); }
+          if(!this.isGeneratingAll) break;
+          
+          let imgSpecs = appState.blueprint.imageRegistry.filter(r => r.id.startsWith(`IMAGE_${part.partNumber}.`));
+          for (let spec of imgSpecs) {
+            if(!this.isGeneratingAll) break;
+            let img = part.images.find(im => im.assetId === spec.id);
+            if (!img) {
+              img = { assetId: spec.id, prompt: '', status: 'not_started', base64: null, approved: false };
+              part.images.push(img); part.generatedTextRaw += `\n\nIMAGE_NEEDED: ${spec.id}\n\n`;
+              part.generatedText = this.renderInlineContentHTML(part);
+            }
+            if (!img.base64 && img.status !== 'generating_image' && img.status !== 'generating_prompt' && img.status !== 'embedded') {
+              await this.genImageInline(part.id, spec.id, false); 
+            }
+          }
+        }
+        this.isGeneratingAll = false;
+        if(btn) btn.innerHTML = '▶ Generate Everything';
+        if(btnPause) btnPause.disabled = true;
+        this.updateStats();
+      },
+      pauseEverything() {
+        this.isGeneratingAll = false;
+        const btn = document.getElementById('s3-btn-gen-all'); if(btn) btn.innerHTML = '▶ Resume Generation';
+        const btnPause = document.getElementById('s3-btn-pause'); if(btnPause) btnPause.disabled = true;
+        Toaster.show('Generation paused after current step', 'amber');
+      },
+      regenerateAllPrompt() {
+        Modal.showConfirm(
+          'Regenerate All Workspace Components?',
+          'This will discard all UNAPPROVED notes and current affairs matrix overlays. Approved parts will remain unaffected.',
+          () => {
+            appState.blueprint.parts.forEach(p => {
+              if(!p.approved) {
+                p.generatedText = ""; p.generatedTextRaw = ""; p.currentAffairsText = ""; p.currentAffairsMerged = false; p.status = 'not_started';
+                p.images.forEach(img => { if(!img.base64) { img.status = 'not_started'; } });
+              }
+            });
+            Session.save(); this.renderFeed(); this.generateEverything();
+          }
+        );
+      }
+    };

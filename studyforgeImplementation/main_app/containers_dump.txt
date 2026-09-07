@@ -1,0 +1,135 @@
+MASTER_IMPLEMENTATION_PLAN_PROMPT_CORRECTED.md: object, persistence, navigation, renderer, prompt registry, container renderers, DOM IDs and event handlers;
+MASTER_IMPLEMENTATION_PLAN_PROMPT_CORRECTED.md: 8. Safe rendering/container plan for all documented containers.
+MASTER_IMPLEMENTATION_PLAN_PROMPT_CORRECTED.md: - container work;
+new architect mandatory analysis documentation.txt: ### Gap 11: New Container Types
+new architect mandatory analysis documentation.txt: Doc mentions 12 container types. Additional containers needed:
+new architect mandatory analysis documentation.txt: t will be written, from source vs researched vs enrichment. Containers planned (Formula Box, Story Box, Comparison Table, etc.).
+new architect mandatory analysis documentation.txt: - "Add more focus on formulas" → adds formula containers to text plan
+new architect mandatory analysis documentation.txt: - Containers render as styled boxes
+new architect mandatory analysis documentation.txt: - All generated content with containers
+new architect mandatory analysis documentation.txt: | Containers | Concept Box, Formula Box, Story Box, Confusion Alert, Le
+new architect mandatory analysis documentation.txt: efs + all formulas) + applied bundles | Formatted HTML with containers and traceability tags | Screen 7 part display |
+Single HTML File Architecture.txt: /* All styles for all screens, containers, modals, etc. */
+Single HTML File Architecture.txt: - Can render containers as they arrive
+Single HTML File Architecture.txt: /* Container styles (all 22 container types with colors) */
+Single HTML File Architecture.txt: <!-- Modal container (for popups) -->
+Single HTML File Architecture.txt: <div id="modal-container"></div>
+Single HTML File Architecture.txt: <div id="toast-container"></div>
+Single HTML File Architecture.txt: SECTION 7: CONTAINER RENDERERS (22 types)
+Single HTML File Architecture.txt: const Containers = {
+Single HTML File Architecture.txt: // ... all 22 containers
+StudyForge_Document_1_Comprehensive_AI_Usage_and_Prompt_Architecture.md: ed|Current facts, URLs, dates, source metadata|AI-07A or CA container insertion|
+StudyForge_Document_1_Comprehensive_AI_Usage_and_Prompt_Architecture.md: section(s). “Add more formulas” modifies Text Plan formula containers; “change comic to flowchart” modifies the relevant Image P
+StudyForge_Document_1_Comprehensive_AI_Usage_and_Prompt_Architecture.md: ructured, sanitizable HTML/content blocks with IDs/anchors, container types, traceability metadata, source refs, and zero or more
+StudyForge_Document_1_Comprehensive_AI_Usage_and_Prompt_Architecture.md: |**Output schema**|`{part\_id, html\_blocks\[], containers\[], citations\[], traceability\[], image\_needed:\[{descri
+StudyForge_Document_1_Comprehensive_AI_Usage_and_Prompt_Architecture.md: app sanitizes returned content and renders through approved container templates; raw unsanitized AI HTML must never be injected d
+StudyForge_Document_1_Comprehensive_AI_Usage_and_Prompt_Architecture.md: ocation()`|Requested anchor and content|Ensures target text/container exists and reserves a safe image slot in HTML state|
+StudyForge_Document_1_Comprehensive_AI_Usage_and_Prompt_Architecture.md: pens next**|Results can be added to the generated part’s CA container or fed into a re-generation/update request if the text need
+StudyForge_Document_1_Comprehensive_AI_Usage_and_Prompt_Architecture.md: |**Runtime data injected**|User request; part HTML/container map; selected content if any; blueprint; part metadata; man
+StudyForge_Document_1_Comprehensive_AI_Usage_and_Prompt_Architecture.md: infers target scope. “Formula explanation” targets formula containers. “Whole/entire/everything” triggers proposed full-part reg
+StudyForge_Document_1_Comprehensive_AI_Usage_and_Prompt_Architecture.md: cable, image usefulness/labels, missing comparison/timeline/container needs, traceability, and relevant cross-domain coverage bas
+StudyForge_Document_1_Comprehensive_AI_Usage_and_Prompt_Architecture.md: |**Modifications**|Accepted text/container changes use AI-07G/AI-07A as appropriate. Image suggestions
+StudyForge_Document_1_Comprehensive_AI_Usage_and_Prompt_Architecture.md: n|`OPTIONAL\_ENRICHMENT`|Added to make understanding easier|Container/section source|
+StudyForge_Document_1_Comprehensive_AI_Usage_and_Prompt_Architecture.md: |Structured IDs|Definitions, formulas, topics, parts, containers, image assets, and suggestions must use stable IDs.|
+StudyForge_Document_1_Comprehensive_AI_Usage_and_Prompt_Architecture.md: mulas`, `blueprint`, `bundles`, `CA`|safe blocks/HTML data, containers, tags, citations, image markers|Screen 7 above generated p
+StudyForge_Document_1_Comprehensive_AI_Usage_and_Prompt_Architecture.md: "container\_id": "C-01",
+StudyForge_Document_1_Comprehensive_AI_Usage_and_Prompt_Architecture.md: "container\_type": "concept\_box",
+StudyForge_Document_1_Comprehensive_AI_Usage_and_Prompt_Architecture.md: "action": "add\_container",
+StudyForge_Document_1_Comprehensive_AI_Usage_and_Prompt_Architecture.md: "container\_type": "comparison\_table",
+StudyForge_Document_1_Comprehensive_AI_Usage_and_Prompt_Architecture.md: ronology|Timeline / Historical|Event/date sequence|Timeline container, cause-effect, relevant historical explanation|
+StudyForge_Document_1_Comprehensive_AI_Usage_and_Prompt_Architecture.md: |Where should image go?|AI returns a stable container/paragraph anchor. The app reserves slot only after target t
+StudyForge_Document_1_Comprehensive_AI_Usage_and_Prompt_Architecture.md: t to structured content blocks or sanitize against approved container allowlist before insertion.|
+StudyForge_Document_1_Comprehensive_AI_Usage_and_Prompt_Architecture.md: |Image placement anchor|Resolve only known generated container IDs; never execute selectors supplied directly by arbitrary
+StudyForge_Document_1_Comprehensive_AI_Usage_and_Prompt_Architecture.md: fe renderer|Generated part shows correct tags, source refs, containers, and prompt viewer|
+StudyForge_Document_1_Comprehensive_AI_Usage_and_Prompt_Architecture.md: ONAL\_ENRICHMENT/WEB\_SOURCED} | Formatted HTML with styled containers + traceability tags + IMAGE\_NEEDED markers | OFF | Screen
+StudyForge_Document_1_Comprehensive_AI_Usage_and_Prompt_Architecture.md: , common\_mistakes\[]}` | OFF | Text generation Formula Box container | Yes |
+StudyForge_Document_1_Merged_Master_AI_Usage.md: ed|Current facts, URLs, dates, source metadata|AI-07A or CA container insertion|
+StudyForge_Document_1_Merged_Master_AI_Usage.md: section(s). “Add more formulas” modifies Text Plan formula containers; “change comic to flowchart” modifies the relevant Image P
+StudyForge_Document_1_Merged_Master_AI_Usage.md: ructured, sanitizable HTML/content blocks with IDs/anchors, container types, traceability metadata, source refs, and zero or more
+StudyForge_Document_1_Merged_Master_AI_Usage.md: |**Output schema**|`{part\_id, html\_blocks\[], containers\[], citations\[], traceability\[], image\_needed:\[{descri
+StudyForge_Document_1_Merged_Master_AI_Usage.md: app sanitizes returned content and renders through approved container templates; raw unsanitized AI HTML must never be injected d
+StudyForge_Document_1_Merged_Master_AI_Usage.md: ocation()`|Requested anchor and content|Ensures target text/container exists and reserves a safe image slot in HTML state|
+StudyForge_Document_1_Merged_Master_AI_Usage.md: pens next**|Results can be added to the generated part’s CA container or fed into a re-generation/update request if the text need
+StudyForge_Document_1_Merged_Master_AI_Usage.md: |**Runtime data injected**|User request; part HTML/container map; selected content if any; blueprint; part metadata; man
+StudyForge_Document_1_Merged_Master_AI_Usage.md: infers target scope. “Formula explanation” targets formula containers. “Whole/entire/everything” triggers proposed full-part reg
+StudyForge_Document_1_Merged_Master_AI_Usage.md: cable, image usefulness/labels, missing comparison/timeline/container needs, traceability, and relevant cross-domain coverage bas
+StudyForge_Document_1_Merged_Master_AI_Usage.md: |**Modifications**|Accepted text/container changes use AI-07G/AI-07A as appropriate. Image suggestions
+StudyForge_Document_1_Merged_Master_AI_Usage.md: n|`OPTIONAL\_ENRICHMENT`|Added to make understanding easier|Container/section source|
+StudyForge_Document_1_Merged_Master_AI_Usage.md: |Structured IDs|Definitions, formulas, topics, parts, containers, image assets, and suggestions must use stable IDs.|
+StudyForge_Document_1_Merged_Master_AI_Usage.md: mulas`, `blueprint`, `bundles`, `CA`|safe blocks/HTML data, containers, tags, citations, image markers|Screen 7 above generated p
+StudyForge_Document_1_Merged_Master_AI_Usage.md: "container\_id": "C-01",
+StudyForge_Document_1_Merged_Master_AI_Usage.md: "container\_type": "concept\_box",
+StudyForge_Document_1_Merged_Master_AI_Usage.md: "action": "add\_container",
+StudyForge_Document_1_Merged_Master_AI_Usage.md: "container\_type": "comparison\_table",
+StudyForge_Document_1_Merged_Master_AI_Usage.md: ronology|Timeline / Historical|Event/date sequence|Timeline container, cause-effect, relevant historical explanation|
+StudyForge_Document_1_Merged_Master_AI_Usage.md: |Where should image go?|AI returns a stable container/paragraph anchor. The app reserves slot only after target t
+StudyForge_Document_1_Merged_Master_AI_Usage.md: t to structured content blocks or sanitize against approved container allowlist before insertion.|
+StudyForge_Document_1_Merged_Master_AI_Usage.md: |Image placement anchor|Resolve only known generated container IDs; never execute selectors supplied directly by arbitrary
+StudyForge_Document_1_Merged_Master_AI_Usage.md: fe renderer|Generated part shows correct tags, source refs, containers, and prompt viewer|
+StudyForge_Document_1_Merged_Master_AI_Usage.md: ONAL\_ENRICHMENT/WEB\_SOURCED} | Formatted HTML with styled containers + traceability tags + IMAGE\_NEEDED markers | OFF | Screen
+StudyForge_Document_1_Merged_Master_AI_Usage.md: , common\_mistakes\[]}` | OFF | Text generation Formula Box container | Yes |
+StudyForge_Document_1_Merged_Master_AI_Usage.md: L is not directly inserted: responses are schema-validated, container type/anchor validated and rendered through application allo
+StudyForge_Document_2_Comprehensive_Prompt_Dependency_Map.md: MOD -->|Text / container| A07G
+StudyForge_Document_2_Comprehensive_Prompt_Dependency_Map.md: │      └── controls AI-07A container/content request
+StudyForge_Document_2_Comprehensive_Prompt_Dependency_Map.md: part CA container / optional targeted text update
+StudyForge_Document_2_Comprehensive_Prompt_Dependency_Map.md: ◇ scope = local containers or whole part?
+StudyForge_Document_2_Comprehensive_Prompt_Dependency_Map.md: |“Make the formula explanation simpler”|Formula containers only|
+StudyForge_Document_2_Comprehensive_Prompt_Dependency_Map.md: parison between the three methods”|Relevant comparison area/container|
+StudyForge_Document_2_Comprehensive_Prompt_Dependency_Map.md: |“Add current facts for GDP”|CA container or CA query flow; grounding remains restricted to AI-07D|
+StudyForge_Document_2_Comprehensive_Prompt_Dependency_Map.md: |Approve Modifications: text/container|AI-07G or AI-07A depending on scope|Modified part re-render
+StudyForge_Document_2_Comprehensive_Prompt_Dependency_Map.md: ├── Add container/table/timeline → user accepts → AI-07G → part validation if
+StudyForge_Document_2_Comprehensive_Prompt_Dependency_Map.md: |CA refreshed|CA container and validation summary for affected part|Source-backed text
+StudyForge_Document_2_Comprehensive_Prompt_Dependency_Map.md: → Screen 7 generation receives applied bundle → relevant container appears
+StudyForge_Document_2_Merged_Comprehensive_Prompt_Dependency_Map.md: MOD -->|Text / container| A07G
+StudyForge_Document_2_Merged_Comprehensive_Prompt_Dependency_Map.md: │      └── controls AI-07A container/content request
+StudyForge_Document_2_Merged_Comprehensive_Prompt_Dependency_Map.md: part CA container / optional targeted text update
+StudyForge_Document_2_Merged_Comprehensive_Prompt_Dependency_Map.md: ◇ scope = local containers or whole part?
+StudyForge_Document_2_Merged_Comprehensive_Prompt_Dependency_Map.md: |“Make the formula explanation simpler”|Formula containers only|
+StudyForge_Document_2_Merged_Comprehensive_Prompt_Dependency_Map.md: parison between the three methods”|Relevant comparison area/container|
+StudyForge_Document_2_Merged_Comprehensive_Prompt_Dependency_Map.md: |“Add current facts for GDP”|CA container or CA query flow; grounding remains restricted to AI-07D|
+StudyForge_Document_2_Merged_Comprehensive_Prompt_Dependency_Map.md: |Approve Modifications: text/container|AI-07G or AI-07A depending on scope|Modified part re-render
+StudyForge_Document_2_Merged_Comprehensive_Prompt_Dependency_Map.md: ├── Add container/table/timeline → user accepts → AI-07G → part validation if
+StudyForge_Document_2_Merged_Comprehensive_Prompt_Dependency_Map.md: |CA refreshed|CA container and validation summary for affected part|Source-backed text
+StudyForge_Document_2_Merged_Comprehensive_Prompt_Dependency_Map.md: → Screen 7 generation receives applied bundle → relevant container appears
+StudyForge_Document_3_Canonical_Stored_Prompt_Library.md: 6. Suggestions must be actionable: identify target anchor/container, action type, rationale, priority, and required source/cont
+StudyForge_Document_3_Canonical_Stored_Prompt_Library.md: RRENT_GENERATED_PART_JSON}}` | Current rendered safe blocks/containers for one part | `{}` |
+StudyForge_Document_3_Canonical_Stored_Prompt_Library.md: | `{{TARGET_ANCHOR}}` | Stable safe HTML/container anchor | `None provided` |
+StudyForge_Document_3_Canonical_Stored_Prompt_Library.md: 8. Do not generate final StudyForge containers, final approval markers, or export formatting.
+StudyForge_Document_3_Canonical_Stored_Prompt_Library.md: source/analysis references support it, and which StudyForge containers are appropriate.
+StudyForge_Document_3_Canonical_Stored_Prompt_Library.md: e must include learning goal, placement after a stable text/container anchor, recommended style, and style reasoning.
+StudyForge_Document_3_Canonical_Stored_Prompt_Library.md: {"container_id": "C-1", "heading_id": "H-1", "container_type": "", "teaching_goal": "", "source_refs": [], "analysi
+StudyForge_Document_3_Canonical_Stored_Prompt_Library.md: les: “Add more formulas” affects relevant Text Plan formula containers; “change the comic to a flowchart” affects only the identi
+StudyForge_Document_3_Canonical_Stored_Prompt_Library.md: ueprint’s headings, text plan, applied bundles, and planned containers.
+StudyForge_Document_3_Canonical_Stored_Prompt_Library.md: 9. Use stable anchors and approved container types. Return structured safe content data, not executable
+StudyForge_Document_3_Canonical_Stored_Prompt_Library.md: "container_type": "",
+StudyForge_Document_3_Canonical_Stored_Prompt_Library.md: "scope": {"type": "container|section|image|ca|whole_part", "target_anchors": [], "reason
+StudyForge_Document_3_Canonical_Stored_Prompt_Library.md: l/source consistency, formula correctness where applicable, container usefulness, image labels/teaching value, traceability, and
+StudyForge_Document_3_Canonical_Stored_Prompt_Library.md: {"suggestion_id": "", "action": "add_container|update_text|regenerate_section|update_image|fetch_ca", "tar
+StudyForge_Document_3_Canonical_Stored_Prompt_Library.md: gestions may add a new part, enrich an existing part, add a container, or add a visual. Every suggestion must include rationale,
+StudyForge_Document_3_Canonical_Stored_Prompt_Library.md: {"suggestion_id": "", "type": "add_part|enrich_part|add_container|add_visual", "target": "", "title": "", "details": "", "rat
+StudyForge_Document_3_Canonical_Stored_Prompt_Library.md: 4. Suitable containers/visuals: code block, I/O demo, trace table, complexity tab
+StudyForge_Document_4_Comprehensive_Prompt_Generation_Rules_and_Runtime_Implementation.md: | CA refreshed | CA container/validation summary | Mark part validation stale. |
+StudyForge_Document_4_Comprehensive_Prompt_Generation_Rules_and_Runtime_Implementation.md: assertAllowedContainerType(block.container_type);
+StudyForge_Document_4_Comprehensive_Prompt_Generation_Rules_and_Runtime_Implementation.md: return renderApprovedContainer(block.container_type, sanitizedText, block);
+StudyForge_Document_4_Comprehensive_Prompt_Generation_Rules_and_Runtime_Implementation.md: | Stable anchors | Created by app from stable `partId`, `containerId`, or `headingId`. |
+StudyForge_Document_4_Comprehensive_Prompt_Generation_Rules_and_Runtime_Implementation.md: - [ ] Unknown container type is rejected.
+StudyForge_Document_5_Missing_Features_and_Agreed_Amendments_Register.md: | AI HTML/XSS risk | Validate JSON, whitelist container types, sanitize text/allowed markup, validate anchors. |
+StudyForge_Document_5_Missing_Features_and_Agreed_Amendments_Register.md: 2. text/container plan with source and analysis references;
+StudyForge_Document_5_Missing_Features_and_Agreed_Amendments_Register.md: utput is parsed and schema-checked before rendering. Anchor/container/URL validation is mandatory. This prevents the discovered q
+StudyForge_Document_5_Missing_Features_and_Agreed_Amendments_Register.md: operly formatted safe structured content rendered as styled containers; final approval embeds text/images/CA. | Lead | Blocking |
+StudyForge_Document_5_Missing_Features_and_Agreed_Amendments_Register.md: | 60 | Containers | Add location, bio, data, formula ops, institution, CA, a
+StudyForge_Document_5_Missing_Features_and_Agreed_Amendments_Register.md: nalogy, process, experiment and medical containers. | Developer | Major |
+StudyForge_Document_5_Missing_Features_and_Agreed_Amendments_Register.md: ## C. Exact additional container specification
+StudyForge_Document_5_Missing_Features_and_Agreed_Amendments_Register.md: | Container | Minimum required content | Used by |
+StudyForge_Document_5_Missing_Features_and_Agreed_Amendments_Register.md: Every container requires CSS, a safe renderer template, allowed container e
+StudyForge_Document_5_Missing_Features_and_Agreed_Amendments_Register.md: ailed Method 2 controls, explicit Screen 3 counts, detailed containers, concrete Screen 7 UI controls, exact 63-item matrix, prio
+StudyForge_Document_6_Comprehensive_User_Intervention_Approval_and_Prompt_Transparency_Specification.md: - Validation may propose text/container/image/CA actions, each routed correctly.
+StudyForge_Document_6_Comprehensive_User_Intervention_Approval_and_Prompt_Transparency_Specification.md: Suggestions: Add Part / Enrich Part / Add Container / Add Visual
+StudyForge_Document_6_Comprehensive_User_Intervention_Approval_and_Prompt_Transparency_Specification.md: - `Merge into notes` — adds result to default relevant CA container;
+StudyForge_Document_6_Comprehensive_User_Intervention_Approval_and_Prompt_Transparency_Specification.md: - **Document 5:** container and product-document amendment requirements.
+StudyForge_Document_7_Implementation_Plan_Reconciliation_and_External_AI_Review_Prompt.md: - container-rendering registry;
+StudyForge_Document_7_Implementation_Plan_Reconciliation_and_External_AI_Review_Prompt.md: with Documents 3–4. | AI-07A returns structured safe blocks/containers. The renderer creates approved HTML. |
+StudyForge_Document_7_Implementation_Plan_Reconciliation_and_External_AI_Review_Prompt.md: | 5 | Core notes and safe renderer | AI-07A, CTX subcalls, containers/tags, anchor system | Part slice/definitions/formulas and
+StudyForge_Document_7_Implementation_Plan_Reconciliation_and_External_AI_Review_Prompt.md: - existing container/rendering functions and IDs;
+StudyForge_Document_7_Implementation_Plan_Reconciliation_and_External_AI_Review_Prompt.md: - container work;
+StudyForge_Document_7_Implementation_Plan_Reconciliation_and_External_AI_Review_Prompt.md: e state schema, local persistence plan, AI integration map, container rendering plan, test plan, risk register, and cross-referen

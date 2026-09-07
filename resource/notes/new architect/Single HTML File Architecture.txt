@@ -1,0 +1,833 @@
+# **Prompt for AI Developer — Single HTML File Architecture**
+
+Sir, here's a complete, ready-to-send prompt that explains our single-file constraint and shows the developer exactly how to organize the code.
+
+---
+
+## **📋 THE PROMPT TO SHARE WITH AI**
+
+---
+
+**SUBJECT: StudyForge — Mandatory Single HTML File Architecture Specification**
+
+---
+
+**CRITICAL CONSTRAINT:**
+
+StudyForge must be delivered as **ONE single `.html` file**. This is non-negotiable. The entire application (HTML structure, CSS styling, JavaScript logic, prompt library, state management) must live inside a single file that can be double-clicked to run — no installation, no build step, no backend server, no external files (except CDN libraries loaded at runtime).
+
+The user must be able to:
+- Save the file to a USB drive and open it on any computer
+- Double-click the file and see the app running immediately
+- Refresh the browser and see their previous session restored
+- Never need to install Node.js, npm, or any development tools
+
+---
+
+## **PART 1 — THE 4-PILLAR ARCHITECTURE**
+
+Follow this exact architecture pattern proven to work for zero-backend SPAs:
+
+### **PILLAR 1: External Dependencies via CDN Only**
+
+Do NOT use `npm install` or local library files. Load everything from CDN in the `<head>`:
+
+```html
+<head>
+  <meta charset="UTF-8">
+  <title>StudyForge</title>
+  
+  <!-- PDF Reading (client-side, no server upload) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script>
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 
+      'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  </script>
+  
+  <!-- Markdown to HTML converter (for AI-generated markdown output) -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  
+  <!-- DOCX file reading -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+  
+  <!-- Optional: Tailwind for quick styling (or use inline CSS) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- All app CSS goes here, inline -->
+  <style>
+    /* All styles for all screens, containers, modals, etc. */
+  </style>
+</head>
+```
+
+**Why this works:**
+- No installation needed
+- No build tools (Webpack, Vite, etc.)
+- Browser fetches libraries dynamically at load
+- Works on any modern browser (Chrome, Firefox, Edge)
+
+---
+
+### **PILLAR 2: State Management via localStorage + JSON**
+
+Since there is no database or backend, use browser's `localStorage` for persistence.
+
+**The Central State Object (The "Brain"):**
+
+Create ONE giant JavaScript object called `appState` that holds EVERYTHING:
+
+```javascript
+const appState = {
+  currentScreen: 1,
+  maxScreen: 1,
+  input: {
+    method: null,           // 'file' | 'topic' | 'paste'
+    file: { name: null, size: null, type: null },
+    topic: '',
+    subtopics: [],          // Dynamic array, up to 10
+    pasteText: '',
+    settings: {
+      exam: '',
+      objective: '',
+      stateFocus: '',
+      includeCA: false,
+      searchInternet: false,
+      previewImagePrompts: false
+    }
+  },
+  extractedText: '',
+  extractionMethod: null,   // 'technical' | 'ai_cleanup' | 'ai_restructure'
+  analysis: {
+    subject: null,
+    subDiscipline: null,
+    signals: {},
+    topics: [],
+    definitions: [],
+    formulas: [],
+    pyqs: [],
+    comparisons: [],
+    examples: [],
+    timelines: [],
+    tables: [],
+    detectedBundles: [],    // Auto-detected (green)
+    suggestedBundles: [],   // Medium confidence (yellow)
+    availableBundles: []    // Not detected (grey, force-enable)
+  },
+  enabledBundles: [],       // User's final selection
+  parts: [
+    // Each part: {
+    //   id: 'part_1',
+    //   title: '',
+    //   pages: [3, 4, 5],
+    //   bundles: [],
+    //   blueprint: { headings, text_plan, image_plan, ca_plan, validation_plan },
+    //   content: { sections: [] },
+    //   images: [],
+    //   ca: [],
+    //   approvals: { text: false, images: false, part: false },
+    //   validation: { summary, issues, suggestions }
+    // }
+  ],
+  cache: {
+    locationFacts: {},      // Key: `${location}_${context}`
+    personalityFacts: {},   // Key: personality name
+    formulaDeepOps: {}      // Key: formula id
+  },
+  finalValidation: null,
+  editedPrompts: {}         // User-edited prompts for regeneration
+};
+```
+
+**Save State (JSON Serialization):**
+
+`localStorage` only stores strings, so convert the object to a string with `JSON.stringify()`:
+
+```javascript
+const State = {
+  save() {
+    try {
+      const serialized = JSON.stringify(appState);
+      localStorage.setItem('studyforge_state', serialized);
+    } catch (e) {
+      console.error('State save failed:', e);
+      // Handle quota exceeded, etc.
+    }
+  },
+  
+  load() {
+    try {
+      const saved = localStorage.getItem('studyforge_state');
+      if (saved) {
+        Object.assign(appState, JSON.parse(saved));
+        return true;
+      }
+      return false;
+    } catch (e) {
+      console.error('State load failed:', e);
+      return false;
+    }
+  },
+  
+  reset() {
+    localStorage.removeItem('studyforge_state');
+    // Reset appState to defaults
+  }
+};
+```
+
+**Auto-save on every state change:**
+
+```javascript
+// Every state mutation triggers save
+function updateState(path, value) {
+  // Set value at path in appState
+  // Then:
+  State.save();
+  UI.rerender();  // Re-render affected UI
+}
+```
+
+---
+
+### **PILLAR 3: JSON Communication with Gemini AI**
+
+All AI calls use JSON in and JSON out.
+
+**The API Namespace:**
+
+```javascript
+const API = {
+  GEMINI_URL: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent',
+  
+  // Standard call (non-streaming)
+  async callGemini(prompt, options = {}) {
+    const payload = {
+      contents: [{ parts: [{ text: prompt }] }],
+      generationConfig: {
+        temperature: options.temperature || 0.3,
+        maxOutputTokens: options.maxTokens || 8192,
+        responseMimeType: options.jsonOutput ? "application/json" : "text/plain"
+      }
+    };
+    
+    // Add grounding/search if enabled (for CA prompts)
+    if (options.grounding) {
+      payload.tools = [{ googleSearchRetrieval: {} }];
+    }
+    
+    try {
+      const response = await fetch(this.GEMINI_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      return data.candidates[0].content.parts[0].text;
+      
+    } catch (error) {
+      return this.handleError(error, prompt, options);
+    }
+  },
+  
+  // Streaming call (for text generation with live typing effect)
+  async streamGenerate(prompt, onChunk, options = {}) {
+    const streamUrl = this.GEMINI_URL.replace(
+      ':generateContent', 
+      ':streamGenerateContent?alt=sse'
+    );
+    
+    const payload = {
+      contents: [{ parts: [{ text: prompt }] }],
+      generationConfig: { 
+        temperature: options.temperature || 0.3 
+      }
+    };
+    
+    const response = await fetch(streamUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+    
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop(); // Keep incomplete line for next iteration
+      
+      for (const line of lines) {
+        if (line.startsWith('data: ')) {
+          const jsonStr = line.substring(6).trim();
+          if (jsonStr === '[DONE]') continue;
+          
+          try {
+            const data = JSON.parse(jsonStr);
+            const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (text) onChunk(text);
+          } catch (e) {
+            // Chunk might be cut mid-JSON, skip and wait for next
+            console.warn('Chunk parse error:', e);
+          }
+        }
+      }
+    }
+  },
+  
+  // Universal error handler
+  async handleError(error, originalPrompt, options) {
+    // Auto-retry logic (2 retries with delay)
+    // Show error popup with recovery options
+    // Return null if user cancels
+  }
+};
+```
+
+**Why streaming matters:**
+- User sees text appearing in real-time (like ChatGPT)
+- Better perceived performance
+- Can render containers as they arrive
+
+---
+
+### **PILLAR 4: Namespace Pattern for Code Organization**
+
+Do NOT put functions in the global scope. Group them into namespace objects.
+
+**Required Namespaces for StudyForge:**
+
+```javascript
+// API and network
+const API = { callGemini, streamGenerate, handleError };
+
+// State management
+const State = { save, load, reset, update };
+
+// Session lifecycle
+const Session = { check, resume, startFresh };
+
+// Prompt library and injection
+const Prompts = { 
+  DEFAULTS: { /* All prompt templates */ },
+  SUBJECT_VARIANTS: { /* Subject-specific variants */ },
+  build: (templateName, dataObject) => {}, // Inject data into template
+  view: (promptId) => {},                   // Show prompt modal
+  copy: (promptText) => {}                  // Copy to clipboard
+};
+
+// Global UI helpers
+const UI = { 
+  showModal, 
+  showPopup, 
+  navigateTo, 
+  rerender,
+  showLoading,
+  showError
+};
+
+// Screen controllers (one per screen)
+const Screen1_Input = { 
+  render, 
+  handleFileUpload, 
+  handleTopicInput,
+  handlePasteInput,
+  addSubtopic,
+  removeSubtopic,
+  handleAIDraft,
+  handleContinue 
+};
+
+const Screen2_Reading = { 
+  render, 
+  extractText, 
+  cleanupWithAI, 
+  restructureWithAI,
+  forceMethod
+};
+
+const Screen3_Understanding = { 
+  render, 
+  runSubjectDetection, 
+  runDeepExtraction, 
+  runBundleDetection,
+  forceEnableBundle,
+  handleContinue 
+};
+
+const Screen4_Parts = { 
+  render, 
+  runSplitting, 
+  addPart, 
+  mergeParts, 
+  editPart,
+  removePart,
+  showEditModal 
+};
+
+const Screen5_Blueprint = { 
+  render, 
+  generateAllBlueprints, 
+  approveAll,
+  approveOne 
+};
+
+const Screen6_BlueprintDetail = { 
+  render, 
+  handleAIChat, 
+  showDiff,
+  applyChanges,
+  undoLast,
+  regenerateSection 
+};
+
+const Screen7_Generation = { 
+  render, 
+  generatePart, 
+  generateAll,
+  approveText,
+  approveImages,
+  approvePart,
+  approveAll,
+  addNewPart,
+  removePart 
+};
+
+const Screen8_Export = { 
+  render, 
+  exportHTML, 
+  exportPDF,
+  exportMarkdown,
+  copyToClipboard,
+  generatePreview,
+  generateCoverPage,
+  generateTOC 
+};
+
+// Cross-screen features
+const ImagePipeline = { 
+  insertImageAtLocation,  // Core function called from 3 places
+  expandPrompt,
+  generateImage,
+  handleVisualizeThis 
+};
+
+const Validation = { 
+  perPart,                // Layer 1
+  finalConsolidated,      // Layer 2
+  showPopup,
+  applySuggestion 
+};
+
+const CAPipeline = { 
+  fetchCA,
+  categorizeResults,
+  mergeIntoNotes 
+};
+```
+
+**Why namespacing works:**
+- No global scope pollution
+- Clear ownership (which namespace does what)
+- Easy to find any function
+- Prevents naming collisions
+- Makes code searchable
+
+---
+
+## **PART 2 — FILE STRUCTURE TEMPLATE**
+
+Follow this exact structure for the single HTML file:
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StudyForge</title>
+  
+  <!-- CDN Libraries -->
+  <script src="[pdf.js CDN]"></script>
+  <script src="[marked.js CDN]"></script>
+  <script src="[mammoth.js CDN]"></script>
+  
+  <!-- All CSS Inline -->
+  <style>
+    /* Reset and base styles */
+    /* Screen layouts */
+    /* Component styles (buttons, modals, inputs) */
+    /* Container styles (all 22 container types with colors) */
+    /* Traceability tag styles (green/blue/gold/purple) */
+    /* Responsive helpers */
+  </style>
+</head>
+<body>
+  <!-- App mount point -->
+  <div id="app">
+    <!-- Sidebar navigation -->
+    <nav id="sidebar"></nav>
+    
+    <!-- Main content area -->
+    <main id="main"></main>
+    
+    <!-- Modal container (for popups) -->
+    <div id="modal-container"></div>
+    
+    <!-- Toast/notification area -->
+    <div id="toast-container"></div>
+  </div>
+  
+  <!-- All JavaScript Inline -->
+  <script>
+    /* ============================================
+       SECTION 1: CONFIGURATION & CONSTANTS
+       ============================================ */
+    const CONFIG = {
+      GEMINI_API_KEY: '', // User enters this
+      MAX_SUBTOPICS: 10,
+      MAX_PARTS: 20,
+      TOKEN_LIMIT_THRESHOLD: 0.8
+    };
+    
+    /* ============================================
+       SECTION 2: PROMPT LIBRARY
+       ============================================ */
+    const UNIVERSAL_HEADER = `You are the ultimate Master 
+    Educational Content Engineer...`;
+    
+    const DEFAULT_PROMPTS = {
+      subtopic_expansion: `...`,
+      content_generation: `...`,
+      subject_detection: `...`,
+      // ... all 20+ prompts
+    };
+    
+    const SUBJECT_PROMPT_MAP = {
+      'Economics': 'economicsBlueprint',
+      'Polity': 'polityBlueprint',
+      // ... etc
+    };
+    
+    /* ============================================
+       SECTION 3: STATE
+       ============================================ */
+    const appState = {
+      // ... complete state object
+    };
+    
+    /* ============================================
+       SECTION 4: NAMESPACES
+       ============================================ */
+    const API = { /* ... */ };
+    const State = { /* ... */ };
+    const Session = { /* ... */ };
+    const Prompts = { /* ... */ };
+    const UI = { /* ... */ };
+    
+    /* ============================================
+       SECTION 5: SCREEN CONTROLLERS
+       ============================================ */
+    const Screen1_Input = { /* ... */ };
+    const Screen2_Reading = { /* ... */ };
+    const Screen3_Understanding = { /* ... */ };
+    const Screen4_Parts = { /* ... */ };
+    const Screen5_Blueprint = { /* ... */ };
+    const Screen6_BlueprintDetail = { /* ... */ };
+    const Screen7_Generation = { /* ... */ };
+    const Screen8_Export = { /* ... */ };
+    
+    /* ============================================
+       SECTION 6: CROSS-SCREEN FEATURES
+       ============================================ */
+    const ImagePipeline = { /* ... */ };
+    const Validation = { /* ... */ };
+    const CAPipeline = { /* ... */ };
+    
+    /* ============================================
+       SECTION 7: CONTAINER RENDERERS (22 types)
+       ============================================ */
+    const Containers = {
+      formula_box: (data) => { /* return HTML */ },
+      story_box: (data) => { /* return HTML */ },
+      geography_box: (data) => { /* return HTML */ },
+      // ... all 22 containers
+    };
+    
+    /* ============================================
+       SECTION 8: APP INITIALIZATION
+       ============================================ */
+    window.onload = function() {
+      // Check for saved session
+      if (Session.check()) {
+        UI.showResumePopup();
+      } else {
+        Session.startFresh();
+      }
+      
+      UI.rerender();
+    };
+    
+  </script>
+</body>
+</html>
+```
+
+---
+
+## **PART 3 — WHAT NOT TO DO**
+
+Do NOT:
+- ❌ Create separate `.js` files (like `main.js`, `state.js`)
+- ❌ Create separate `.json` files (like `prompts.json`, `config.json`)
+- ❌ Create separate `.css` files (like `styles.css`)
+- ❌ Use `require()` or `import` statements
+- ❌ Use `module.exports` or ES6 modules
+- ❌ Require any npm packages
+- ❌ Require any build tools (Webpack, Vite, Parcel, etc.)
+- ❌ Use any framework that requires a build step (React JSX, Vue SFC, etc.)
+- ❌ Require a local server to run
+- ❌ Use `fetch()` to load local JSON files (won't work with `file://` protocol)
+
+Do:
+- ✅ Put ALL JavaScript inside ONE `<script>` tag in the HTML file
+- ✅ Put ALL CSS inside ONE `<style>` tag in the HTML file
+- ✅ Store ALL prompts as JavaScript constants (not JSON files)
+- ✅ Store ALL configuration as JavaScript objects
+- ✅ Load external libraries only from CDNs
+- ✅ Use vanilla JavaScript OR runtime-only frameworks (like Tailwind CDN)
+- ✅ Test by double-clicking the file (opens with `file://` protocol)
+
+---
+
+## **PART 4 — HOW TO ORGANIZE PROMPTS INSIDE THE HTML**
+
+Since we can't use `.json` files, all prompts must be JavaScript constants.
+
+**Storage Pattern (Based on Existing Working Code):**
+
+```javascript
+// System header used across many prompts
+const UNIVERSAL_HEADER = `You are the ultimate Master Educational 
+Content Engineer specializing in competitive civil service exams 
+(UPSC, MPPSC, State PSC) and academic subjects. Follow all 
+instructions precisely.`;
+
+// Main prompt dictionary
+const DEFAULT_PROMPTS = {
+  
+  // === SECTION A: METHOD 2 (AI DRAFT) ===
+  subtopic_expansion: `${UNIVERSAL_HEADER}
+
+Given the main topic: {{TOPIC}}
+User-provided sub-topics: {{SUBTOPICS}}
+Optional focus: {{FOCUS}}
+
+Task: Identify additional sub-topics essential for comprehensive 
+coverage of {{TOPIC}}. Consider PSC exam relevance.
+
+{{INTERNET_INSTRUCTION}}
+
+Return JSON: {
+  "user_provided": [...],
+  "ai_suggested": [{"name": "...", "reason": "..."}]
+}`,
+  
+  content_generation: `${UNIVERSAL_HEADER}
+
+Generate comprehensive study notes on: {{TOPIC}}
+Sub-topics to cover: {{SUBTOPICS_LIST}}
+Depth: {{DEPTH}} (medium/comprehensive)
+Include CA: {{INCLUDE_CA}}
+
+{{INTERNET_INSTRUCTION}}
+
+Return well-structured content covering all sub-topics.
+Format: Markdown with headings, definitions, formulas, examples.`,
+  
+  // === SECTION C: STAGE 3 (ANALYSIS) ===
+  subject_detection: `${UNIVERSAL_HEADER}
+
+Analyze this content and detect:
+- Primary subject (Economics/CS/Medicine/Literature/Law/etc.)
+- Sub-discipline
+- Content signals present
+
+Content:
+{{CONTENT_SLICE}}
+
+Return JSON: {
+  "subject": "...",
+  "sub_discipline": "...",
+  "signals": {
+    "formulas": true/false,
+    "dates": true/false,
+    "code": true/false,
+    "locations": true/false,
+    "persons": true/false,
+    "legal_refs": true/false,
+    "diagrams": true/false
+  }
+}`,
+  
+  deep_extraction: `${UNIVERSAL_HEADER}
+
+Given this is {{SUBJECT}} ({{SUB_DISCIPLINE}}) content, extract:
+- All topics with page refs
+- All definitions with IDs
+- All formulas with variables
+- All PYQs with year/type
+- All comparisons, examples, timelines, tables
+
+Content:
+{{CONTENT}}
+
+Return structured JSON: {
+  "topics": [...],
+  "definitions": [{"id": "D-001", "term": "...", "definition": "...", "page": ...}],
+  "formulas": [{"id": "F-001", "formula": "...", "variables": {...}, "page": ...}],
+  "pyqs": [...],
+  ...
+}`,
+  
+  // ... [rest of the 20+ prompts follow same pattern]
+};
+
+// Subject-specific variants
+const SUBJECT_VARIANTS = {
+  economics: {
+    blueprint: `Apply METABOLIC PIPELINE STRATEGY: focus on 
+    economic flows, cause-effect chains, formula derivations...`,
+    writer: `You are an elite Economics Study Notes Writer...`
+  },
+  polity: {
+    blueprint: `Apply CASE CONFLICT AND INSTITUTIONAL FRICTION 
+    STRATEGY: focus on landmark judgments...`,
+    writer: `You are an elite Polity Study Notes Writer...`
+  },
+  // ... etc for all subjects
+};
+
+// Subject → prompt mapping
+const SUBJECT_PROMPT_MAP = {
+  'Economics': 'economicsBlueprint',
+  'Polity': 'polityBlueprint',
+  'History': 'historyBlueprint',
+  'Geography': 'geographyBlueprint',
+  'Science & Technology': 'scienceTechBlueprint',
+  'Environment': 'environmentBlueprint',
+  'Social Issues': 'socialIssuesBlueprint',
+  'MP Specific': 'mpSpecificBlueprint',
+  'Current Affairs': 'currentAffairsBlueprint'
+};
+
+// Prompt injection function
+const Prompts = {
+  DEFAULTS: DEFAULT_PROMPTS,
+  
+  build(templateName, data) {
+    let template = this.DEFAULTS[templateName];
+    if (!template) throw new Error(`Template not found: ${templateName}`);
+    
+    // Replace all {{PLACEHOLDER}} with data values
+    Object.keys(data).forEach(key => {
+      const placeholder = `{{${key.toUpperCase()}}}`;
+      template = template.replaceAll(placeholder, data[key] || '');
+    });
+    
+    return template;
+  },
+  
+  view(promptId) {
+    // Show modal with the built prompt
+    const finalPrompt = appState.editedPrompts[promptId] || this.build(...);
+    UI.showModal({
+      title: 'View Prompt',
+      content: `
+        <textarea readonly>${finalPrompt}</textarea>
+        <button onclick="Prompts.copy('${promptId}')">📋 Copy</button>
+        <button onclick="Prompts.edit('${promptId}')">✏️ Edit & Regenerate</button>
+      `
+    });
+  },
+  
+  copy(promptText) {
+    navigator.clipboard.writeText(promptText);
+    UI.showPopup('Copied to clipboard');
+  }
+};
+```
+
+**Usage Example:**
+
+```javascript
+// When Screen 3 needs to detect subject:
+async function detectSubject() {
+  const prompt = Prompts.build('subject_detection', {
+    CONTENT_SLICE: appState.extractedText.substring(0, 5000)
+  });
+  
+  const result = await API.callGemini(prompt, {
+    temperature: 0.1,
+    jsonOutput: true
+  });
+  
+  const parsed = JSON.parse(result);
+  appState.analysis.subject = parsed.subject;
+  appState.analysis.signals = parsed.signals;
+  
+  State.save();
+  UI.rerender();
+}
+```
+
+---
+
+## **PART 5 — VERIFICATION CHECKLIST**
+
+Before submitting your code, verify:
+
+- [ ] Single `.html` file (no other files needed)
+- [ ] File opens by double-clicking (works with `file://` protocol)
+- [ ] All CSS is inside ONE `<style>` tag
+- [ ] All JavaScript is inside ONE `<script>` tag
+- [ ] All prompts are JavaScript constants (not `.json` files)
+- [ ] All configuration is in JavaScript objects
+- [ ] External libraries load from CDN only
+- [ ] No `require()`, `import`, or `module.exports`
+- [ ] No build tools required
+- [ ] `appState` object holds all application state
+- [ ] `localStorage` used for persistence
+- [ ] All state changes trigger `State.save()`
+- [ ] Session resumes on page load
+- [ ] Namespaces used (no global function names)
+- [ ] All 12 namespaces exist as required
+- [ ] All 20+ prompts stored in `DEFAULT_PROMPTS`
+- [ ] File size is reasonable (typically 500KB - 2MB for a complex SPA)
+
+---
+
+
+---
+
+CONCLUSION
+
+The single HTML file constraint means:
+
+Everything lives in one place (portable, unbreakable)
+User can run it anywhere without setup
+No dependencies on external files (except CDN libraries)
+State persists via localStorage + JSON serialization
+Code is organized via namespace pattern
+Prompts are JavaScript constants, not JSON files
+API communication uses JSON in and JSON out
+This architecture has been proven to work for professional-grade AI orchestration engines. Follow it exactly.

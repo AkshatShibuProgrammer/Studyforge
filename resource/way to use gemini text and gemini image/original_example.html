@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Topic Explorer</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel for JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+            color: #1f2937;
+        }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #c1c1c1; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8; 
+        }
+
+        .markdown-body p { margin-bottom: 1em; }
+        .markdown-body h1, .markdown-body h2, .markdown-body h3 { font-weight: 600; margin-top: 1.5em; margin-bottom: 0.5em; }
+        .markdown-body h1 { font-size: 1.5em; }
+        .markdown-body h2 { font-size: 1.25em; }
+        .markdown-body ul { list-style-type: disc; padding-left: 1.5em; margin-bottom: 1em; }
+        .markdown-body strong { font-weight: 600; }
+        .markdown-body a { color: #3b82f6; text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        const Icons = {
+            Search: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>,
+            BookOpen: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>,
+            Image: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>,
+            Loader: ({ className }) => <svg className={`animate-spin ${className}`} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="2" x2="12" y2="6"></line><line x1="12" y1="18" x2="12" y2="22"></line><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line><line x1="2" y1="12" x2="6" y2="12"></line><line x1="18" y1="12" x2="22" y2="12"></line><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line></svg>,
+            Check: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>,
+            Sparkles: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+        };
+
+        const API_KEY = ""; // Provided by environment
+
+        // Exponential backoff helper for fetch
+        const fetchWithRetry = async (url, options, maxRetries = 3) => {
+            for (let i = 0; i < maxRetries; i++) {
+                try {
+                    const response = await fetch(url, options);
+                    if (!response.ok && response.status === 429) {
+                        throw new Error("Rate limited");
+                    }
+                    return response;
+                } catch (error) {
+                    if (i === maxRetries - 1) throw error;
+                    await new Promise(resolve => setTimeout(resolve, Math.pow(2, i) * 1000));
+                }
+            }
+        };
+
+        // Utility to fetch prompts using structured output
+        const generatePromptsWithAI = async (topic) => {
+            const payload = {
+                contents: [{ parts: [{ text: `Create three highly effective prompts to explore the topic: "${topic}".\n1. searchPrompt: A prompt to search the internet for the latest current affairs and news about this topic.\n2. understandingPrompt: A prompt to generate a comprehensive, clear, and easy-to-understand explanation of this topic.\n3. imagePrompt: A prompt to generate a visually striking and relevant image representing this topic.` }] }],
+                generationConfig: {
+                    responseMimeType: "application/json",
+                    responseSchema: {
+                        type: "OBJECT",
+                        properties: {
+                            searchPrompt: { type: "STRING" },
+                            understandingPrompt: { type: "STRING" },
+                            imagePrompt: { type: "STRING" }
+                        },
+                        required: ["searchPrompt", "understandingPrompt", "imagePrompt"]
+                    }
+                }
+            };
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${API_KEY}`;
+            
+            const response = await fetchWithRetry(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const result = await response.json();
+            
+            if (result.candidates?.[0]?.content?.parts?.[0]?.text) {
+                return JSON.parse(result.candidates[0].content.parts[0].text);
+            }
+            throw new Error("Failed to generate prompts.");
+        };
+
+        // Utility to execute text generation (with optional search)
+        const executeTextPrompt = async (prompt, useSearch = false) => {
+            const payload = {
+                contents: [{ parts: [{ text: prompt }] }],
+            };
+            if (useSearch) {
+                payload.tools = [{ google_search: {} }];
+            }
+
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${API_KEY}`;
+            const response = await fetchWithRetry(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const result = await response.json();
+            
+            const candidate = result.candidates?.[0];
+            if (candidate && candidate.content?.parts?.[0]?.text) {
+                const text = candidate.content.parts[0].text;
+                let sources = [];
+                if (useSearch && candidate.groundingMetadata?.groundingAttributions) {
+                    sources = candidate.groundingMetadata.groundingAttributions
+                        .map(attr => ({
+                            uri: attr.web?.uri,
+                            title: attr.web?.title,
+                        }))
+                        .filter(src => src.uri && src.title);
+                }
+                return { text, sources };
+            }
+            throw new Error("Failed to generate content.");
+        };
+
+        // Utility to execute image generation
+        const executeImagePrompt = async (prompt) => {
+            const payload = {
+                contents: [{
+                    role: 'user',
+                    parts: [{ text: prompt }]
+                }],
+                generationConfig: {
+                    responseModalities: ['IMAGE'],
+                    imageConfig: { aspectRatio: "16:9" }
+                },
+            };
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image-preview:generateContent?key=${API_KEY}`;
+            const response = await fetchWithRetry(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const result = await response.json();
+            const part = result?.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
+            
+            if (part) {
+                return `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
+            }
+            throw new Error("Failed to generate image.");
+        };
+
+        const MarkdownText = ({ text }) => {
+            // Very basic markdown parser for paragraphs, bold, and lists to keep it self-contained
+            const renderHTML = (markdown) => {
+                let html = markdown
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                    .replace(/## (.*?)\n/g, '<h2>$1</h2>\n')
+                    .replace(/### (.*?)\n/g, '<h3>$1</h3>\n');
+
+                const blocks = html.split('\n\n');
+                return blocks.map(block => {
+                    if (block.trim().startsWith('* ') || block.trim().startsWith('- ')) {
+                        const listItems = block.split('\n')
+                            .filter(line => line.trim().length > 0)
+                            .map(line => `<li>${line.replace(/^[\*\-]\s+/, '')}</li>`)
+                            .join('');
+                        return `<ul>${listItems}</ul>`;
+                    } else if (!block.trim().startsWith('<h')) {
+                        return `<p>${block}</p>`;
+                    }
+                    return block;
+                }).join('');
+            };
+
+            return <div className="markdown-body" dangerouslySetInnerHTML={{ __html: renderHTML(text) }} />;
+        };
+
+        const App = () => {
+            // State
+            const [topic, setTopic] = useState('');
+            const [isGeneratingPrompts, setIsGeneratingPrompts] = useState(false);
+            const [prompts, setPrompts] = useState(null);
+            
+            // Execution State
+            const [isExecuting, setIsExecuting] = useState(false);
+            const [results, setResults] = useState({
+                search: { status: 'idle', data: null, error: null },
+                understanding: { status: 'idle', data: null, error: null },
+                image: { status: 'idle', data: null, error: null }
+            });
+
+            const handleGeneratePrompts = async () => {
+                if (!topic.trim()) return;
+                setIsGeneratingPrompts(true);
+                setPrompts(null);
+                setResults({
+                    search: { status: 'idle', data: null, error: null },
+                    understanding: { status: 'idle', data: null, error: null },
+                    image: { status: 'idle', data: null, error: null }
+                });
+
+                try {
+                    const generatedPrompts = await generatePromptsWithAI(topic);
+                    setPrompts(generatedPrompts);
+                } catch (error) {
+                    console.error(error);
+                    // Minimal error handling for UI
+                    alert("Failed to generate prompts. Please try again.");
+                } finally {
+                    setIsGeneratingPrompts(false);
+                }
+            };
+
+            const handlePromptChange = (key, value) => {
+                setPrompts(prev => ({ ...prev, [key]: value }));
+            };
+
+            const handleExecuteAll = async () => {
+                if (!prompts) return;
+                setIsExecuting(true);
+
+                // Set all to loading
+                setResults({
+                    search: { status: 'loading', data: null, error: null },
+                    understanding: { status: 'loading', data: null, error: null },
+                    image: { status: 'loading', data: null, error: null }
+                });
+
+                // Execute independently so UI updates as each finishes
+                
+                // 1. Search Task
+                executeTextPrompt(prompts.searchPrompt, true)
+                    .then(data => setResults(prev => ({ ...prev, search: { status: 'success', data, error: null } })))
+                    .catch(error => setResults(prev => ({ ...prev, search: { status: 'error', data: null, error: error.message } })));
+
+                // 2. Understanding Task
+                executeTextPrompt(prompts.understandingPrompt, false)
+                    .then(data => setResults(prev => ({ ...prev, understanding: { status: 'success', data, error: null } })))
+                    .catch(error => setResults(prev => ({ ...prev, understanding: { status: 'error', data: null, error: error.message } })));
+
+                // 3. Image Task
+                executeImagePrompt(prompts.imagePrompt)
+                    .then(data => setResults(prev => ({ ...prev, image: { status: 'success', data, error: null } })))
+                    .catch(error => setResults(prev => ({ ...prev, image: { status: 'error', data: null, error: error.message } })));
+            };
+
+            // Check if all tasks are done to reset global executing state
+            useEffect(() => {
+                const allDone = Object.values(results).every(r => r.status === 'success' || r.status === 'error' || r.status === 'idle');
+                const anyStarted = Object.values(results).some(r => r.status !== 'idle');
+                if (allDone && anyStarted) {
+                    setIsExecuting(false);
+                }
+            }, [results]);
+
+            return (
+                <div className="min-h-screen max-w-5xl mx-auto p-4 sm:p-6 lg:p-8 flex flex-col gap-8">
+                    
+                    {/* Header */}
+                    <header className="text-center space-y-4 pt-8">
+                        <div className="inline-flex items-center justify-center p-3 bg-blue-100 text-blue-600 rounded-2xl mb-2">
+                            <Icons.Sparkles />
+                        </div>
+                        <h1 className="text-4xl font-bold tracking-tight text-gray-900">Topic Explorer AI</h1>
+                        <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+                            Enter a topic to generate specialized prompts for current affairs, in-depth understanding, and imagery. Review, approve, and watch AI explore it for you.
+                        </p>
+                    </header>
+
+                    {/* Input Section */}
+                    <section className="bg-white rounded-3xl shadow-sm border border-gray-200 p-6 sm:p-8">
+                        <div className="flex flex-col sm:flex-row gap-4">
+                            <input 
+                                type="text" 
+                                value={topic}
+                                onChange={(e) => setTopic(e.target.value)}
+                                onKeyDown={(e) => e.key === 'Enter' && handleGeneratePrompts()}
+                                placeholder="Enter any topic (e.g., Quantum Computing, Mars Colonization, Renaissance Art)..."
+                                className="flex-1 text-lg px-6 py-4 rounded-2xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                            />
+                            <button 
+                                onClick={handleGeneratePrompts}
+                                disabled={!topic.trim() || isGeneratingPrompts}
+                                className="px-8 py-4 bg-gray-900 hover:bg-gray-800 text-white font-semibold rounded-2xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 whitespace-nowrap"
+                            >
+                                {isGeneratingPrompts ? <Icons.Loader className="text-white" /> : 'Generate Prompts'}
+                            </button>
+                        </div>
+                    </section>
+
+                    {/* Prompts Review Section */}
+                    {prompts && (
+                        <section className="bg-white rounded-3xl shadow-sm border border-gray-200 p-6 sm:p-8 space-y-8 animate-[fadeIn_0.5s_ease-out]">
+                            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                                <div>
+                                    <h2 className="text-2xl font-bold text-gray-900">Review Prompts</h2>
+                                    <p className="text-gray-500">You can edit these AI-generated prompts before executing them.</p>
+                                </div>
+                                <button 
+                                    onClick={handleExecuteAll}
+                                    disabled={isExecuting}
+                                    className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                                >
+                                    {isExecuting ? <Icons.Loader className="text-white" /> : <><Icons.Check /> Run Approved Prompts</>}
+                                </button>
+                            </div>
+
+                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                                {/* Search Prompt */}
+                                <div className="space-y-3">
+                                    <label className="flex items-center gap-2 font-semibold text-gray-700">
+                                        <div className="p-1.5 bg-green-100 text-green-700 rounded-lg"><Icons.Search /></div>
+                                        Current Affairs Search
+                                    </label>
+                                    <textarea 
+                                        value={prompts.searchPrompt}
+                                        onChange={(e) => handlePromptChange('searchPrompt', e.target.value)}
+                                        className="w-full h-40 p-4 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all resize-none"
+                                    />
+                                </div>
+                                {/* Understanding Prompt */}
+                                <div className="space-y-3">
+                                    <label className="flex items-center gap-2 font-semibold text-gray-700">
+                                        <div className="p-1.5 bg-blue-100 text-blue-700 rounded-lg"><Icons.BookOpen /></div>
+                                        Topic Understanding
+                                    </label>
+                                    <textarea 
+                                        value={prompts.understandingPrompt}
+                                        onChange={(e) => handlePromptChange('understandingPrompt', e.target.value)}
+                                        className="w-full h-40 p-4 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all resize-none"
+                                    />
+                                </div>
+                                {/* Image Prompt */}
+                                <div className="space-y-3">
+                                    <label className="flex items-center gap-2 font-semibold text-gray-700">
+                                        <div className="p-1.5 bg-purple-100 text-purple-700 rounded-lg"><Icons.Image /></div>
+                                        Image Generation
+                                    </label>
+                                    <textarea 
+                                        value={prompts.imagePrompt}
+                                        onChange={(e) => handlePromptChange('imagePrompt', e.target.value)}
+                                        className="w-full h-40 p-4 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all resize-none"
+                                    />
+                                </div>
+                            </div>
+                        </section>
+                    )}
+
+                    {/* Results Section */}
+                    {(results.search.status !== 'idle' || results.understanding.status !== 'idle' || results.image.status !== 'idle') && (
+                        <section className="space-y-8 animate-[fadeIn_0.5s_ease-out]">
+                            
+                            {/* Top Row: Current Affairs & Image */}
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                
+                                {/* Current Affairs Result */}
+                                <div className="bg-white rounded-3xl shadow-sm border border-gray-200 overflow-hidden flex flex-col">
+                                    <div className="p-6 border-b border-gray-100 bg-gray-50 flex items-center gap-3">
+                                        <div className="p-2 bg-green-100 text-green-700 rounded-xl"><Icons.Search /></div>
+                                        <h3 className="font-bold text-lg">Current Affairs & News</h3>
+                                    </div>
+                                    <div className="p-6 flex-1 overflow-auto max-h-[500px]">
+                                        {results.search.status === 'loading' && <div className="flex items-center justify-center h-full text-gray-400"><Icons.Loader className="w-8 h-8" /></div>}
+                                        {results.search.status === 'error' && <p className="text-red-500">Error: {results.search.error}</p>}
+                                        {results.search.status === 'success' && (
+                                            <div>
+                                                <MarkdownText text={results.search.data.text} />
+                                                
+                                                {/* Citations */}
+                                                {results.search.data.sources && results.search.data.sources.length > 0 && (
+                                                    <div className="mt-6 pt-6 border-t border-gray-100">
+                                                        <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Sources</h4>
+                                                        <ul className="space-y-2">
+                                                            {results.search.data.sources.map((source, idx) => (
+                                                                <li key={idx} className="text-sm">
+                                                                    <a href={source.uri} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline flex items-center gap-1">
+                                                                        <span className="truncate">{source.title || source.uri}</span>
+                                                                    </a>
+                                                                </li>
+                                                            ))}
+                                                        </ul>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Generated Image Result */}
+                                <div className="bg-white rounded-3xl shadow-sm border border-gray-200 overflow-hidden flex flex-col">
+                                    <div className="p-6 border-b border-gray-100 bg-gray-50 flex items-center gap-3">
+                                        <div className="p-2 bg-purple-100 text-purple-700 rounded-xl"><Icons.Image /></div>
+                                        <h3 className="font-bold text-lg">Generated Imagery</h3>
+                                    </div>
+                                    <div className="p-6 flex-1 flex items-center justify-center bg-gray-50 min-h-[300px]">
+                                        {results.image.status === 'loading' && <div className="flex flex-col items-center gap-3 text-gray-400"><Icons.Loader className="w-8 h-8" /><span className="text-sm">Generating image...</span></div>}
+                                        {results.image.status === 'error' && <p className="text-red-500">Error: {results.image.error}</p>}
+                                        {results.image.status === 'success' && (
+                                            <img 
+                                                src={results.image.data} 
+                                                alt={`Generated representation of ${topic}`} 
+                                                className="w-full h-auto max-h-[450px] object-cover rounded-2xl shadow-sm border border-gray-200"
+                                            />
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Bottom Row: In-depth Understanding */}
+                            <div className="bg-white rounded-3xl shadow-sm border border-gray-200 overflow-hidden">
+                                <div className="p-6 border-b border-gray-100 bg-gray-50 flex items-center gap-3">
+                                    <div className="p-2 bg-blue-100 text-blue-700 rounded-xl"><Icons.BookOpen /></div>
+                                    <h3 className="font-bold text-lg">In-Depth Understanding</h3>
+                                </div>
+                                <div className="p-6 sm:p-8">
+                                    {results.understanding.status === 'loading' && <div className="flex items-center justify-center py-12 text-gray-400"><Icons.Loader className="w-8 h-8" /></div>}
+                                    {results.understanding.status === 'error' && <p className="text-red-500">Error: {results.understanding.error}</p>}
+                                    {results.understanding.status === 'success' && (
+                                        <MarkdownText text={results.understanding.data.text} />
+                                    )}
+                                </div>
+                            </div>
+
+                        </section>
+                    )}
+                    
+                    <footer className="text-center text-sm text-gray-400 pb-8">
+                        Powered by Gemini AI Multi-modal Capabilities
+                    </footer>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

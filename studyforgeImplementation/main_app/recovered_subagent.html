@@ -1,0 +1,695 @@
+Created At: 2026-07-19T03:07:26+05:30
+Completed At: 2026-07-19T03:07:26+05:30
+File Path: `file:///F:/Code%20by%20Akshat/testgemini/studyforge/studyforgeImplementation/main_app/studyforge_main.html`
+Total Lines: 3318
+Total Bytes: 220157
+Showing lines 1 to 800
+Content truncated: showing bytes 0-46080 of 53651. To see more, call this tool again with the same line range and ContentOffset=46080.
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+1: <!DOCTYPE html>
+2: <html lang="en">
+3: <head>
+4:     <meta charset="UTF-8">
+5:     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+6:     <title>StudyForge V1</title>
+7:     
+8:     <!-- CDNs -->
+9:     <script src="https://cdn.tailwindcss.com"></script>
+10:     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+11:     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+12:     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+13:     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+14:     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+15:     <script>
+16:         tailwind.config = {
+17:             darkMode: 'class'
+18:         }
+19:     </script>
+20:     <script>
+21:         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+22:     </script>
+23:     
+24:     <style>
+25:         body { font-family: 'Inter', system-ui, sans-serif; background-color: #F9FAFB; }
+26:         .toggle-switch { position: relative; display: inline-block; width: 36px; height: 20px; }
+27:         .toggle-switch input { opacity: 0; width: 0; height: 0; }
+28:         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .3s; border-radius: 20px; }
+29:         .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 2px; bottom: 2px; background-color: white; transition: .3s; border-radius: 50%; }
+30:         input:checked + .slider { background-color: #2563EB; }
+31:         input:checked + .slider:before { transform: translateX(16px); }
+32:         .fade-in { animation: fadeIn 0.3s ease-in-out; }
+33:         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+34:     </style>
+35: </head>
+36: <body>
+37:     <div id="root"></div>
+38: 
+39:     <script>
+40:         /* ═══════════════════════════════════════════
+41:            SECTION 1: AI INTEGRATION FUNCTIONS
+42:            ═══════════════════════════════════════════ */
+43:         async function geminiGenerateText(promptText) {
+44:             const apiKey = "";
+45:             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+46:             const response = await fetch(apiUrl, {
+47:                 method: 'POST',
+48:                 headers: { 'Content-Type': 'application/json' },
+49:                 body: JSON.stringify({ contents: [{ parts: [{ text: promptText }] }] })
+50:             });
+51:             if (!response.ok) throw new Error(`API Error: ${response.status}`);
+52:             const result = await response.json();
+53:             return result?.candidates?.[0]?.content?.parts?.[0]?.text || "No text generated.";
+54:         }
+55: 
+56:         async function geminiSearchText(searchQuery) {
+57:             const apiKey = "";
+58:             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+59:             const response = await fetch(apiUrl, {
+60:                 method: 'POST',
+61:                 headers: { 'Content-Type': 'application/json' },
+62:                 body: JSON.stringify({
+63:                     contents: [{ parts: [{ text: `Search the web for: "${searchQuery}". Provide a concise summary.` }] }],
+64:                     tools: [{ googleSearch: {} }]
+65:                 })
+66:             });
+67:             if (!response.ok) throw new Error(`API Error: ${response.status}`);
+68:             const result = await response.json();
+69:             return result?.candidates?.[0]?.content?.parts?.[0]?.text || "No search results.";
+70:         }
+71: 
+72:         async function geminiImageCreation(imagePrompt) {
+73:             const apiKey = "";
+74:             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${apiKey}`;
+75:             const response = await fetch(apiUrl, {
+76:                 method: 'POST',
+77:                 headers: { 'Content-Type': 'application/json' },
+78:                 body: JSON.stringify({
+79:                     instances: [{ prompt: imagePrompt }],
+80:                     parameters: { sampleCount: 1, aspectRatio: "16:9" }
+81:                 })
+82:             });
+83:             if (!response.ok) throw new Error(`API Error: ${response.status}`);
+84:             const result = await response.json();
+85:             const base64Encoded = result?.predictions?.[0]?.bytesBase64Encoded;
+86:             if (!base64Encoded) throw new Error("No image data returned.");
+87:             return `data:image/png;base64,${base64Encoded}`;
+88:         }
+89:         
+90:         /* ═══════════════════════════════════════════
+91:            SECTION 2: INDEXED DB STATE ENGINE
+92:            ═══════════════════════════════════════════ */
+93:         const DB = {
+94:             dbName: "StudyForgeV1DB",
+95:             dbVersion: 1,
+96:             init() {
+97:                 return new Promise((resolve, reject) => {
+98:                     const req = indexedDB.open(this.dbName, this.dbVersion);
+99:                     req.onupgradeneeded = (e) => {
+100:                         const db = e.target.result;
+101:                         if (!db.objectStoreNames.contains("state")) {
+102:                             db.createObjectStore("state");
+103:                         }
+104:                     };
+105:                     req.onsuccess = (e) => resolve(e.target.result);
+106:                     req.onerror = (e) => reject(e.target.error);
+107:                 });
+108:             },
+109:             async set(key, value) {
+110:                 try {
+111:                     const db = await this.init();
+112:                     return new Promise((resolve, reject) => {
+113:                         const tx = db.transaction("state", "readwrite");
+114:                         const store = tx.objectStore("state");
+115:                         const req = store.put(value, key);
+116:                         req.onsuccess = () => resolve();
+117:                         req.onerror = () => reject(req.error);
+118:                     });
+119:                 } catch(e) { console.error("IndexedDB write crashed", e); }
+120:             },
+121:             async get(key) {
+122:                 try {
+123:                     const db = await this.init();
+124:                     return new Promise((resolve, reject) => {
+125:                         const tx = db.transaction("state", "readonly");
+126:                         const store = tx.objectStore("state");
+127:                         const req = store.get(key);
+128:                         req.onsuccess = () => resolve(req.result);
+129:                         req.onerror = () => reject(req.error);
+130:                     });
+131:                 } catch(e) { return null; }
+132:             }
+133:         };
+134:     </script>
+135: 
+136:     <script type="text/babel">
+137:         const { useState, useEffect, useRef } = React;
+138: 
+139:         const SCREEN_NAMES = {
+140:             1: "Input Material",
+141:             2: "AI Reading",
+142:             3: "Understanding",
+143:             4: "Structure Parts",
+144:             5: "Blueprints",
+145:             6: "Generation",
+146:             7: "Final Polish",
+147:             8: "Export"
+148:         };
+149: 
+150:         // --- SHARED COMPONENTS ---
+151:         const ToggleSwitch = ({ value, onChange }) => (
+152:             <label className="toggle-switch relative inline-block w-10 h-6">
+153:                 <input type="checkbox" checked={value} onChange={(e) => onChange(e.target.checked)} className="opacity-0 w-0 h-0" />
+154:                 <span className={`slider absolute cursor-pointer top-0 left-0 right-0 bottom-0 rounded-full transition-colors duration-300 ${value ? 'bg-blue-600' : 'bg-gray-300'}`}>
+155:                     <span className={`absolute bg-white w-4 h-4 rounded-full bottom-1 transition-transform duration-300 ${value ? 'transform translate-x-5' : 'left-1'}`}></span>
+156:                 </span>
+157:             </label>
+158:         );
+159: 
+160:         const ResumeBanner = ({ savedState, onResume, onFresh }) => (
+161:             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 flex items-center justify-between">
+162:                 <div>
+163:                     <p className="font-semibold text-blue-800">
+164:                         📂 Saved session found: "{savedState.topic || 'Previous session'}"
+165:                     </p>
+166:                     <p className="text-sm text-blue-600">
+167:                         Last saved: {new Date(savedState.lastSaved).toLocaleString()}
+168:                     </p>
+169:                 </div>
+170:                 <div className="flex gap-3">
+171:                     <button onClick={onResume} className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700">
+172:                         Resume Session
+173:                     </button>
+174:                     <button onClick={onFresh} className="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-50">
+175:                         Start Fresh
+176:                     </button>
+177:                 </div>
+178:             </div>
+179:         );
+180: 
+181:         const VISUAL_STYLES = [
+182:             // Process / Flow (7)
+183:             { id: "flowchart",      label: "Flowchart",              category: "Process" },
+184:             { id: "step_sequence",  label: "Step-by-Step Sequence",  category: "Process" },
+185:             { id: "decision_tree",  label: "Decision Tree",          category: "Process" },
+186:             { id: "sankey",         label: "Sankey Diagram",         category: "Process" },
+187:             { id: "process_map",    label: "Process Map",            category: "Process" },
+188:             { id: "timeline",       label: "Timeline",               category: "Process" },
+189:             { id: "gantt",          label: "Gantt Chart",            category: "Process" },
+190:             // Structural / Hierarchical (7)
+191:             { id: "erd",            label: "Entity Relationship Diagram", category: "Structural" },
+192:             { id: "hierarchy_tree", label: "Hierarchical Tree",      category: "Structural" },
+193:             { id: "network_diagram",label: "Network Diagram",        category: "Structural" },
+194:             { id: "sequence_diagram",label:"Sequence Diagram",       category: "Structural" },
+195:             { id: "use_case",       label: "Use Case Diagram",       category: "Structural" },
+196:             { id: "state_machine",  label: "State Machine Diagram",  category: "Structural" },
+197:             { id: "mind_map",       label: "Mind Map",               category: "Structural" },
+198:             // Data / Quantitative (10)
+199:             { id: "bar_chart",      label: "Bar Chart",              category: "Data" },
+200:             { id: "pie_chart",      label: "Pie Chart",              category: "Data" },
+201:             { id: "line_graph",     label: "Line Graph",             category: "Data" },
+202:             { id: "scatter_plot",   label: "Scatter Plot",           category: "Data" },
+203:             { id: "heat_map",       label: "Heat Map",               category: "Data" },
+204:             { id: "radar_chart",    label: "Radar Chart",            category: "Data" },
+205:             { id: "bubble_chart",   label: "Bubble Chart",           category: "Data" },
+206:             { id: "stacked_area",   label: "Stacked Area Chart",     category: "Data" },
+207:             { id: "pictograph",     label: "Pictograph",             category: "Data" },
+208:             { id: "heatmap_table",  label: "Heat-Map Table",         category: "Data" },
+209:             // Conceptual / Qualitative (11)
+210:             { id: "concept_map",    label: "Concept Map",            category: "Conceptual" },
+211:             { id: "venn_diagram",   label: "Venn Diagram",           category: "Conceptual" },
+212:             { id: "comparison_matrix",label:"Comparison Matrix",     category: "Conceptual" },
+213:             { id: "comic_story",    label: "Scenario / Comic Story", category: "Conceptual" },
+214:             { id: "infographic",    label: "Infographic Illustration",category:"Conceptual" },
+215:             { id: "3d_model",       label: "3D Model Render",        category: "Conceptual" },
+216:             { id: "icon_array",     label: "Icon Array",             category: "Conceptual" },
+217:             { id: "geo_map_overlay",label: "Geographic Map Overlay", category: "Conceptual" },
+218:             { id: "funnel_diagram", label: "Funnel Diagram",         category: "Conceptual" },
+219:             { id: "storyboard",     label: "Storyboard",             category: "Conceptual" },
+220:             { id: "table_diagram",  label: "Table Diagram",          category: "Conceptual" },
+221:             // Special (1)
+222:             { id: "mixed_multi",    label: "Mixed Multi-Style Visual",category:"Special" }
+223:         ];
+224: 
+225:         const FEATURE_CATEGORIES = {
+226:             CONTENT_CORE: {
+227:                 label: '📚 Core Content & Summaries',
+228:                 alwaysShow: true,
+229:                 features: {
+230:                     detailed_notes: 'Detailed Content Notes',
+231:                     quick_revision: 'Quick Revision Bullet Points',
+232:                     key_definitions: 'Key Definitions Highlighted',
+233:                     summary_boxes: 'Summary Boxes'
+234:                 }
+235:             },
+236:             FORMULAS_MATH: {
+237:                 label: '🔢 Formulas & Mathematics',
+238:                 showWhen: (a) => a.counts?.formulas > 0 || a.contentType === 'science',
+239:                 features: {
+240:                     formula_breakdown: 'Formula Breakdown & Explanation',
+241:                     formula_facts: 'Facts About Each Formula',
+242:                     formula_operations: 'Mathematical Operations Demonstrated',
+243:                     formula_derivation: 'Step-by-Step Derivations',
+244:                     formula_applications: 'Where Each Formula Applies'
+245:                 }
+246:             },
+247:             GEOGRAPHY: {
+248:                 label: '🗺️ Geography & Locations',
+249:                 showWhen: (a) => (a.geographyMentions?.length > 0) || a.contentType === 'geography',
+250:                 features: {
+251:                     location_maps: 'Location Maps & Diagrams',
+252:                     neighboring_analysis: 'Neighboring Places Analysis',
+253:                     personalities_from_place: 'Important Personalities from Location',
+254:                     place_current_news: 'Current News About Location',
+255:                     place_activities: 'Important Activities at Location',
+256:                     place_history: 'Historical Significance'
+257:                 }
+258:             },
+259:             PERSONALITIES: {
+260:                 label: '👤 Personalities & People',
+261:                 showWhen: (a) => a.personalitiesMentioned?.length > 0,
+262:                 features: {
+263:                     bio_cards: 'Personality Bio Cards',
+264:                     related_personalities: 'Related & Contemporary Personalities',
+265:                     contributions: 'Key Contributions & Legacy',
+266:                     personalities_news: 'Recent News About Personalities'
+267:                 }
+268:             },
+269:             DATA_CHARTS: {
+270:                 label: '📊 Data & Charts',
+271:                 showWhen: (a) => a.counts?.tables > 0 || a.counts?.diagrams > 0,
+272:                 features: {
+273:                     comparison_tables: 'Comparison Tables',
+274:                     data_charts: 'Data Visualization Charts',
+275:                     chart_facts: 'Key Facts from Charts',
+276:                     chart_operations: 'Operations Performed on Data',
+277:                     trend_analysis: 'Trend Analysis'
+278:                 }
+279:             },
+280:             CODE_PROGRAMMING: {
+281:                 label: '💻 Code & Programming',
+282:                 showWhen: (a) => a.contentType === 'programming' || a.counts?.codeBlocks > 0,
+283:                 features: {
+284:                     code_blocks: 'Syntax-Highlighted Code Blocks',
+285:                     input_output_demos: 'Input → Output Demonstrations',
+286:                     algorithm_complexity: 'Time & Space Complexity Tables',
+287:                     data_structure_visuals: 'Data Structure Diagrams',
+288:                     step_by_step_trace: 'Algorithm Trace Steps'
+289:                 }
+290:             },
+291:             CURRENT_AFFAIRS: {
+292:                 label: '📰 Current Affairs',
+293:                 showWhen: (a, s) => s.includeCA || ['psc_upsc','geography','history'].includes(a.contentType),
+294:                 features: {
+295:                     national_recent: 'National Recent (2024–today)',
+296:                     national_major: 'National Major Events (2020–2023)',
+297:                     state_recent: 'State Recent (if state set)',
+298:                     state_major: 'State Major Events (if state set)',
+299:                     international: 'International Context'
+300:                 }
+301:             },
+302:             EXAM_PREP: {
+303:                 label: '🎯 Exam Preparation',
+304:                 showWhen: (a, s) => ['UPSC','State PSC','Academic Exam'].includes(s.exam),
+305:                 features: {
+306:                     pyq_integration: 'Previous Year Questions',
+307:                     answer_framework: 'Answer Writing Framework',
+308:                     keywords_highlight: 'Exam Keywords Highlighted',
+309:                     marks_allocation: 'Marks & Importance Indicators'
+310:                 }
+311:             },
+312:             STORYTELLING: {
+313:                 label: '📖 Storytelling & Analogies',
+314:                 alwaysShow: true,
+315:                 features: {
+316:                     story_boxes: 'Story & Scenario Boxes',
+317:                     analogy_boxes: 'Analogy Boxes',
+318:                     case_studies: 'Case Studies'
+319:                 }
+320:             },
+321:             ADMINISTRATIVE: {
+322:                 label: '🏛️ Administration & Governance',
+323:                 showWhen: (a) => a.institutionsMentioned?.length > 0 || a.contentType === 'governance',
+324:                 features: {
+325:                     institution_cards: 'Institution & Organization Cards',
+326:                     policy_context: 'Policy & Legal Context',
+327:                     constitutional_links: 'Constitutional Articles Linked',
+328:                     admin_structure: 'Administrative Structure Diagrams'
+329:                 }
+330:             },
+331:             PROCESS_CREATION: {
+332:                 label: '⚙️ Process & Creation',
+333:                 alwaysShow: true,
+334:                 features: {
+335:                     process_flows: 'Process Flow Diagrams',
+336:                     creation_steps: 'Step-by-Step Creation Process',
+337:                     experiment_boxes: 'Experiment & Method Boxes'
+338:                 }
+339:             },
+340:             MEDICAL_SCIENCE: {
+341:                 label: '🔬 Science & Medicine',
+342:                 showWhen: (a) => ['biology','chemistry','medicine','science'].some(t => a.subject?.toLowerCase().includes(t)),
+343:                 features: {
+344:                     medical_info: 'Medical / Scientific Info Cards',
+345:                     chemical_formulas: 'Chemical Formula Boxes',
+346:                     biological_diagrams: 'Biological Process Diagrams'
+347:                 }
+348:             }
+349:         };
+350: 
+351:         const getVisibleCategories = (analysisData, settings) => {
+352:             return Object.entries(FEATURE_CATEGORIES).filter(([_, cat]) => {
+353:                 if (cat.alwaysShow) return true;
+354:                 if (cat.showWhen) return cat.showWhen(analysisData, settings);
+355:                 return false;
+356:             });
+357:         };
+358: 
+359:         const DEFAULT_PROMPTS = {
+360:             subtopicExpansion: `Search internet for this topic. Identify latest developments, recent policy changes, and any new sub-topics that have emerged. Include all relevant facts.\nGiven topic [TOPIC] with sub-topics [SUB_TOPICS], what other sub-topics are essential for comprehensive coverage? Return ONLY a comma-separated list of new subtopics. No extra text.`,
+361:             contentGeneration: `Search internet for current facts and data while writing. Include latest statistics, recent developments, and current affairs related to each sub-topic.\nWrite comprehensive [LENGTH] study material about [TOPIC].\nSub-topics to cover: [ALL_TOPICS].\n[FOCUS]\nWrite in clear, educational style. Include definitions, examples, and key facts.`,
+362:             analysis: `You are an expert educational content analyzer.\nAnalyze the following study material and return a detailed analysis.\n\nTOPIC: [topic]\nSUB-TOPICS: [subtopics]\nFOCUS: [focus]\nEXAM TYPE: [exam]\nSTATE FOCUS: [state]\n\nMATERIAL:\n[content]\n\nAnalyze and return JSON with:\n{\n  "subject": "...",\n  "subDiscipline": "...",\n  "contentType": "psc_upsc|academic|programming|geography|history|science|economics|general",\n  "language": "...",\n  "complexity": "low|medium|high|very_high",\n  "topics": [...],\n  "definitions": [{"term": "...", "definition": "..."}],\n  "formulas": [{"formula": "...", "meaning": "...", "facts": [...]}],\n  "codeBlocks": [...],\n  "pyqs": [...],\n  "geographyMentions": [...],\n  "personalitiesMentioned": [...],\n  "institutionsMentioned": [...],\n  "counts": { "topics":0, "definitions":0, "formulas":0, "pyqs":0, "diagrams":0, "tables":0, "examples":0, "timelines":0, "codeBlocks":0 },\n  "detectedFeatures": [{"featureId":"", "featureName":"", "category":"", "detected":true, "reason":"", "priority":1}],\n  "suggestedParts": 6,\n  "splitRationale": "..."\n}\nReturn ONLY valid JSON.`,
+363:             partsGeneration: `You are an expert curriculum designer.\nSplit the study material into logical learning parts.\n\nSubject: [subject]\nSub-discipline: [subDiscipline]\nContent type: [contentType]\nComplexity: [complexity]\nSuggested parts: [suggestedParts]\nTotal topics: [topics]\nSettings: [settings]\n\nRules:\n- Create [suggestedParts] logical parts\n- Each part should be self-contained\n- Progress from foundational to advanced\n- Group related topics together\n- Each part needs a clear learning objective\n\nReturn JSON:\n{\n  "parts": [{\n    "id": "part-1",\n    "title": "...",\n    "summary": "...",\n    "topics": [...],\n    "complexity": "low|medium|high",\n    "estimatedLength": "short|medium|long",\n    "applicableFeatures": [...],\n    "needsCurrentAffairs": true,\n    "hasFormulas": true,\n    "hasCode": false,\n    "suggestedImageCount": 3,\n    "learningObjective": "..."\n  }],\n  "totalParts": 6,\n  "splitRationale": "..."\n}\nReturn ONLY valid JSON.`,
+364:             blueprintGeneration: `Create a detailed teaching blueprint for this part.\n\nPart: [title]\nSummary: [summary]\nTopics: [topics]\nSubject: [subject]\nContent type: [contentType]\nEnabled features: [features]\nSettings: [settings]\n\nReturn JSON:\n{\n  "headings": { "main": "...", "subHeadings": [...] },\n  "textPlan": {\n    "fromSource": [...],\n    "willAdd": [...],\n    "containers": [{ "type": "concept_box|formula_box|...", "heading": "...", "topic": "..." }]\n  },\n  "imagePlan": [{\n    "title": "...",\n    "purpose": "...",\n    "recommendedStyles": ["infographic", "flowchart"],\n    "dataToShow": [...],\n    "isMixedStyle": true,\n    "prompt": "Create an educational infographic showing..."\n  }],\n  "caPlan": {\n    "needed": true,\n    "searches": [{ "scope": "national_recent|state_recent|...", "query": "..." }]\n  },\n  "validationPlan": ["Check source coverage", "Verify all formulas"],\n  "estimatedLength": "medium",\n  "generationPromptPreview": "Write detailed notes about..."\n}\nReturn ONLY valid JSON.`,
+365:             blueprintChat: `You are helping modify a teaching blueprint for: "[title]"\nCurrent blueprint: [localBP]\nUser request: "[userMessage]"\n\nApply the user's request and return the COMPLETE updated blueprint JSON.\nReturn ONLY valid JSON matching the original blueprint structure.`,
+366:             notesGeneration: `You are an expert educator writing structured study notes.\n\nPart: [title]\nTopics: [topics]\nSubject: [subject]\nContent type: [contentType]\nDifficulty: [difficulty]\nLength: [length]\nLanguage: [language]\nState focus: [state]\nEnabled features: [features]\nBlueprint containers planned: [containers]\n\nWrite comprehensive, well-structured study notes covering all topics.\nFormat as JSON:\n{\n  "sections": [{\n    "containerType": "concept_box|formula_box|story_box|comparison_table|code_block|definition_box|pyq_box|quick_revision|geography_box|personality_card|data_insight|analogy_box|timeline_box|process_box|institution_box|ca_box|experiment_box|summary_box",\n    "heading": "...",\n    "content": "rich markdown",\n    "sourceTag": "source_backed|ai_enriched|ca_integrated",\n    "formula": "(if formula_box)",\n    "variables": [...],\n    "operations": [...],\n    "facts": [...],\n    "code": "(if code_block)",\n    "language": "python|javascript|...",\n    "inputExample": "...",\n    "outputExample": "...",\n    "tableData": { "headers": [], "rows": [[]] },\n    "steps": [...],\n    "person": "...",\n    "role": "..."\n  }],\n  "quickRevision": ["key point 1"],\n  "caNeeded": true,\n  "caContext": "search query"\n}\nReturn ONLY valid JSON.`,
+367:             imagePromptGeneration: `Create a detailed educational image prompt for this concept: "[text]". Return only the image prompt, 2-3 sentences.`,
+368:             currentAffairsSearch: `Search internet for: "[query]"`,
+369:             validation: `You are an expert educational content validator.\nReview these study notes for quality, accuracy, and completeness.\nPart title: [title]\nBlueprint planned: [validationPlan]\n\nNotes content summary:\n[contentSummary]\n\nReturn JSON:\n{\n  "overallScore": 82,\n  "grade": "Good",\n  "strengths": ["point 1", "point 2"],\n  "improvements": [\n    {\n      "priority": "high|medium|low",\n      "issue": "...",\n      "suggestion": "...",\n      "autoFixable": false\n    }\n  ],\n  "missingElements": ["element 1"],\n  "accuracyNotes": ["note 1"]\n}\nReturn ONLY valid JSON.`,
+370:             visualizeThis: `[prompt]. [styleDesc]. Educational, clear labels, professional.`,
+371:             locationFacts: `Location detected: "[locationName]"\nContent context: This part discusses [context]\nLocation relevance: [relevance]\n\nExtract facts about [locationName] relevant to:\n- [context]\n\nDO NOT extract facts about unrelated topics.\nReturn as JSON: {"facts": [...], "relevance_to_topic": "..."}`
+372:         };
+373: 
+374:         // Sanitize before inserting into HTML or sending to AI
+375:         const sanitizeInput = (str) => {
+376:             if (typeof str !== 'string') return String(str || '');
+377:             return str
+378:                 .replace(/&/g, '&amp;')
+379:                 .replace(/</g, '&lt;')
+380:                 .replace(/>/g, '&gt;')
+381:                 .replace(/"/g, '&quot;')
+382:                 .replace(/'/g, '&#039;');
+383:         };
+384: 
+385:         // Sanitize output before rendering
+386:         const sanitizeOutput = (str) => {
+387:             if (typeof str !== 'string') return '';
+388:             return str.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+389:         };
+390: 
+391:         const Modal = ({ title, children, onClose, wide }) => (
+392:             <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 fade-in">
+393:                 <div className={`bg-white dark:bg-gray-800 rounded-xl shadow-xl ${wide ? 'max-w-2xl' : 'max-w-lg'} w-full max-h-screen overflow-y-auto flex flex-col`}>
+394:                     <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+395:                         <h2 className="font-bold text-gray-900 dark:text-white">{title}</h2>
+396:                         <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-xl font-light">×</button>
+397:                     </div>
+398:                     <div className="px-6 py-5 text-gray-800 dark:text-gray-200">{children}</div>
+399:                 </div>
+400:             </div>
+401:         );
+402: 
+403:         const ErrorModal = ({ action, errorMessage, onRetry, onSkip, onClose }) => (
+404:             <Modal title="Something went wrong" onClose={onClose}>
+405:                 <div className="space-y-4">
+406:                     <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+407:                         <p className="font-semibold text-red-800">Failed to {action}</p>
+408:                         <p className="text-sm text-red-600 mt-1">{errorMessage}</p>
+409:                     </div>
+410:                     <p className="text-sm text-gray-600">What would you like to do?</p>
+411:                     <div className="flex flex-wrap gap-3">
+412:                         {onRetry && <button onClick={onRetry} className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium">Try Again</button>}
+413:                         {onSkip && <button onClick={onSkip} className="border border-gray-300 text-gray-700 px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-50">Skip This Step</button>}
+414:                         <button onClick={onClose} className="text-gray-500 px-4 py-2 text-sm hover:text-gray-700">Cancel</button>
+415:                     </div>
+416:                 </div>
+417:             </Modal>
+418:         );
+419: 
+420:         const SourceTag = ({ type }) => {
+421:             const tags = {
+422:                 source_backed: { label: 'Source', className: 'bg-green-100 text-green-700' },
+423:                 ai_enriched:   { label: 'AI Added', className: 'bg-blue-100 text-blue-700' },
+424:                 ca_integrated: { label: 'Current Affairs', className: 'bg-amber-100 text-amber-700' }
+425:             };
+426:             const tag = tags[type];
+427:             if (!tag) return null;
+428:             return (
+429:                 <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${tag.className}`}>
+430:                     {tag.label}
+431:                 </span>
+432:             );
+433:         };
+434: 
+435:         const MarkdownContent = ({ content }) => {
+436:             if (!content) return null;
+437:             const parseMarkdown = (md) => {
+438:                 if (typeof md !== 'string') return '';
+439:                 return md
+440:                     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+441:                     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+442:                     .replace(/\*(.+?)\*/g, '<em>$1</em>')
+443:                     .replace(/`(.+?)`/g, '<code>$1</code>')
+444:                     .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+445:                     .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+446:                     .replace(/^# (.+)$/gm, '<h1>$1</h1>')
+447:                     .replace(/^\* (.+)$/gm, '<li>$1</li>')
+448:                     .replace(/^- (.+)$/gm, '<li>$1</li>')
+449:                     .replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>')
+450:                     .replace(/\n\n/g, '</p><p>')
+451:                     .replace(/^(?!<[hlu])/m, '<p>')
+452:                     .replace(/(?<![>])$/m, '</p>');
+453:             };
+454:             return <div className="prose-content text-sm text-gray-800 dark:text-gray-200" dangerouslySetInnerHTML={{ __html: parseMarkdown(content) }} />;
+455:         };
+456: 
+457:         const PromptCenter = ({ prompts, onUpdate, onClose }) => {
+458:             const promptCards = [
+459:                 { id: 'subtopicExpansion', label: 'Method 2: Sub-topic Expansion', screen: 'Screen 1' },
+460:                 { id: 'contentGeneration', label: 'Method 2: Content Generation', screen: 'Screen 1' },
+461:                 { id: 'analysis', label: 'Material Analysis Prompt', screen: 'Screen 2-3' },
+462:                 { id: 'partsGeneration', label: 'Part Splitting Prompt', screen: 'Screen 4' },
+463:                 { id: 'blueprintGeneration', label: 'Blueprint Generation Prompt', screen: 'Screen 5' },
+464:                 { id: 'blueprintChat', label: 'Blueprint AI Chat Prompt', screen: 'Screen 6' },
+465:                 { id: 'notesGeneration', label: 'Notes Generation Prompt', screen: 'Screen 7' },
+466:                 { id: 'imagePromptGeneration', label: 'Image Prompt Generator Prompt', screen: 'Screen 7' },
+467:                 { id: 'currentAffairsSearch', label: 'Current Affairs Search Prompt', screen: 'Screen 7' },
+468:                 { id: 'validation', label: 'AI Validation Prompt', screen: 'Screen 7' },
+469:                 { id: 'visualizeThis', label: 'Visualize This Prompt', screen: 'Screen 7' },
+470:                 { id: 'locationFacts', label: 'Location Facts Prompt', screen: 'Screen 7' }
+471:             ];
+472:             
+473:             return (
+474:                 <Modal title="🔧 Prompt Center" onClose={onClose} wide>
+475:                     <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+476:                         View, edit, and copy the AI prompts used at each stage.
+477:                         Changes affect all future generations.
+478:                     </p>
+479:                     <div className="space-y-4 pb-4">
+480:                         {promptCards.map(card => (
+481:                             <details key={card.id} className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden group">
+482:                                 <summary className="flex items-center justify-between px-4 py-3 bg-gray-50 dark:bg-gray-750 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700">
+483:                                     <div>
+484:                                         <span className="font-medium text-gray-800 dark:text-gray-200">{card.label}</span>
+485:                                         <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">({card.screen})</span>
+486:                                     </div>
+487:                                     <span className="text-gray-400 text-xs transition-transform group-open:rotate-180">▼</span>
+488:                                 </summary>
+489:                                 <div className="p-4 bg-white dark:bg-gray-800">
+490:                                     <textarea rows={8}
+491:                                         value={prompts[card.id] || ''}
+492:                                         onChange={(e) => onUpdate(card.id, e.target.value)}
+493:                                         className="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-xs font-mono focus:ring-2 focus:ring-blue-500 outline-none resize-y bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200" />
+494:                                     <div className="flex gap-2 mt-2">
+495:                                         <button onClick={() => navigator.clipboard.writeText(prompts[card.id] || '')} className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium">
+496:                                             📋 Copy
+497:                                         </button>
+498:                                         <button onClick={() => onUpdate(card.id, DEFAULT_PROMPTS[card.id])} className="text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 font-medium ml-4">
+499:                                             Reset to Default
+500:                                         </button>
+501:                                     </div>
+502:                                 </div>
+503:                             </details>
+504:                         ))}
+505:                     </div>
+506:                 </Modal>
+507:             );
+508:         };
+509: 
+510:         const TopBar = ({ currentScreen, maxReachedScreen, navigateBack, saveStatus, darkMode, setDarkMode, onShowPrompts }) => (
+511:             <div className="sticky top-0 z-50 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-3 flex items-center justify-between shadow-sm transition-colors">
+512:                 <div className="flex items-center gap-3">
+513:                     <span className="text-xl font-bold text-blue-600 dark:text-blue-400">📚 StudyForge V1</span>
+514:                     <span className="text-gray-300 dark:text-gray-600">|</span>
+515:                     <span className="text-sm text-gray-600 dark:text-gray-300 font-medium">{SCREEN_NAMES[currentScreen]}</span>
+516:                 </div>
+517:                 <div className="flex items-center gap-2">
+518:                     {[1,2,3,4,5,6,7,8].map(n => (
+519:                         <button key={n}
+520:                             onClick={() => n <= maxReachedScreen && navigateBack(n)}
+521:                             className={`w-7 h-7 rounded-full text-xs font-semibold transition-all
+522:                                 ${currentScreen === n ? 'bg-blue-600 text-white ring-2 ring-blue-300 dark:ring-blue-800' 
+523:                                 : n < maxReachedScreen ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300 hover:bg-green-200 cursor-pointer' 
+524:                                 : n === maxReachedScreen ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300 cursor-pointer' 
+525:                                 : 'bg-gray-100 text-gray-400 dark:bg-gray-700 dark:text-gray-500 cursor-not-allowed'}`}
+526:                             disabled={n > maxReachedScreen}>
+527:                             {n < maxReachedScreen ? '✓' : n}
+528:                         </button>
+529:                     ))}
+530:                 </div>
+531:                 <div className="flex items-center gap-4">
+532:                     <button onClick={onShowPrompts} className="text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 flex items-center gap-1"><span className="text-lg">🔧</span> Prompts</button>
+533:                     <button onClick={() => setDarkMode(!darkMode)} className="text-xl p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+534:                         {darkMode ? '☀️' : '🌙'}
+535:                     </button>
+536:                     <span className={`text-xs font-medium px-2 py-1 rounded-full 
+537:                         ${saveStatus === 'saving' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300' :
+538:                           saveStatus === 'saved' ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300' : 'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400'}`}>
+539:                         {saveStatus === 'saving' ? '💾 Saving...' : saveStatus === 'saved' ? '✅ Saved' : 'Ready'}
+540:                     </span>
+541:                 </div>
+542:             </div>
+543:         );
+544: 
+545:         const FileUploadSection = ({ fileInfo, updateState }) => {
+546:             const [dragOver, setDragOver] = useState(false);
+547:             
+548:             const handleFile = (file) => {
+549:                 if (!file) return;
+550:                 const allowedExt = ['pdf','txt','doc','docx','md','html','jpg','jpeg','png'];
+551:                 const ext = file.name.split('.').pop().toLowerCase();
+552: 
+553:                 if (!allowedExt.includes(ext)) {
+554:                     alert('File type not supported. Use PDF, TXT, DOC, DOCX, MD, HTML, JPG, PNG');
+555:                     return;
+556:                 }
+557: 
+558:                 updateState({ 
+559:                     fileInfo: { name: file.name, size: (file.size / 1024).toFixed(1) + ' KB', type: ext.toUpperCase() },
+560:                     inputMethod: 'file'
+561:                 });
+562: 
+563:                 if (['jpg','jpeg','png'].includes(ext)) {
+564:                     const reader = new FileReader();
+565:                     reader.onload = (e) => updateState({ fileBase64: e.target.result });
+566:                     reader.readAsDataURL(file);
+567:                 } else if (ext === 'pdf') {
+568:                     const reader = new FileReader();
+569:                     reader.onload = async function() {
+570:                         const typedarray = new Uint8Array(this.result);
+571:                         try {
+572:                             const pdf = await pdfjsLib.getDocument(typedarray).promise;
+573:                             let fullText = '';
+574:                             for (let i = 1; i <= pdf.numPages; i++) {
+575:                                 const page = await pdf.getPage(i);
+576:                                 const textContent = await page.getTextContent();
+577:                                 const pageText = textContent.items.map(item => item.str).join(' ');
+578:                                 fullText += pageText + '\n\n';
+579:                             }
+580:                             updateState({ fileContent: fullText, pastedText: fullText });
+581:                         } catch(e) { alert("Failed to read PDF text."); }
+582:                     };
+583:                     reader.readAsArrayBuffer(file);
+584:                 } else {
+585:                     const reader = new FileReader();
+586:                     reader.onload = (e) => updateState({ fileContent: e.target.result, pastedText: e.target.result });
+587:                     reader.readAsText(file);
+588:                 }
+589:             };
+590: 
+591:             return (
+592:                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+593:                     <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+594:                         <span className="bg-blue-100 text-blue-600 w-6 h-6 rounded-full flex items-center justify-center text-sm">A</span>
+595:                         Upload File
+596:                     </h2>
+597:                     <div 
+598:                         onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+599:                         onDragLeave={() => setDragOver(false)}
+600:                         onDrop={(e) => { e.preventDefault(); setDragOver(false); handleFile(e.dataTransfer.files[0]); }}
+601:                         className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors cursor-pointer
+602:                             ${dragOver ? 'border-blue-400 bg-blue-50' : 'border-gray-300 hover:border-gray-400'}`}
+603:                         onClick={() => document.getElementById('file-input').click()}
+604:                     >
+605:                         <input id="file-input" type="file" className="hidden" accept=".pdf,.txt,.doc,.docx,.md,.html,.jpg,.jpeg,.png" onChange={(e) => handleFile(e.target.files[0])} />
+606:                         {fileInfo ? (
+607:                             <div className="flex items-center justify-center gap-4">
+608:                                 <span className="text-3xl">📄</span>
+609:                                 <div className="text-left">
+610:                                     <p className="font-semibold text-gray-800">{fileInfo.name}</p>
+611:                                     <p className="text-sm text-gray-500">{fileInfo.size} · {fileInfo.type}</p>
+612:                                 </div>
+613:                                 <button onClick={(e) => { e.stopPropagation(); updateState({ fileInfo: null, fileContent: null, fileBase64: null, pastedText: '' }); }} className="ml-4 text-red-500 hover:text-red-700 text-sm font-medium">Remove</button>
+614:                             </div>
+615:                         ) : (
+616:                             <div>
+617:                                 <span className="text-4xl mb-3 block">📁</span>
+618:                                 <p className="text-gray-700 font-medium">Drop file here or click to browse</p>
+619:                                 <p className="text-sm text-gray-500 mt-1">PDF · TXT · DOC · DOCX · MD · HTML · JPG · PNG</p>
+620:                             </div>
+621:                         )}
+622:                     </div>
+623:                 </div>
+624:             );
+625:         };
+626: 
+627:         const TopicInputSection = ({ appState, updateState }) => {
+628:             const [isDrafting, setIsDrafting] = useState(false);
+629:             const [showApproval, setShowApproval] = useState(false);
+630:             const [expandedTopics, setExpandedTopics] = useState([]);
+631:             const [internetSearch, setInternetSearch] = useState(false);
+632: 
+633:             const addSubTopic = () => {
+634:                 if (appState.subTopics.length < 10) {
+635:                     updateState({ subTopics: [...appState.subTopics, ''] });
+636:                 }
+637:             };
+638: 
+639:             const removeSubTopic = (index) => {
+640:                 updateState({ subTopics: appState.subTopics.filter((_, i) => i !== index) });
+641:             };
+642: 
+643:             const updateSubTopic = (index, value) => {
+644:                 const updated = [...appState.subTopics];
+645:                 updated[index] = value;
+646:                 updateState({ subTopics: updated });
+647:             };
+648: 
+649:             const handleAIExpand = async () => {
+650:                 if (!appState.topic.trim()) return;
+651:                 setIsDrafting(true);
+652:                 try {
+653:                     const existing = appState.subTopics.filter(Boolean);
+654:                     let prompt = `Given topic [${appState.topic}] with sub-topics [${existing.join(', ')}], what other sub-topics are essential for comprehensive coverage? Return ONLY a comma-separated list of 3-6 new subtopics. No extra text.`;
+655:                     
+656:                     let result = '';
+657:                     if (internetSearch) {
+658:                         prompt += ` Search internet for this topic to identify latest developments.`;
+659:                         result = await window.geminiSearchText(prompt);
+660:                     } else {
+661:                         result = await window.geminiGenerateText(prompt);
+662:                     }
+663: 
+664:                     const suggested = result.split(',').map(s => {
+665:                         let text = s.trim();
+666:                         text = text.replace(/^[-*•\d.]+\s*/, '');
+667:                         return text;
+668:                     }).filter(Boolean);
+669:                     
+670:                     setExpandedTopics(suggested.map(t => ({ name: t, checked: true })));
+671:                     setShowApproval(true);
+672:                 } catch (e) {
+673:                     alert('Expansion failed: ' + e.message);
+674:                 } finally {
+675:                     setIsDrafting(false);
+676:                 }
+677:             };
+678: 
+679:             const handleAIGenerate = async () => {
+680:                 setIsDrafting(true);
+681:                 setShowApproval(false);
+682:                 try {
+683:                     const approvedNew = expandedTopics.filter(t => t.checked).map(t => t.name);
+684:      
+<truncated 971 bytes>
+
+NOTE: The output was truncated because it was too long. Use a more targeted query or a smaller range to get the information you need.

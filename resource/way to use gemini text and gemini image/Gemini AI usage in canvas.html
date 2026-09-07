@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gemini Canvas API Cheat Sheet</title>
+    <style>
+        body { font-family: monospace; max-width: 800px; margin: 40px auto; padding: 20px; background: #1e1e1e; color: #d4d4d4; line-height: 1.6; }
+        h1 { color: #569cd6; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        h2 { color: #4ec9b0; margin-top: 30px; }
+        pre { background: #000; padding: 15px; border-radius: 5px; overflow-x: auto; border: 1px solid #333; }
+        button { background: #0e639c; color: white; border: none; padding: 8px 16px; cursor: pointer; border-radius: 4px; font-family: monospace; }
+        button:hover { background: #1177bb; }
+        .result { margin-top: 10px; padding: 15px; background: #2d2d2d; border-left: 4px solid #4ec9b0; min-height: 50px; white-space: pre-wrap; }
+        .error { border-left-color: #f44336; color: #f44336; }
+    </style>
+</head>
+<body>
+    <h1>Gemini AI Usage in Canvas (Cheat Sheet)</h1>
+    <p>This file demonstrates the "Environment Hack". By leaving the <code>apiKey</code> completely blank, the Gemini Canvas runtime silently intercepts the fetch request and injects a valid authorization token.</p>
+
+    <!-- ========================================== -->
+    <!-- 1. TEXT GENERATION -->
+    <!-- ========================================== -->
+    <h2>1. Text Generation (Gemini 3 Flash)</h2>
+    <p>Use this function to ask questions, summarize text, or analyze data.</p>
+    <button onclick="testText()">Test: geminiGenerateText("Explain Quantum Computing in 2 sentences")</button>
+    <div id="textResult" class="result">Waiting for test...</div>
+
+    <script>
+        async function geminiGenerateText(promptText) {
+            const apiKey = ""; 
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: promptText }] }]
+                })
+            });
+
+            if (!response.ok) throw new Error(`API Error: ${response.status}`);
+            const result = await response.json();
+            return result?.candidates?.[0]?.content?.parts?.[0]?.text || "No text generated.";
+        }
+
+        async function testText() {
+            const resDiv = document.getElementById('textResult');
+            resDiv.className = 'result'; resDiv.innerText = 'Loading...';
+            try { resDiv.innerText = await geminiGenerateText("Explain Quantum Computing in 2 sentences."); } 
+            catch (e) { resDiv.className = 'result error'; resDiv.innerText = e.message; }
+        }
+    </script>
+
+    <!-- ========================================== -->
+    <!-- 2. WEB SEARCH -->
+    <!-- ========================================== -->
+    <h2>2. Web Search (Gemini 3 Flash + Grounding)</h2>
+    <p>Use this function to search the live internet for up-to-date information.</p>
+    <button onclick="testSearch()">Test: geminiSearchText("What is the current stock price of Google?")</button>
+    <div id="searchResult" class="result">Waiting for test...</div>
+
+    <script>
+        async function geminiSearchText(searchQuery) {
+            const apiKey = ""; 
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: `Search the web for: "${searchQuery}". Provide a concise summary.` }] }],
+                    tools: [{ googleSearch: {} }] // This enables live web grounding
+                })
+            });
+
+            if (!response.ok) throw new Error(`API Error: ${response.status}`);
+            const result = await response.json();
+            return result?.candidates?.[0]?.content?.parts?.[0]?.text || "No search results.";
+        }
+
+        async function testSearch() {
+            const resDiv = document.getElementById('searchResult');
+            resDiv.className = 'result'; resDiv.innerText = 'Searching the web...';
+            try { resDiv.innerText = await geminiSearchText("What is the current stock price of Google?"); } 
+            catch (e) { resDiv.className = 'result error'; resDiv.innerText = e.message; }
+        }
+    </script>
+
+    <!-- ========================================== -->
+    <!-- 3. IMAGE GENERATION -->
+    <!-- ========================================== -->
+    <h2>3. Image Generation (Imagen 4)</h2>
+    <p>Use this function to generate high quality images. Returns a base64 Data URL.</p>
+    <button onclick="testImage()">Test: geminiImageCreation("A cute futuristic robot reading a book, digital art")</button>
+    <div id="imageResult" class="result" style="text-align: center;">Waiting for test...</div>
+
+    <script>
+        async function geminiImageCreation(imagePrompt) {
+            const apiKey = ""; 
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${apiKey}`;
+
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    instances: [{ prompt: imagePrompt }],
+                    parameters: { sampleCount: 1, aspectRatio: "16:9" }
+                })
+            });
+
+            if (!response.ok) throw new Error(`API Error: ${response.status}`);
+            const result = await response.json();
+            const base64Encoded = result?.predictions?.[0]?.bytesBase64Encoded;
+            
+            if (!base64Encoded) throw new Error("No image data returned.");
+            return `data:image/png;base64,${base64Encoded}`;
+        }
+
+        async function testImage() {
+            const resDiv = document.getElementById('imageResult');
+            resDiv.className = 'result'; resDiv.innerHTML = 'Generating image...';
+            try { 
+                const imgData = await geminiImageCreation("A cute futuristic robot reading a book, digital art"); 
+                resDiv.innerHTML = `<img src="${imgData}" style="max-width: 100%; border-radius: 8px; margin-top: 10px;" />`;
+            } 
+            catch (e) { resDiv.className = 'result error'; resDiv.innerText = e.message; }
+        }
+    </script>
+
+</body>
+</html>

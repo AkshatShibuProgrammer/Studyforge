@@ -1,0 +1,89 @@
+Line 61: ## SYS-01 — Universal Educational Content System Instruction
+Line 63: **Use with:** AI-01A, AI-01B, AI-03A, AI-03B, AI-03C, AI-03D, AI-04, AI-05, AI-06A, AI-06B, AI-07A, AI-07E, AI-07F, AI-07G, AI-07H, AI-07I, AI-07J, AI-07K.
+Line 82: ## SYS-02 — Source Preservation System Instruction
+Line 84: **Use with:** AI-02A and AI-02B only.
+Line 100: ## SYS-03 — Educational Image System Instruction
+Line 102: **Use with:** AI-07B and AI-07C.
+Line 120: ## SYS-04 — Grounded Current Affairs Research System Instruction
+Line 122: **Use with:** AI-07D, and AI-01A/AI-01B only when the user has explicitly enabled internet/current mode.
+Line 139: ## SYS-05 — Validation and Refinement System Instruction
+Line 141: **Use with:** AI-06A, AI-06B, AI-07G, AI-07H, AI-07I, AI-07K.
+Line 202: ## AI-01A — Related Sub-topic Expansion
+Line 204: **System prompt:** SYS-01, plus SYS-04 only when `{{INTERNET_MODE}} = true`.  
+Line 255: ### AI-01A validation checklist
+Line 264: ## AI-01B — Full Source-Material Draft
+Line 266: **System prompt:** SYS-01, plus SYS-04 only when `{{INTERNET_MODE}} = true`.  
+Line 315: ## AI-02A — Extraction Cleanup Fallback
+Line 317: **System prompt:** SYS-02.  
+Line 357: ## AI-02B — Source Restructuring Fallback
+Line 359: **System prompt:** SYS-02.  
+Line 361: **Trigger:** AI-02A result remains inadequate or user chooses method C.
+Line 401: ## AI-03A — Subject and Signal Detection
+Line 403: **System prompt:** SYS-01.  
+Line 459: ## AI-03B — Deep Core Extraction
+Line 461: **System prompt:** SYS-01.  
+Line 463: **Trigger:** Always after AI-03A.
+Line 535: ## AI-03C — Smart Routed Bundle Analysis
+Line 537: **System prompt:** SYS-01.  
+Line 539: **Trigger:** Always after AI-03A/AI-03B, but only for rule-routed bundle instructions.
+Line 583: ## AI-03D — Force-Enabled Bundle Analysis
+Line 585: **System prompt:** SYS-01.  
+Line 628: ## AI-04 — Coherent Part Splitting and Per-Part Bundle Assignment
+Line 630: **System prompt:** SYS-01.  
+Line 687: ## AI-05 — Per-Part Coherent Blueprint Generation
+Line 689: **System prompt:** SYS-01.  
+Line 758: ## AI-06A — Surgical Blueprint Chat Modification
+Line 760: **System prompt:** SYS-01 + SYS-05.  
+Line 806: ## AI-06B — Regenerate One Blueprint Section Only
+Line 808: **System prompt:** SYS-01 + SYS-05.  
+Line 852: ## AI-07A — Per-Part Notes and Structured Content Generation
+Line 854: **System prompt:** SYS-01.  
+Line 927: ## AI-07B — Educational Image Prompt Expansion
+Line 929: **System prompt:** SYS-03.  
+Line 981: ## AI-07C — Image Generation Execution Instruction
+Line 983: **System prompt:** SYS-03.  
+Line 985: **Trigger:** Chained after AI-07B, or after user confirms/edits final image prompt.
+Line 1009: ## AI-07D — Grounded Current-Affairs Research
+Line 1011: **System prompt:** SYS-04.  
+Line 1057: ## AI-07E — Post-Generation Image Gap Review
+Line 1059: **System prompt:** SYS-01 + SYS-03.  
+Line 1099: ## AI-07F — Highlight-to-Visualize Prompt Design
+Line 1101: **System prompt:** SYS-03.  
+Line 1145: ## AI-07G — Scope-Aware Generated Content Refinement
+Line 1147: **System prompt:** SYS-01 + SYS-05.  
+Line 1196: ## AI-07H — Per-Part Validation on Approval
+Line 1198: **System prompt:** SYS-01 + SYS-05.  
+Line 1260: ## AI-07I — Final Consolidated Validation
+Line 1262: **System prompt:** SYS-01 + SYS-05.  
+Line 1310: ## AI-07J — Quick Blueprint for an Added Part
+Line 1312: **System prompt:** SYS-01.  
+Line 1357: ## AI-07K — Validation-Originated Image Request Adapter
+Line 1359: **System prompt:** SYS-05 + SYS-03.  
+Line 1361: **Trigger:** User accepts an AI-07H suggested image.
+Line 1711: ## C. Amendment to AI-03A Subject and Signal Detection
+Line 1713: **Add this exact line immediately after the `sub_discipline` requirement in AI-03A:**
+Line 1719: **Replace the AI-03A output schema opening with this exact opening:**
+Line 1733: ## D. Amendment to AI-03B Deep Core Extraction
+Line 1735: **Add this exact requirement immediately before the final return-schema instruction in AI-03B:**
+Line 1741: **Add this exact field before `processes` in AI-03B output schema:**
+Line 1757: ## BND-GEO — Geography, Locations and Maps
+Line 1773: ## BND-PER — Personalities and Contributions
+Line 1789: ## BND-FORM — Formula Operations
+Line 1803: ## BND-DATA — Charts, Data and Comparisons
+Line 1818: ## BND-LAW — Legal, Constitutional and Case-Law Content
+Line 1832: ## BND-TIME — Timeline and Historical Evolution
+Line 1847: ## BND-STORY — Storytelling, Analogy and Scenario Learning
+Line 1861: ## BND-ADM — Institutions, Administration and Governance
+Line 1876: ## BND-PROC — Process, Creation and Procedure
+Line 1892: ## BND-CS — Code, Algorithms and Data Structures
+Line 1906: ## BND-MED — Medical and Science Content
+Line 1919: ## BND-CA — Current-Affairs Relevance Layer
+Line 1939: ## CTX-LOC — Context-Specific Location Facts
+Line 1941: **System prompt:** SYS-01.  
+Line 1942: **Grounding:** OFF; if current facts are needed, create/use AI-07D query instead.  
+Line 1980: ## CTX-PER — PSC-Relevant Personality Facts
+Line 1982: **System prompt:** SYS-01.  
+Line 1983: **Grounding:** OFF; current news uses AI-07D.  
+Line 2019: ## CTX-FORM — Formula Operations Deep Dive
+Line 2021: **System prompt:** SYS-01.  
+Line 2081: **Required future document synchronization:** Document 1’s inventory should list `CTX-LOC`, `CTX-PER`, and `CTX-FORM` as conditional Stage 7 context-enrichment subcalls when implementation chooses to execute them separately. If they are executed inside one AI-07A call instead, their exact prompt text must be embedded as sub-instructions and saved in the final AI-07A prompt history.

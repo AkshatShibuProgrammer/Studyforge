@@ -1,0 +1,1222 @@
+
+
+Here is the complete consolidated documentation of everything discussed and decided:
+
+---
+
+# STUDYFORGE — COMPLETE CONSOLIDATED DOCUMENTATION
+
+## PART 1: PRODUCT OVERVIEW
+
+### Product Name
+StudyForge — AI-Powered Study Material Transformer
+
+### One Line Description
+An app that takes any study material (file or topic) and transforms it into comprehensive, exam-ready or learning-ready notes with intelligent visuals, current affairs, previous year questions, and subject-adaptive features.
+
+### Who Is It For
+- Students preparing for UPSC, State PSC, or any competitive exam
+- Students studying academic subjects like Computer Science, Literature, Medicine
+- Anyone who wants to deeply understand a topic with visual explanations
+- Self-learners who want organized notes from raw material
+
+### How It Works (Simple)
+User gives input → App reads and understands → App plans how to teach → App writes notes with images and extras → User reviews and approves → User downloads final document
+
+---
+
+## PART 2: THE THREE STARTING POINTS
+
+### Starting Point A: User Has A File
+User uploads study material they already have. Supported file types:
+- PDF
+- TXT (plain text / notepad files)
+- DOC / DOCX (Word documents)
+- HTML (web pages saved as files)
+- MD (Markdown files)
+- Images (JPG, PNG — text extracted from images)
+
+### Starting Point B: User Has A Topic Name
+User does not have a file. They just type:
+- Main topic name (required)
+- Sub-topics (optional, can add multiple up to 10)
+- Specific focus area (optional)
+
+App generates comprehensive raw content on that topic and treats it as if it were an uploaded document.
+
+### Starting Point C: User Pastes Text
+User copies text from somewhere and pastes it directly into the app.
+
+---
+
+## PART 3: WHAT THE APP PRODUCES
+
+### The Final Output Contains
+- Organized notes broken into logical parts
+- Visual explanations — diagrams, charts, comics, flowcharts, tables, infographics
+- Current affairs relevant to the topic (if applicable)
+- Previous year questions detected from source + analysis
+- Comparison tables where concepts need side-by-side analysis
+- Timelines where historical progression matters
+- Legal/case law boxes where constitutional or legal aspects exist
+- Stories and scenarios to make concepts memorable
+- Code examples and output previews (for programming subjects)
+- Input/Output demonstrations (for technical tools and algorithms)
+- Formula breakdown boxes with derivation, variables, operations
+- Geography/Location boxes with contextual facts
+- Personality bio cards with PSC-relevant facts
+- Data insight boxes with chart analysis
+- Institution/Administration boxes
+- Analogy boxes for concept clarity
+- Process/Creation boxes
+- Experiment boxes (for science)
+- Medical info boxes (for medical subjects)
+
+### Output Formats
+- HTML (styled webpage)
+- PDF (via browser print)
+- Markdown (plain text with formatting)
+- Copy to clipboard (formatted text and images)
+
+---
+
+## PART 4: THE 8 SCREENS
+
+1. Screen 1: INPUT — User provides study material and preferences
+2. Screen 2: READING — App processes the input (progress display)
+3. Screen 3: UNDERSTANDING + FEATURE DETECTION — App shows what it understood and which features apply
+4. Screen 4: PARTS — App proposes how to split material into teachable parts
+5. Screen 5: BLUEPRINT (Card Grid) — App shows high-level teaching plan for each part
+6. Screen 6: BLUEPRINT DETAIL VIEW — Interactive workspace to chat with AI and edit exact prompts/plans for a specific part
+7. Screen 7: GENERATION (Single Long Page) — App writes notes, generates images, fetches CA — user reviews
+8. Screen 8: EXPORT — User downloads final completed document
+
+---
+
+## PART 5: SUBJECT-ADAPTIVE BEHAVIOR
+
+The app is NOT limited to one subject. It adapts based on what the content is about.
+
+### For Exam Preparation (UPSC / PSC / Competitive)
+
+| Feature | Visible | Purpose |
+|---|---|---|
+| Current Affairs | Yes | Latest news related to topics |
+| State Focus (MP, UP, etc.) | Yes | State-specific data and schemes |
+| PYQ Detection | Yes | Find and tag previous year questions |
+| Legal/Case Law | If applicable | Constitutional provisions, court cases |
+| Timeline | If historical | Evolution of policies, movements |
+| Comparison Tables | Yes | GDP vs GNP, Fundamental Rights vs DPSP |
+| Formula Breakdown | If applicable | Economics formulas, science formulas |
+| Story/Scenario Boxes | Yes | Memorable examples with characters |
+
+### For Computer Science / Programming
+
+| Feature | Visible | Purpose |
+|---|---|---|
+| Code Blocks | Yes | Syntax-highlighted code examples |
+| Algorithm Tables | Yes | Time/space complexity comparison |
+| Input → Output Demos | Yes | Show what tool/function produces |
+| Architecture Diagrams | Yes | System design, data flow |
+| Data Structure Visuals | Yes | Trees, graphs, stacks, queues |
+| Current Affairs | Hidden | Not needed (can force-enable) |
+| State Focus | Hidden | Not relevant (can force-enable) |
+| PYQ Detection | Maybe | If academic exam questions exist |
+
+### For Literature / Humanities
+
+| Feature | Visible | Purpose |
+|---|---|---|
+| Timeline | Yes | Literary periods, author lifetimes |
+| Character Maps | Yes | Relationships between characters |
+| Theme Comparisons | Yes | Themes across works |
+| Current Affairs | Hidden | Not needed (can force-enable) |
+| Formulas | Hidden | Not relevant |
+| Code Blocks | Hidden | Not relevant |
+
+### For Medical / Science
+
+| Feature | Visible | Purpose |
+|---|---|---|
+| Diagrams | Yes | Anatomy, processes, cycles |
+| Formulas | Yes | Chemical equations, physics formulas |
+| Comparison Tables | Yes | Drug comparisons, disease vs disease |
+| Timeline | If applicable | Disease progression, treatment evolution |
+| Current Affairs | Maybe | Medical breakthroughs, policy changes |
+
+### Feature Detection Logic
+After the app reads the content (Screen 3), it automatically detects which features are relevant based on:
+- Subject matter identified
+- Content types found (formulas, dates, code, legal references)
+- User's stated exam/objective
+- What elements were extracted (PYQs, tables, diagrams)
+
+User can always override — turn OFF detected features or turn ON hidden ones via "Show more options" link.
+
+---
+
+## PART 6: IMAGE GENERATION PHILOSOPHY
+
+### Not One Style — Mixed Styles
+A single image can combine multiple visual styles when the content demands it.
+
+Example: GDP vs GNP image could contain:
+- Flowchart showing where GDP and GNP sit in economics hierarchy
+- Bar chart comparing India's GDP vs GNP over years
+- Table showing data comparison for India and MP
+- Small explanation cards on the side describing behavior patterns
+
+### Styles Available (35 Options Grouped)
+- Process/Flow: Flowchart, Step-by-Step, Decision Tree, Sankey, Process Map, Timeline, Gantt
+- Structure: Entity Diagram, Hierarchical Tree, Network, Sequence Diagram, Use Case, State Machine, Mind Map
+- Data: Bar Chart, Pie Chart, Line Graph, Scatter Plot, Heat Map, Radar, Bubble Chart, Stacked Area, Pictograph, Heat-Map Table
+- Concept: Concept Map, Venn Diagram, Comparison Matrix, Comic Story, Infographic, 3D Model, Icon Array, Geographic Map, Funnel, Storyboard, Table Diagram
+
+### How Images Are Created
+- AI automatically picks the best style(s) based on content
+- User can change to any style via dropdown
+- AI generates a detailed prompt for image creation
+- User can edit the prompt before generation
+- User can regenerate with different style
+- User can describe their own vision and AI builds the prompt
+
+### Key Image Principles (Lead's Directives)
+- Focus on UNDERSTANDING, not aesthetics
+- Make tough concepts simple through visuals
+- Think like an infographic designer
+- Preferred styles: infographics, comic stories, formula breakdowns, metric visualizations, fact cards
+- Every image should teach something — viewer should understand the concept just by looking at the image
+- Do not make it pretty — make it clear
+- AI tries to put as much information as possible in one image
+- If combining would make image too cluttered, AI splits into multiple images
+- AI decides if multiple images are needed based on data volume
+
+### Interactive Image Creation
+User highlights any text in notes → camera button appears → shows editable auto-generated prompt → shows recommended styles → user picks/modifies → image generates → user approves or regenerates
+
+### Image Function Chain (Architectural Decision)
+When AI identifies an image is needed at any point:
+1. Call insertImageAtLocation(text, imageDescription, position)
+2. Function places text in HTML at specified position
+3. Function calls generateImagePrompt(imageDescription, surroundingContent, position)
+4. Prompt function creates detailed image prompt
+5. Prompt function calls generateImage(detailedPrompt)
+6. Image generator creates and returns image
+7. Original function places image after the text at specified position
+
+This chain works identically whether triggered during text generation, after text review, or during validation.
+
+---
+
+## PART 7: AI VALIDATION SYSTEM
+
+### Two-Layer Validation
+
+#### Layer 1: Per-Part Validation (When User Approves a Part)
+When user clicks "Approve Part" on any part:
+1. AI call fires with everything in that part (text + all images + what each image shows)
+2. AI creates a summary of that part covering what content was written, what images were created, what each image shows, what sources/enrichments were used
+3. AI checks for issues and gaps
+4. Popup appears with options: Cross (cancel), Approve Modifications (accept AI suggestions), Ignore (approve as-is)
+5. If user clicks "Approve All" master button — this happens one by one for each part sequentially with progress indicator
+
+#### Layer 2: Final Consolidated Validation (After ALL Parts Approved)
+Once all parts are approved:
+1. AI call fires with consolidated data of ALL approved parts
+2. AI checks against content-driven requirements (NOT rigid subject categories)
+3. AI reports gaps and suggestions
+4. User can accept suggestions (new parts/sections added) OR ignore and export
+
+### Content-Driven Validation (Not Subject-Based)
+Validation does NOT use rigid subject categories. Instead:
+- AI looks at what content types actually exist (formulas, laws, timelines, personalities)
+- AI checks if all content types are properly covered
+- Example: GST topic has Economics + Polity + History aspects — AI validates ALL three, not just "Economics rules"
+- During blueprint and validation, AI considers visualization: stories as comic style, case stories as character comics, formulas as metrics/graphs, comparisons as tables/matrices, processes as flowcharts
+
+### What AI Validation Checks
+- Text authenticity — are facts correct and traceable
+- Image relevance — does the image actually explain the concept
+- Coverage completeness — are all planned topics actually covered
+- Suggestions — how to improve text, images, or structure
+- Missing elements — anything that should be added
+
+### Subject-Specific Checks in Final Validation
+
+| Content Type Present | What AI Checks |
+|---|---|
+| Economics concepts | Key metrics covered, India data included, recent policy changes |
+| Polity/Constitutional | Articles referenced, landmark judgments with both sides (plea + facts + verdict), amendments |
+| Historical content | Timeline completeness, cause-effect chains, period coverage |
+| Geography content | Locations mapped, neighboring context, physical + political balance |
+| CS/Programming | Complexity analysis, edge cases, code examples |
+| Medical/Science | Anatomy diagrams, symptom-diagnosis-treatment chain, latest guidelines |
+| Any content | Coverage completeness, factual consistency, source traceability |
+
+---
+
+## PART 8: ERROR HANDLING — UNIVERSAL
+
+Everywhere in the app where AI is called, the same error handling applies:
+1. Step 1: AI call is made
+2. Step 2: If it fails — auto-retry (wait 2 seconds)
+3. Step 3: If it fails again — auto-retry (wait 4 seconds)
+4. Step 4: If it still fails — show popup
+
+Error popup contains:
+- Failed action name
+- Reason (error details)
+- Failed prompt (visible in editable textarea)
+- Buttons: Try Again, Retry with Simplified Prompt, Retry with Edited Prompt, Skip This Step, Cancel
+
+Smart detection:
+- If error contains "context", "token", "length", "limit" → highlight Simplified Retry button
+- If error is "rate limit" → auto-wait 30 seconds before showing popup
+- If error is "network" → auto-retry when connection returns
+
+This applies to: text generation, image generation, current affairs search, blueprint generation, AI validation, AI chat responses, any AI interaction anywhere.
+
+---
+
+## PART 9: APPROVAL SYSTEM
+
+### Three Levels Of Approval
+
+Level 1: Individual Element
+- Approve specific text section
+- Approve specific image
+- Approve specific CA integration
+
+Level 2: Part Level
+- "Approve Part" button — triggers per-part validation, then approves all elements in that part
+- Locks the part with green checkmark
+- Shows "Unlock to Edit" button
+
+Level 3: All Parts
+- "Approve All" master button
+- Triggers per-part validation popup for each part one by one
+- Only available when all parts have been reviewed
+
+### Progress Tracking
+- Top progress bar: "3 of 6 parts approved"
+- Sidebar: Each part has checkmark/pending/generating icon
+- Floating widget: Percentage complete (if not too heavy on performance)
+
+### Unlock to Edit
+After approving a part, user can click "Unlock to Edit" to:
+- Re-open the part for modifications
+- Make changes
+- Re-approve when done
+- Progress indicator updates accordingly
+
+---
+
+## PART 10: TRACEABILITY SYSTEM
+
+Every piece of content in the final notes is tagged:
+
+| Tag | Color | Meaning |
+|---|---|---|
+| SOURCE_BACKED | Green | Directly from uploaded material — verified content |
+| RESEARCH_REQUIRED | Blue | Content that was researched/generated by AI — should be verified |
+| OPTIONAL_ENRICHMENT | Gold | Extra content added for better understanding — nice to have |
+| WEB_SOURCED: url | Purple | From live web search — with verifiable URL citation |
+
+This helps the user know what is from their original material and what AI added. The WEB_SOURCED tag was added based on our discussion to differentiate live web data from AI-inferred content.
+
+---
+
+## PART 11: SAVE AND RESUME
+
+- App automatically saves all progress to browser storage
+- If user closes browser and comes back, everything is exactly where they left
+- No manual save button needed
+- Works across page refreshes
+- State includes: all inputs, all AI outputs, all approvals, all generated content
+- Session resume must repopulate UI fields (Screen 1 fields show saved values on reload)
+
+---
+
+## PART 12: NAVIGATION
+
+### Methods Available
+- Sidebar: Shows all stages/screens, click to jump to any completed stage
+- Top progress bar: Visual indicator of current stage with clickable stages
+- Back button: Go to previous screen
+- Forward button: Only available if next stage is already completed
+
+### Rules
+- Can always go back to any completed screen
+- Can only go forward if current screen requirements are met
+- Blueprint approval required before generation starts
+- Part generation required before export
+
+### Routing Logic (Critical Architecture)
+- navTo() = for jumping BACK to already-completed screens (enforces maxScreen check)
+- navigate() = for advancing FORWARD to next screen (updates maxScreen)
+- Screen 4 "Continue to Blueprint" → uses navigate(5)
+- Screen 5 "Approve & Start Generation" → uses navigate(7)
+- Screen 7 "Finish & Go to Export" → uses navigate(8)
+
+---
+
+## PART 13: PROMPT ARCHITECTURE
+
+The app works through a chain of AI prompts where each prompt's output feeds the next.
+
+### Prompt Chain Flow
+- Source Input → Stage 3 Analysis Prompts
+- Stage 3 Output → Stage 4 Splitting Prompt
+- Stage 4 Output → Stage 5 Blueprint Prompts (per part, parallel)
+- Blueprint Output → Stage 7 Text Generation Prompt (per part)
+- Blueprint Output → Stage 7 Image Prompt Expansion → Image Generation
+- Blueprint Output → Stage 7 CA Search Prompt (with grounding)
+- Generated Content → Validation Prompt
+- User Selection → Visualize-This Prompt
+
+### Key Principles
+- Every prompt is visible, copyable, editable, and regeneratable
+- User can see exactly what the AI is being asked
+- User can modify the prompt and regenerate
+- System prompts shown via toggle (not default view)
+- Prompts stored as inline JavaScript constants following DEFAULT_PROMPTS pattern
+- Users can only edit final generated prompts, not base templates
+
+### Prompt Storage Pattern (From Existing Code)
+```javascript
+const UNIVERSAL_HEADER = `You are the ultimate Master Educational Content Engineer...`;
+
+const DEFAULT_PROMPTS = {
+    extractionPrompt: `...`,
+    universalBlueprintHeader: UNIVERSAL_HEADER,
+    economicsBlueprintPrompt: `Apply the METABOLIC PIPELINE STRATEGY...`,
+    polityBlueprintPrompt: `Apply the CASE CONFLICT AND INSTITUTIONAL FRICTION STRATEGY...`,
+    historyBlueprintPrompt: `Apply the STRATIFIED CHRONOLOGY STRATEGY...`,
+    geographyBlueprintPrompt: `Apply the KINETIC TOPOGRAPHY STRATEGY...`,
+    scienceTechBlueprintPrompt: `Apply the THEORY-TO-TOOL STRATEGY...`,
+    environmentBlueprintPrompt: `Apply the TROPHIC CYCLE STRATEGY...`,
+    socialIssuesBlueprintPrompt: `Apply the SOCIAL ISSUES BLUEPRINT...`,
+    mpSpecificBlueprintPrompt: `Apply the MP SPECIFIC BLUEPRINT...`,
+    currentAffairsBlueprintPrompt: `Apply the CURRENT AFFAIRS BLUEPRINT...`,
+    blueprintPartRefinementPrompt: `...`,
+    partWriterPrompt: `...`,
+    economicsPartWriterPrompt: `...`,
+    imagePromptBuilder: `...`,
+    currentAffairsPrompt: `...`,
+    refinementPrompt: `...`
+};
+
+const SUBJECT_PROMPT_MAP = {
+    'Economics': 'economicsBlueprintPrompt',
+    'Polity': 'polityBlueprintPrompt',
+    'History': 'historyBlueprintPrompt',
+    'Geography': 'geographyBlueprintPrompt',
+    'Science & Technology': 'scienceTechBlueprintPrompt',
+    'Environment': 'environmentBlueprintPrompt',
+    'Social Issues': 'socialIssuesBlueprintPrompt',
+    'MP Specific': 'mpSpecificBlueprintPrompt',
+    'Current Affairs': 'currentAffairsBlueprintPrompt'
+};
+```
+
+---
+
+## PART 14: NON-FUNCTIONAL REQUIREMENTS
+
+### Performance
+- App should work smoothly with documents up to 500 pages
+- Single page app — no page reloads
+- Progress indicators for any operation taking more than 2 seconds
+- Auto-save should not cause UI lag
+
+### Reliability
+- Auto-retry on AI failures (2 retries with delay)
+- User-friendly error messages (not technical errors)
+- No data loss on browser refresh
+- Graceful handling of unsupported file types
+
+### Usability
+- Minimal, moderate design — not fancy but clean
+- All interactive elements clearly labeled
+- No mandatory fields that block progress unnecessarily
+- Placeholders/dummy labels clearly visible during skeleton testing
+- Subject-adaptive UI — irrelevant features hidden, not cluttered
+
+### Technical Constraints
+- Single HTML file (HTML + CSS + JS)
+- Uses Gemini's built-in AI (no external API keys)
+- No backend server needed
+- Works in modern browsers (Chrome, Firefox, Edge)
+- All processing happens in browser
+
+---
+
+## PART 15: IMPLEMENTATION PLAN (Overview)
+
+- Phase 1: Skeleton — Build the complete UI shell with all 8 screens, navigation, state management, and placeholder content. No real AI logic. Goal: Verify the entire user flow works end-to-end with dummy data.
+- Phase 2: Stage 1 (Real AI) — Replace placeholders in Screens 1-3 with real file parsing and AI analysis. Goal: Upload a real PDF and see real analysis output.
+- Phase 3: Stage 2 (Real AI) — Replace placeholders in Screens 4-6 with real partitioning and blueprint generation. Goal: See real blueprint cards with real teaching plans.
+- Phase 4: Stage 3 (Real AI) — Replace placeholders in Screen 7 with real text generation, image generation, CA search, and validation. Goal: See real notes with real images and current affairs.
+- Phase 5: Stage 4 (Export) — Build real export functionality on Screen 8. Goal: Download a complete, properly formatted document.
+- Phase 6: Polish — End-to-end testing, bug fixes, performance optimization, edge case handling.
+
+---
+
+## PART 16: ALL ARCHITECTURAL DECISIONS
+
+### Decision Q1.1 — Method 2: AI Draft Text Type
+Decision: AI generates full comprehensive notes. AI first fetches related sub-topics, then generates content prompt, then generates actual content. Content flows into Method 3 paste area as if uploaded.
+
+### Decision Q1.2 — AI Draft Length
+Decision: Medium by default (~10-15 pages, ~8000 words). Option for comprehensive. Option to search internet for that topic. Option to include current affairs for that topic.
+
+### Decision Q1.3 — Sub-topic Structure
+Decision: Option B — AI uses sub-topics as foundation but can add more sections it thinks are needed.
+
+### Decision Q1.4 — Generated Text Destination
+Decision: Option A — Into Method 3 paste area for user editing before continuing.
+
+### Decision Q2.1 — File Extraction Method
+Decision: Technical extraction first (no AI). If fails, auto-failover to AI cleanup. If that fails, auto-failover to AI restructuring. User can also manually choose method A, B, or C.
+
+### Decision Q2.2 — AI Draft Reading Phase
+Decision: Option A — Skip reading phase entirely for AI-generated text.
+
+### Decision Q2.3 — Paste Text Cleanup
+Decision: Option A — Take as-is, no cleanup.
+
+### Decision Q3.1 — Analysis Architecture
+Decision: Hybrid — 3 Prompts + Smart Routing.
+- Prompt 1: Subject Detection (fast, 5-10s) — returns subject, sub-discipline, content signals, confidence per signal as JSON
+- Prompt 2: Deep Extraction (15-20s) — extracts all topics, definitions, formulas, PYQs, comparisons, examples, timelines, tables as structured JSON
+- Prompt 3: Smart Bundle Detection (15-30s) — based on Prompt 1 signals, only runs relevant bundle detection prompts in parallel. Skips irrelevant bundles. User can force-enable skipped ones later.
+
+### Decision Q3.2 — Feature Bundle Auto-Selection
+Decision: Three-tier display on Screen 3.
+- Auto-enabled (green checkmark, on by default) — high confidence
+- Suggested (visible, unchecked, "AI found this but wasn't sure") — medium confidence
+- Force-enable (hidden behind "Show more options") — not detected
+
+### Decision Q3.3 — Confidence Display
+Decision: Visual icons, no percentages.
+- Green dot = strong signals (auto-on)
+- Yellow dot = weak signals (suggested)
+- Grey dot = not detected (force-enable available)
+- Hover tooltip shows reasoning: "Detected 12 place names, 5 historical events"
+
+### Decision Q3.4 — Location Extraction
+Decision: Check all facts related to that place WITH RESPECT TO the topic being studied. If place is in current affairs, include those facts. If a country, include map with neighboring countries, their capitals, popular seas or passages. Context-driven facts — not fixed count. Historical topic gets historical facts. Geopolitics gets political facts. Economics gets economic data. Basic detection on Screen 3, deep facts fetched on Screen 7 when part generates. Results cached.
+
+### Decision Q3.5 — Formula Extraction
+Decision: Split — Detect formula in Screen 3 (identify, extract variables, note page reference). Deep operations in Screen 7 (derivation, facts, variable deep dive, substitution examples, edge cases, real-world applications, common mistakes).
+
+### Decision Q3.6 — Personality Extraction
+Decision: All important facts related to PSC and current affairs. Prompt specifically asks for PSC/UPSC relevant facts about that person. Not generic bio — focused, exam-relevant information. Name + role detected on Screen 3. Full PSC-relevant facts fetched on Screen 7. Cached for reuse.
+
+### Decision Q4.1 — Part Splitting Logic
+Decision: Rules as guardrails, coherence first, user final say.
+- AI calculates range from page-count table
+- AI applies splitting rules (never split formula from explanation, PYQs stay with topic, conceptual coherence)
+- AI proposes N parts within range
+- User can add/merge/edit on Screen 4
+- If AI wants to go outside table range, show warning
+
+Part Count Table:
+| Total Pages | Parts Range |
+|---|---|
+| 1-10 | 1-3 parts |
+| 11-20 | 2-6 parts |
+| 21-30 | 4-8 parts |
+| 31-50 | 5-10 parts |
+| 51-100 | 8-15 parts |
+| 101-200 | 12-20 parts |
+
+### Decision Q4.2 — Splitting Prompt Inputs
+Decision: Analysis output is primary input. Full text included only if under token limit. If over token limit, send text summary per topic instead.
+
+### Decision Q4.3 — Per-Part Bundle Assignment
+Decision: Auto-assign bundles per part with global inheritance + per-part override.
+- If user enables a bundle globally on Screen 3, AI auto-includes it in parts where that content exists
+- AI auto-assigns based on content (Part 2 has formulas → Formula bundle applies)
+- User can override per part on Screen 5 (chip UI on cards) and Screen 6 (add/remove in detail view)
+
+### Decision Q5.1 — Blueprint Generation
+Decision: One prompt per part, fired in parallel with 1-second gap between each.
+
+### Decision Q5.2 — Blueprint Sections
+Decision: One prompt per part produces all 5 sections: headings, text_plan, image_plan, ca_plan, validation_plan. Coherent output. User can regenerate individual sections.
+
+### Decision Q5.3 — Image Style Selection
+Decision: AI smart defaults based on content type. User override via dropdown (35 styles). Hover shows reasoning.
+
+### Decision Q5.4 — CA Search Execution Timing
+Decision: Generate search queries during blueprint. Execute on Screen 7 when user clicks or when auto-generate is triggered.
+
+### Decision Q5.5 — Screen 6 AI Chat Modification
+Decision: Surgical modification of targeted section only. Lightweight undo for last change. Other sections untouched.
+
+### Decision Q7.1 — Text Generation Inputs
+Decision: Sliced inputs — only relevant pages per part.
+- Part metadata (title, page range, applied bundles)
+- Relevant source text slice (only pages for this part)
+- Relevant analysis (formulas and definitions for this part)
+- ALL definitions from entire document (shared globally)
+- ALL formulas from entire document (shared globally)
+- Blueprint plan for this part
+- Traceability instruction (tag as SOURCE_BACKED, RESEARCH_REQUIRED, OPTIONAL_ENRICHMENT)
+
+### Decision Q7.2 — Text Generation Output Format
+Decision: Properly formatted HTML. Once approved, embedded into the page. Approve Part = auto-approve all text, images, and CA in that part.
+
+### Decision Q7.3 — Image Prompt Expansion
+Decision: Auto-expand blueprint description into detailed prompt → generate immediately → show prompt for regeneration. Global setting available to preview prompts before generation (default: off).
+
+### Decision Q7.4 — CA Search Method
+Decision: Gemini's built-in grounding/search feature (no external API key). Returns fresh data. Fallback to training data with disclaimer if grounding unavailable.
+
+### Decision Q7.5 — AI Validation System
+Decision: Two layers.
+- Layer 1: Per-part validation when user clicks Approve Part. 1 combined AI call. Summary + issues + suggestions popup. Options: Cancel, Approve Modifications, Ignore & Approve As-Is.
+- Layer 2: Final consolidated validation after all parts approved. Content-driven checks (not rigid subject categories). Suggestions to add new parts or enrich existing ones.
+
+### Decision Q7.6 — Refinement Chat
+Decision: Smart scope detection. AI infers what sections a natural language instruction affects. Diff preview before applying. Options: Apply All, Apply Selective, Discard, Expand Scope. Full regen requires confirmation with cost warning.
+
+### Decision Q7.7 — Highlight-to-Visualize
+Decision: Full contextual awareness — selected text + parent paragraph + part metadata (bundles, subject). AI recommends 3 styles from 35-style catalog with reasoning. Cross-paragraph selection uses all highlighted content + surrounding paragraphs as context.
+
+### Decision Q7.8 — Add New Part
+Decision: Quick blueprint with optional edit. Modal shows topic input + sub-topics. Two buttons: Generate Immediately (auto-blueprint with defaults) or Configure Blueprint First (edit before generating). CA auto-decision based on global toggle or topic sensitivity.
+
+### Decision Q8.1 — Export
+Decision: No AI in export. Already validated. Pure formatting: compile approved parts with embedded text and images. Copy formatted text + images. Save as PDF.
+
+### Decision QX.1 — Error Handling
+Decision: Combined popup with all recovery options. Show failed prompt (editable). Buttons: Retry As-Is, Retry Simplified, Retry with Edited Prompt, Skip, Cancel. Smart detection for error type.
+
+### Decision QX.2 — Token/Context Limits
+Decision: Semantic chunking at natural boundaries (chapter > section > page). Each chunk gets context (previous summary, next preview). Analyze chunks separately. Merge analyses (union topics, deduplicate, concatenate). Parts can span original chunks.
+
+### Decision QX.3 — Prompt Visibility
+Decision: Show user prompt by default. Toggle to see system prompt. Both visible for full transparency. User can edit user prompt and regenerate.
+
+---
+
+## PART 17: FINAL CLARIFYING DECISIONS (Sections A-K)
+
+### Decision QA.1 — Method 2 Multi-Step Chain
+Decision: Confirmed 5-step chain.
+1. User types topic + sub-topics
+2. AI fetches/expands related sub-topics
+3. Expanded list shown to user for approval/editing
+4. After approval, AI generates full content
+5. Content appears in Method 3 paste area
+
+### Decision QA.2 — Expanded Sub-Topics Visibility
+Decision: Show expanded list to user. User approves/edits before content generation. User can uncheck items, add own sub-topics. Panel appears below Method 2 inputs.
+
+### Decision QA.3 — Internet Search Timing for Method 2
+Decision: Both prompts use internet search when toggle is ON. Sub-topic expansion searches for latest developments and new sub-topics. Content generation searches for current facts and data while writing.
+
+### Decision QB.1 — Location Deep Facts Timing
+Decision: Screen 7 only. Basic detection on Screen 3 (name, count, page refs). Deep facts fetched during generation. Saves cost if part is removed. Results cached.
+
+### Decision QB.2 — Facts Per Location
+Decision: Context-driven, not fixed count.
+- Indus Valley topic + MP → archaeological sites, historical significance, ancient trade routes
+- Geopolitics + MP → borders, strategic locations, security, political geography
+- Current Affairs + MP → recent schemes, budget, elections, development
+- Economics + MP → GSDP, per capita income, key industries, poverty index
+- Geography + MP → rivers, mountains, climate, minerals
+- Passing mention → basic only (capital, region, 1-2 relevant facts)
+
+Dynamic prompt template includes content context and explicitly says DO NOT extract unrelated facts.
+
+### Decision QB.3 — International Location Treatment
+Decision: Same context-driven approach as domestic. India-angle comes naturally because source content is from Indian perspective. No hardcoded rules for international vs domestic.
+
+### Decision QC.1 — New Image Suggestion Timing
+Decision: All three moments via unified function chain.
+- During text generation: AI includes IMAGE_NEEDED tags
+- After text generation: AI reviews and suggests
+- During validation: AI finds gaps and suggests with position
+Same function chain handles all three triggers.
+
+### Decision QC.2 — Mixed-Style Images
+Decision: Single complex image by default. AI tries to combine all related visual information. If combining would be too cluttered, AI splits into multiple. Priority: visually understandable, not pretty. Tough topics should be explainable through the image alone.
+
+### Decision QC.3 — Style Mix Control
+Decision: AI decides the mix, user approves. If unhappy, user can edit image plan and change styles/elements. Consistent with smart-defaults-user-override philosophy.
+
+### Decision QD.1 — AI Calls Per Part Validation
+Decision: 1 combined AI call. Returns summary + issues + suggestions as single JSON response.
+
+### Decision QD.2 — Subject-Specific Validation Rules
+Decision: Content-driven, NOT rigid subject categories. AI checks whatever content types actually exist in the document. GST has Economics + Polity + History → AI validates all three. No fixed "if Economics then check X" rules.
+
+### Decision QD.3 — New Part From Validation Suggestion
+Decision: User approves suggestion first. Then quick blueprint flow (from Q7.8). New part needs its own approval. Final validation re-runs after new part approved.
+
+### Decision QE.1 — Duplicate Image Detection
+Decision: No duplicate checking. Let duplicates exist. User can manually delete unwanted images. Keeps feature fast and simple.
+
+### Decision QF.1 — Prompt Storage Type
+Decision: All three — system prompts + templates with placeholders + generation rules. Following existing DEFAULT_PROMPTS code pattern.
+
+### Decision QF.2 — Storage Location
+Decision: Inline JavaScript constants in the single HTML file. Copy button for user visibility.
+
+### Decision QF.3 — User Template Editing
+Decision: No. Users can only edit final generated prompts, not base templates.
+
+### Decision QG.1 — Regenerate Behavior
+Decision: Same prompt + "Generate a different variation" instruction. User can optionally add direction (comprehensive, artistic, simpler). Creative guidelines built into ALL image prompts at system level.
+
+### Decision QG.2 — Edited Prompt Regeneration
+Decision: System prompt + user's edited prompt + diff context (what user changed and why). AI understands user's intent, not just raw text.
+
+### Decision QH.1 — Cross-Part References
+Decision: Include structured formula data from analysis JSON. AI arranges appropriately in the output.
+
+### Decision QH.2 — Analysis Slicing
+Decision: ALL definitions and ALL formulas shared globally across all parts. Other elements (PYQs, examples, timelines, comparisons) strictly sliced per part.
+
+### Decision QI.1 — Grounding Scope
+Decision: Grounding ON only for CA prompts and Method 2 with internet toggle ON. OFF for everything else (source analysis, blueprint, text generation, validation, refinement).
+
+### Decision QI.2 — Web-Sourced Tagging
+Decision: New WEB_SOURCED tag (purple) with URL citation. 4-tag system total: SOURCE_BACKED (green), RESEARCH_REQUIRED (blue), OPTIONAL_ENRICHMENT (gold), WEB_SOURCED (purple with URL).
+
+### Decision QJ — Prompt Trigger Classification
+
+| # | Prompt | Trigger Type |
+|---|---|---|
+| 1 | Method 2: Sub-topic expansion | ALWAYS (when Method 2 used) |
+| 2 | Method 2: Content generation | ALWAYS (after sub-topic approval) |
+| 3 | Stage 2: Text cleanup | CONDITIONAL (only if technical extraction fails) |
+| 4 | Stage 3 Prompt 1: Subject detection | ALWAYS |
+| 5 | Stage 3 Prompt 2: Deep extraction | ALWAYS |
+| 6 | Stage 3 Prompt 3: Bundle detection | ALWAYS (smart routing — only relevant bundles) |
+| 7 | Force-enable bundle prompt | USER-TRIGGERED |
+| 8 | Stage 4: Splitting prompt | ALWAYS |
+| 9 | Stage 5: Blueprint per part | ALWAYS (parallel with 1s gap) |
+| 10 | Stage 6: AI chat refinement | USER-TRIGGERED |
+| 11 | Stage 7: Text generation per part | USER-TRIGGERED or ALWAYS (if auto-generate) |
+| 12 | Stage 7: Image prompt expansion | ALWAYS (chained with image generation) |
+| 13 | Stage 7: Image generation | ALWAYS (chained after prompt expansion) |
+| 14 | Stage 7: CA search per part | USER-TRIGGERED or ALWAYS (if auto-generate) |
+| 15 | Stage 7: Visualize-this prompt | USER-TRIGGERED |
+| 16 | Stage 7: Refinement chat | USER-TRIGGERED |
+| 17 | Stage 7: Per-part validation | ALWAYS (on approve click) |
+| 18 | Stage 7: Final consolidated validation | ALWAYS (after all parts approved) |
+| 19 | Stage 7: New part quick blueprint | USER-TRIGGERED |
+| 20 | Stage 8: Cover page/TOC | NONE (no AI in export) |
+
+### Decision QK.1 — Missing Features Scope
+Decision: Lead's explicit demands + developer bug findings + discussed and agreed items. Excludes rejected suggestions.
+
+### Decision QK.2 — Missing Features Format
+Decision: Comparison table (doc vs actual need) + structured detail list (feature, why, stage, priority, implementation notes).
+
+---
+
+## PART 18: GAPS NOT IN ORIGINAL DOCUMENT BUT REQUIRED
+
+These items were explicitly demanded by the lead or surfaced through developer work. All confirmed and agreed.
+
+### Gap 1: Dynamic Feature Detection System
+Original doc shows 12 static toggle features. Actual requirement is a dynamic bundle-based system where features are detected and offered based on actual content, organized by category:
+- Geography features: location maps, neighboring places, personalities from location, current news, important activities
+- Personalities features: bio cards, related personalities, contributions, recent news
+- Formula features: formula facts, operations, derivations, variable deep dives
+- Charts/Data features: operations on charts, facts of charts, all possible analyses
+- Maps features: for geography, empires, civilizations, any location mention
+- Administration features: governance, institutions, policies
+- Storytelling features: narrative examples, character-based explanations
+- Creation/process features: how things are made/built
+- Mathematics features: operations on mathematical content
+
+### Gap 2: Dynamic Sub-Topics Button (Screen 1, Method 2)
+Doc shows one static sub-topic field. Actual requirement: multiple sub-topic fields (up to 10) with add/remove buttons.
+
+### Gap 3: Session Resume Must Repopulate UI Fields
+Doc says save and resume but does not specify that Screen 1 fields must repopulate with saved values (filename, topic, sub-topics, paste content, optional settings).
+
+### Gap 4: AI Draft Text Feature in Method 2
+Not in original doc. After entering topic in Method 2, user can click "AI Draft Text" to auto-generate content and inject into Method 3 paste area. Multi-step chain: expand sub-topics → user approves → generate content.
+
+### Gap 5: Routing Logic Undefined
+Doc does not distinguish forward navigation (must update maxScreen) from backward navigation (jump to completed screen). navTo() for back, navigate() for forward.
+
+### Gap 6: Screen 4 Edit Settings Modal
+Doc mentions Edit button on part cards but does not specify it needs a proper modal, not a toast notification. Modal must include: part title, page range, topic count, formula count, description, applied bundles, save/cancel buttons.
+
+### Gap 7: Prompt Visibility Throughout App
+Doc mentions prompt architecture but does not specify users must see, copy, and edit actual AI prompts at every stage. Required at: Screen 3 (analysis), Screen 4 (splitting), Screen 5 (blueprint per card), Screen 6 (text plan), Screen 7 (text generation, each image, CA search, validation). Copy button on every visible prompt.
+
+### Gap 8: Granular Approval System (Screen 7)
+Doc mentions 3-level approval but does not specify Screen 7 needs separate Approve Text and Approve Images checkboxes per part, plus master Approve All Parts button.
+
+### Gap 9: AI Validation Workflow (Screen 7)
+Doc mentions AI validation exists but does not specify the complete workflow: click validate → see summary + score → get suggestions → accept/ignore each suggestion → apply changes. Two-layer system (per-part + consolidated).
+
+### Gap 10: Dynamic Part Operations on Screen 7
+Doc allows adding/merging parts on Screen 4 only. Actual requirement: Screen 7 must also allow removing generated parts and adding new parts with AI (user types topic → AI generates with quick blueprint flow).
+
+### Gap 11: New Container Types
+Doc mentions 12 container types. Additional containers needed:
+- Geography/Location Box
+- Personality Bio Card
+- Data Insight Box
+- Formula Operations Box
+- Institution/Admin Box
+- Current Affairs Box
+- Analogy Box
+- Process/Creation Box
+- Experiment Box
+- Medical Info Box
+
+### Gap 12: HTML Escaping/Sanitization
+If user types double quotes in Edit Prompt box, HTML rendering breaks. Input sanitization requirement not specified in doc.
+
+### Gap 13: Bundle Data Sync Across Screens
+When user adds a new part on Screen 4, the new part must inherit and display dynamic feature bundle icons on Screen 5. Data sync not specified in doc.
+
+### Gap 14: WEB_SOURCED Tag (4th Traceability Tag)
+Original doc has 3 tags. 4th tag added: WEB_SOURCED (purple) with URL citation for content fetched via Gemini grounding/search.
+
+### Gap 15: Context-Driven Location/Personality/Formula Facts
+Original doc does not specify that extracted facts must be contextual (related to the topic being studied, not generic). Location facts for Indus Valley topic differ from location facts for Economics topic.
+
+### Gap 16: Image Function Chain
+Original doc does not specify the unified function chain for inserting images at three trigger points (during generation, after generation, during validation) using the same code path.
+
+### Gap 17: Creative Guidelines in All Image Prompts
+Original doc does not specify the system-level creative directives: focus on understanding not aesthetics, think like infographic designer, every image should teach the concept by itself.
+
+### Gap 18: Method 2 Internet Search Options
+Original doc does not specify that Method 2 should have toggles for internet search and current affairs inclusion, with search happening in both sub-topic expansion and content generation prompts.
+
+### Gap 19: Grounding Rules
+Original doc does not specify when Gemini grounding/search should be ON vs OFF. Decision: ON only for CA prompts and Method 2 with internet toggle. OFF for all source-based analysis and generation.
+
+### Gap 20: Cross-Part Data Sharing
+Original doc does not specify that ALL definitions and ALL formulas should be shared globally across all parts during text generation, while other elements remain strictly per-part.
+
+---
+
+## PART 19: DEVELOPER MANAGEMENT
+
+### Developer Assessment
+
+| Developer | Claimed Score | Actual Score | Honesty | Status |
+|---|---|---|---|---|
+| akshatpck (AkshatGemini) | 85% (honest) | ~85% | HONEST | PROCEED — sole developer |
+| anilfamily | 310/310 A+ | ~180-200/310 | LIED | DROPPED |
+| Sindhu Sinha | 310/310 A+ | 294.5/310 (after caught) + deeper gaps | LIED first, admitted second | DROPPED |
+
+### Required Developer Reply Format (4-Part Structure)
+
+PART 1: BINARY STATUS
+- Each fix: DONE / PARTIAL / NOT DONE (no marketing language)
+
+PART 2: FUNCTION MAP
+- Real function names, element IDs, code paths
+
+PART 3: MANUAL TEST WALKTHROUGH
+- What happens when user performs each action
+
+PART 4: HONEST DECLARATION
+- Option A: "100% done. All fixes verified." OR
+- Option B: "[X]% done. Remaining gaps: [list them]"
+
+### Sublead Protocol
+- Never trust self-scoring
+- Manual test > developer explanation
+- One stage at a time
+- Ask "show me" not "tell me"
+- Trace features end-to-end through code
+- Document everything
+- Prioritize blocking issues
+- Escalate honestly with evidence
+
+---
+
+## PART 20: DETAILED STAGE SPECIFICATIONS
+
+### STAGE 1: UNDERSTAND THE SOURCE
+
+#### Screen 1: Input
+
+What User Sees:
+Three input methods separated by clean dividers. All settings optional.
+
+Input Method 1: File Upload
+- Accepted Types: PDF, TXT, DOC, DOCX, HTML, MD, JPG, PNG
+- Multiple Files: No — one file at a time
+- File Size Hint: Show file name and size after selection
+- Drag and Drop: Nice to have but not mandatory
+
+Input Method 2: Type Topic
+- Main Topic: Yes (if using this method) e.g., "National Income"
+- Sub-topics: Optional, can add multiple e.g., "GDP", "GNP", "NDP"
+- Specific Focus: Optional e.g., "Focus on Indian economy data"
+- Add Sub-topic Button: [+ Add another] (creates new field, Up to 10 sub-topics)
+- AI Draft Text Button: After entering topic, user can click to auto-generate content
+
+Input Method 3: Paste Text
+- Large Text Area: Resizable, min 10 rows
+- Placeholder Text: "Paste your study material here..."
+- Character Count: Shows live character count at bottom
+
+Optional Settings (Below All Three Methods):
+- Exam: Dropdown (UPSC / State PSC / Academic / Other) Default: Blank
+- Objective: Dropdown (Notes / Answer Writing / Revision) Default: Blank
+- State Focus: Text Field ("MP" / "UP" / blank) Default: Blank
+- Include Current Affairs: Toggle (On / Off) Default: Off
+- Search Internet (for Method 2): Toggle (On / Off) Default: Off
+
+Continue Button:
+- Always active — user decides when to proceed
+- Validates that at least ONE input method has content
+- If nothing provided, shows gentle message: "Please upload a file, type a topic, or paste text"
+
+#### Screen 2: Reading
+
+What Happens Behind The Scenes:
+
+For File Upload:
+1. Detect file type
+2. Extract text from file (PDF: page by page, Images inside PDF: OCR, DOC/DOCX: parse structure, TXT/MD: read directly, HTML: strip tags keep content, JPG/PNG: full OCR)
+3. Clean up junk (remove watermarks, page numbers, repeated headers/footers, text shorter than 10 characters)
+4. Organize in reading order (sort top to bottom per page, merge text and image-extracted text, maintain page references)
+5. If extraction fails: auto-failover to AI cleanup, then AI restructuring
+
+For Topic Name (Method 2):
+1. AI generates comprehensive content on the topic (multi-step chain)
+2. Content includes definitions, examples, comparisons, data
+3. Structured with clear headings
+4. Treated as if it were an uploaded document
+
+For Pasted Text:
+1. Take text as-is
+2. Try to detect structure (headings, lists)
+3. Treat as single-page document
+
+What User Sees:
+- Progress bar with steps
+- Each step shows checkmark when complete
+- Progress bar moves smoothly
+- No user action needed
+- Auto-advances to Screen 3 when done
+
+#### Screen 3: Understanding + Feature Detection
+
+What AI Analyzes:
+The AI reads ALL extracted text and produces a comprehensive understanding using 3-prompt hybrid approach.
+
+Prompt 1 — Subject Detection (5-10 seconds):
+Detects primary subject, sub-discipline, content signals (formulas, dates, code, locations, persons, legal refs, diagrams), confidence per signal. Returns JSON.
+
+Prompt 2 — Deep Extraction (15-20 seconds):
+Given the detected subject, extracts all topics with page refs, definitions with IDs, formulas with variables, PYQs with year/type, comparisons, examples, timelines, tables. Returns structured JSON.
+
+Prompt 3 — Smart Bundle Detection (15-30 seconds):
+Based on Prompt 1 signals, only runs detection for relevant bundles. Skips irrelevant ones. 6 relevant bundles run in parallel or as one combined prompt.
+
+Feature Detection Display:
+After analysis, the app shows detected features as toggleable items with three-tier system:
+- Green checkmark: auto-enabled (high confidence)
+- Yellow/unchecked: suggested (medium confidence)
+- Hidden behind "Show more options": not detected (force-enable available)
+
+Each feature shows count in parentheses (e.g., "Formula Breakdown (12 formulas)")
+
+"See Full Details" expandable section shows tables of:
+- Definitions found (ID, Definition, Page)
+- Formulas found (ID, Formula, Variables, Page)
+- PYQs found (ID, Year, Type, Question, Answer)
+
+Basic summary counts shown above bundles:
+"19 topics • 20 definitions • 12 formulas • 4 PYQs • 6 diagrams • 5 comparisons • 7 examples • 3 timelines • 6 tables"
+
+Buttons: Re-analyze, Fix manually, Looks good — Continue
+
+---
+
+### STAGE 2: PLAN THE BLUEPRINT
+
+#### Screen 4: Parts
+
+What AI Does:
+Takes the analysis from Stage 1 and divides content into logical teachable parts.
+
+Splitting Rules:
+- Conceptual coherence first — related topics stay together
+- Never split a formula from its explanation
+- PYQs go with the topic they test
+- Never create a tiny part with just 1-2 paragraphs
+- Never merge completely unrelated topics
+- Each part must make sense on its own
+
+Each part card shows:
+- Part number and title (editable)
+- Pages covered
+- Topic count, formula count
+- Brief description
+- Applied bundles (chip icons)
+- Edit Settings button (opens modal)
+
+User actions: Add Part, Merge Parts, Edit, Continue to Blueprint
+
+#### Screen 5: Blueprint (Card Grid)
+
+Grid of blueprint cards — one per part. Each card shows compact summary:
+- Part title
+- Text plan summary (bullet points of what will be written)
+- Images planned (count + brief descriptions)
+- Current Affairs queries planned
+- Validation planned
+- Click to see full blueprint (opens Screen 6)
+- Approve this Part checkbox
+
+Master Controls:
+- Approve All Blueprints — approves every part at once
+- Each card also has individual approve button
+
+#### Screen 6: Blueprint Detail View
+
+When user clicks a card, full-screen detail view opens.
+
+Layout: LEFT SIDE (70%) content, RIGHT SIDE (30%) sticky AI chat
+
+Left side contains 5 sections:
+
+SECTION 1: HEADINGS
+Main heading, sub-headings listed
+
+SECTION 2: TEXT PLAN
+What will be written, from source vs researched vs enrichment. Containers planned (Formula Box, Story Box, Comparison Table, etc.). Generation Prompt (editable textarea) with Copy and Regenerate buttons.
+
+SECTION 3: IMAGE PLAN
+For each planned image: title, style (auto-picked with dropdown for all 35), description of what image will show, labels. Change style dropdown and Edit prompt button per image.
+
+SECTION 4: CA PLAN
+Current Affairs Search Plan: search queries with purposes. Each query has Edit query button. Executes on Screen 7.
+
+SECTION 5: VALIDATION PLAN
+What AI will check after generation. Checklist of validation items.
+
+Right side AI Chat:
+User can type instructions to modify the blueprint. Examples:
+- "Add more focus on formulas" → adds formula containers to text plan
+- "Remove the comic for Shyam, make it a flowchart" → changes image 2 style
+- "Add MP GSDP comparison with India GDP" → adds new image + CA query
+- "Make this part simpler, I'm a beginner" → adjusts text plan for prerequisites
+
+Changes are surgical (only affected section modified). Lightweight undo available.
+
+Buttons: Approve this Part's Blueprint, Save Changes
+
+---
+
+### STAGE 3: WRITE AND GENERATE
+
+#### Screen 7: The Generation Workspace
+
+Overall Layout:
+- TOP BAR: Generate All button with progress bar
+- SIDEBAR: Scrollable list of all parts with status icons (pending, generating, generated, approved, unlocked)
+- MAIN CONTENT: All parts stacked on one long scrollable page
+
+Sidebar icons:
+- Grey: pending (not generated yet)
+- Spinning: currently generating
+- Yellow: generated, awaiting review
+- Green: approved by user
+- Blue: unlocked for editing (was approved)
+
+What Happens When User Clicks "Generate Part":
+
+Step 1: Text Generation
+- AI writes comprehensive notes using the blueprint plan
+- Sliced inputs: only relevant pages + all definitions + all formulas + blueprint plan
+- Text streams in real-time (user can watch it appear)
+- Containers render as styled boxes
+- IMAGE_NEEDED tags appear as placeholder cards
+
+Step 2: Image Generation
+- For each planned image, AI builds the detailed prompt from blueprint description
+- Image generates using Gemini's built-in image generation
+- Image appears inline where the placeholder was
+- If AI identifies additional images needed during text generation, same function chain handles them
+
+Step 3: Current Affairs (if applicable)
+- CA search buttons appear at relevant positions
+- Not auto-triggered — user clicks when ready (unless auto-generate is active)
+- Uses Gemini grounding/search for live data
+- Results appear in categorized boxes (National Recent, National Major, State Recent, State Major)
+- Each result has "Merge into notes" button
+
+Step 4: Ready for review
+- Part section fully populated
+- All interactive controls active
+
+Single Part Detail View shows:
+- Part header with Generate, Approve Text checkbox, Approve Images checkbox, Approve Part button
+- All generated content with containers
+- Each image with: Regenerate, Different Style dropdown, Edit Prompt, Approve Image checkbox
+- Current Affairs Zone with fetch button and results
+- Refinement Options: Regenerate Entire Text, Inline Edit (contenteditable), AI Refine (opens chat)
+- Refinement Chat: natural language instructions, smart scope detection, diff preview
+- Highlight-to-Visualize: select text → camera button → popup with auto-prompt + 3 recommended styles + custom vision option
+- AI Validation button: triggers per-part validation popup
+- Approval Controls: Approve Text, Approve Images, Approve Entire Part
+
+After approving: Part shows APPROVED banner, content locked/greyed slightly, Unlock to Edit button available.
+
+Dynamic Part Operations on Screen 7:
+- Remove Part: confirmation dialog, removes from state, re-renders, updates part numbers
+- Add New Part with AI: modal with topic + sub-topics + CA toggle + Generate Immediately or Configure Blueprint First buttons
+
+#### Screen 8: Export
+
+What User Sees:
+- Confirmation that all parts are approved
+- Export Settings:
+  - Format: HTML / PDF / Markdown / Copy to clipboard
+  - Include options: Cover page, Table of contents, Images, Current affairs, PYQ section, Source tags, Blueprint prompts
+- Preview button and Download button
+- Full rendered preview scrollable below settings
+
+No AI in export. Pure formatting of already-validated content.
+
+---
+
+## PART 21: PSC VS CS FEATURE COMPARISON
+
+| Feature | PSC Content | CS Content |
+|---|---|---|
+| Current Affairs | 4 search queries per part (National recent, National major, State recent, State major) | Hidden by default |
+| PYQ Detection | Detect year, type, answer | Only if academic exam Qs exist |
+| State Focus | MP/UP specific data | Not applicable |
+| Legal/Case Law | If constitutional/polity topic | Not applicable |
+| Formula Boxes | Economics/Science formulas | Algorithm formulas |
+| Code Blocks | Not applicable | With syntax highlighting |
+| Input/Output Demos | Not applicable | Shows program execution |
+| Complexity Tables | Not applicable | Big-O analysis |
+| Story/Scenario | Character-driven examples | Real-world analogies |
+| Comparison Tables | GDP vs GNP, etc. | Array vs LinkedList, etc. |
+| Timeline | Historical evolution | Technology evolution |
+| Images | Mixed styles (charts + tables + cards) | Mixed styles (diagrams + tables + code visualization) |
+| AI Validation | Same flow | Same flow |
+| AI Chat | Same flow | Same flow |
+| Traceability Tags | Source/Research/Enrichment/WebSourced | Source/Research/Enrichment/WebSourced |
+| Containers | Concept Box, Formula Box, Story Box, Confusion Alert, Legal Box, Timeline Strip, Location Box, Personality Card, Data Insight Box | Code Block, I/O Demo, Complexity Table, Application Box, Concept Box, Architecture Diagram |
+
+---
+
+## PART 22: COMPLETE PROMPT TRIGGER TABLE
+
+| # | Prompt Name | When It Fires | Trigger Type | Input | Output | Feeds Into |
+|---|---|---|---|---|---|---|
+| 1 | Sub-topic Expansion | Method 2, after user enters topic | ALWAYS (Method 2) | Topic + sub-topics + optional settings | Expanded sub-topic list | Prompt 2 (after user approval) |
+| 2 | Content Generation | Method 2, after user approves expanded list | ALWAYS (Method 2) | Approved topic + sub-topics + depth setting + internet toggle | Full comprehensive content text | Method 3 paste area → Screen 2 pipeline |
+| 3 | Text Cleanup | Screen 2, only if technical extraction fails | CONDITIONAL | Garbled/failed extracted text | Clean structured text | Screen 3 analysis |
+| 4 | Subject Detection | Screen 3, for every document | ALWAYS | Full extracted/generated text | Subject, sub-discipline, content signals, confidence JSON | Prompts 5 and 6 |
+| 5 | Deep Extraction | Screen 3, after Prompt 4 | ALWAYS | Text + detected subject | Topics, definitions, formulas, PYQs, comparisons, examples, timelines, tables as JSON | Screen 3 display + Prompt 6 + Screen 4 |
+| 6 | Bundle Detection | Screen 3, after Prompt 4 | ALWAYS (smart routing) | Text + subject + signals from Prompt 4 | Relevant bundle detections with confidence | Screen 3 feature toggles |
+| 7 | Force-Enable Bundle | Screen 3, user toggles hidden bundle | USER-TRIGGERED | Text + specific bundle to detect | Bundle-specific detection results | Screen 3 feature toggles |
+| 8 | Content Splitting | Screen 4, auto on load | ALWAYS | Analysis JSON + text (or summary if large) + page-count rules | Part definitions (titles, page ranges, topic assignments) | Screen 4 display → Screen 5 |
+| 9 | Blueprint Generation | Screen 5, per part in parallel | ALWAYS | Part metadata + source slice + analysis slice + applied bundles | Headings, text plan, image plan, CA plan, validation plan JSON | Screen 5 cards + Screen 6 detail |
+| 10 | AI Chat Refinement | Screen 6, user types message | USER-TRIGGERED | User message + current blueprint + part context | Surgical modification to specific blueprint section | Screen 6 re-render |
+| 11 | Text Generation | Screen 7, per part | USER-TRIGGERED or ALWAYS (auto-generate) | Blueprint plan + source slice + analysis (all defs + all formulas) + applied bundles | Formatted HTML with containers and traceability tags | Screen 7 part display |
+| 12 | Image Prompt Expansion | Screen 7, chained with image gen | ALWAYS (when image needed) | Blueprint image description + surrounding content context | Detailed multi-line image generation prompt | Prompt 13 |
+| 13 | Image Generation | Screen 7, chained after Prompt 12 | ALWAYS | Detailed image prompt | Generated image | Screen 7 inline display |
+| 14 | CA Search | Screen 7, per part | USER-TRIGGERED or ALWAYS (auto-generate) | CA search queries from blueprint + grounding enabled | Live current affairs data with sources | Screen 7 CA zone |
+| 15 | Visualize-This | Screen 7, user highlights text | USER-TRIGGERED | Selected text + parent paragraph + part metadata | Expanded image prompt + 3 style recommendations | Image generation popup |
+| 16 | Refinement Chat | Screen 7, user types instruction | USER-TRIGGERED | User instruction + current generated text + part context | Targeted edits with diff preview | Screen 7 text update |
+| 17 | Per-Part Validation | Screen 7, on Approve Part click | ALWAYS | Part text + all images + descriptions + blueprint plan + source slice | Summary + issues + suggestions JSON | Validation popup |
+| 18 | Final Consolidated Validation | Screen 7, after all parts approved | ALWAYS | All approved parts consolidated + subject context | Coverage gaps + suggestions + new part recommendations | Final validation popup |
+| 19 | New Part Quick Blueprint | Screen 7, Add New Part button | USER-TRIGGERED | New topic + sub-topics + global bundle settings | Quick blueprint (headings, text plan, image plan, CA plan) | Text generation for new part |
+| 20 | Export | Screen 8 | NONE | N/A | N/A | N/A (pure formatting) |
+
+---
+
+## PART 23: GROUNDING/SEARCH RULES
+
+| Prompt Type | Grounding ON/OFF | Reason |
+|---|---|---|
+| Stage 3: Subject detection | OFF | Analyzing uploaded content only |
+| Stage 3: Deep extraction | OFF | Extracting from source only |
+| Stage 3: Bundle detection | OFF | Analyzing uploaded content only |
+| Stage 4: Splitting | OFF | Working with analysis data only |
+| Stage 5: Blueprint generation | OFF | Planning based on source content |
+| Stage 7: Text generation | OFF | Writing from source + analysis |
+| Stage 7: Image prompt expansion | OFF | Building on blueprint's image plan |
+| Stage 7: CA search | ON | Needs live web data |
+| Method 2: Sub-topic expansion (internet toggle ON) | ON | User explicitly requested |
+| Method 2: Content generation (internet toggle ON) | ON | User explicitly requested |
+| Stage 7: Validation | OFF | Comparing against source, not web |
+| Stage 7: Refinement chat | OFF | Modifying existing content |
+| Stage 7: Visualize-this | OFF | Building prompt from existing content |
+
+---
+
+## PART 24: 4-TAG TRACEABILITY SYSTEM
+
+| Tag | Color | Meaning | When Used |
+|---|---|---|---|
+| SOURCE_BACKED | Green | Directly from uploaded material — verified | Text generation from source pages |
+| RESEARCH_REQUIRED | Blue | AI-generated/inferred — should be verified | AI adds content beyond source |
+| OPTIONAL_ENRICHMENT | Gold | Extra content for better understanding | Analogies, simplified explanations |
+| WEB_SOURCED: url | Purple | From live web search — with verifiable URL | CA search results, internet-enabled Method 2 |
+
+---
+
+## PART 25: TOKEN/CONTEXT LIMIT HANDLING
+
+When source text exceeds model context window:
+1. Detect: If token count exceeds 80% of model limit, trigger chunking
+2. Split at natural boundaries: Chapter headings first, then section headings, then page boundaries
+3. Each chunk gets continuity context: chunk_id, section_boundaries, previous_chunk_summary, next_chunk_preview
+4. Analyze each chunk through Stage 1/2/3 pipeline separately
+5. Merge analyses: Union all topics, deduplicate definitions/formulas by content, concatenate PYQs
+6. Stage 4 splitting works on merged analysis — parts can span original chunks
+
+If even one section is too large for single call:
+- Fall back to sub-section chunking (paragraph groups)
+- Warning to user: "Very large section detected — analysis may have reduced granularity"
+
+---
+
+## PART 26: SLICED INPUT STRATEGY FOR TEXT GENERATION
+
+When generating notes for a specific part (e.g., Part 2, pages 6-10):
+
+What is included in the prompt:
+- Part metadata: title, page range, applied bundles
+- Source text slice: ONLY text from pages 6-10
+- Part-specific analysis: topics, examples, timelines, PYQs, comparisons from pages 6-10
+- ALL definitions from entire document (global share)
+- ALL formulas from entire document (global share)
+- Blueprint plan for this part
+- Traceability instruction
+
+Why definitions and formulas are shared globally:
+- They are small in data size (few KB total)
+- They might be referenced across any part
+- Prevents "definition not found" errors
+- Token cost increase is minimal
+
+Why other elements are strictly per-part:
+- PYQs, examples, timelines, comparisons are part-specific by nature
+- Including all would waste tokens without quality benefit
+
+Cross-part formula references:
+- If Part 2 references a formula from Part 3, the structured formula JSON data is included
+- AI arranges appropriately in the output
+
+---
+
+END OF COMPLETE CONSOLIDATED DOCUMENTATION

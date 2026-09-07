@@ -1,0 +1,12 @@
+# Backup and temp files
+*.bak*
+*.tmp
+*.log
+
+# Python
+__pycache__/
+*.pyc
+
+# OS metadata
+.DS_Store
+Thumbs.db
